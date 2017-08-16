@@ -1,0 +1,407 @@
+<head> 
+	<style>
+		@import url("http://fonts.googleapis.com/css?family=Open+Sans:400,600,700");
+		@import url("http://netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.css");
+		*, *:before, *:after {
+		  margin: 0;
+		  padding: 0;
+		  box-sizing: border-box;
+		}
+
+		main {
+		  min-width: 320px;
+		  max-width: 800px;
+		  padding: 50px;
+		  margin: 0 auto;
+		  background: #fff;
+		}
+
+		section {
+		  display: none;
+		  padding: 20px 0 0;
+		  border-top: 1px solid #ddd;
+		}
+
+		input {
+		  display: none;
+		}
+
+		label {
+		  display: inline-block;
+		  margin: 0 0 -1px;
+		  padding: 15px 25px;
+		  font-weight: 600;
+		  text-align: center;
+		  color: #bbb;
+		  border: 1px solid transparent;
+		}
+
+		label:before {
+		  font-family: fontawesome;
+		  font-weight: normal;
+		  margin-right: 10px;
+		}
+
+		label[for*='1']:before {
+		  content: '\f013';
+		}
+
+		label[for*='2']:before {
+		  content: '\f013';
+		}
+
+		label[for*='3']:before {
+		  content: '\f013';
+		}
+
+		label[for*='4']:before {
+		  content: '\f013';
+		}
+
+		label[for*='5']:before {
+		  content: '\f013';
+		}
+
+		label:hover {
+		  color: #888;
+		  cursor: pointer;
+		}
+
+		input:checked + label {
+		  color: #555;
+		  border: 1px solid #ddd;
+		  border-top: 2px solid black;
+		  border-bottom: 1px solid #fff;
+		}
+
+		#tab1:checked ~ #content1,
+		#tab2:checked ~ #content2,
+		#tab3:checked ~ #content3,
+		#tab4:checked ~ #content4,
+		#tab5:checked ~ #content5 {
+		  display: block;
+		}
+
+		@media screen and (max-width: 650px) {
+		  label {
+		    font-size: 0;
+		  }
+
+		  label:before {
+		    margin: 0;
+		    font-size: 18px;
+		  }
+		}
+		@media screen and (max-width: 400px) {
+		  label {
+		    padding: 15px;
+		  }
+		}
+	</style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script>
+</head>
+
+<main>
+
+ <div class="row ng-admin-entity-products" id="edit-view">
+    <form form-horizontal" name="formController.form" ng-submit="formController.submitEdition($event)">
+        <div class="row">
+
+  <input id="tab1" type="radio" name="tabs" checked>
+  <label for="tab1">Communication</label>
+    
+  <input id="tab2" type="radio" name="tabs">
+  <label for="tab2">Data Refresh</label>
+    
+  <input id="tab3" type="radio" name="tabs">
+  <label for="tab3">Logging</label>
+    
+  <input id="tab4" type="radio" name="tabs">
+  <label for="tab4">Images</label>
+
+  <input id="tab5" type="radio" name="tabs">
+  <label for="tab5">Other</label>
+    
+  <section id="content1">
+
+	  <div ng-init="field=formController.fields[0]" class="form-group has-feedback" ng-class="formController.form.email_username.$dirty ? (formController.form.email_username.$valid ? 'has-success' : 'has-error') : ''">
+	  	<h5>Email Username</h5>
+	    <ma-input-field field="::field" value="entry.values.email_username"></ma-input-field>
+	    <span ng-show="formController.form.email_username.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.email_username.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[1]" class="form-group has-feedback" ng-class="formController.form.email_password.$dirty ? (formController.form.email_password.$valid ? 'has-success' : 'has-error') : ''">
+	  	<h5>Email Password</h5>
+	    <ma-input-field type="password" field="::field" value="entry.values.email_password"></ma-input-field>
+	    <span ng-show="formController.form.email_password.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.email_password.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[2]" class="form-group has-feedback" ng-class="formController.form.email_address.$dirty ? (formController.form.email_address.$valid ? 'has-success' : 'has-error') : ''">
+	  	<h5>Email Address</h5>
+	    <ma-input-field field="::field" value="entry.values.email_address"></ma-input-field>
+	    <span ng-show="formController.form.email_address.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.email_address.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[32]" class="form-group has-feedback" ng-class="formController.form.googlegcmapi.$dirty ? (formController.form.googlegcmapi.$valid ? 'has-success' : 'has-error') : ''">
+	  	<h5>Google Gcm Api</h5>
+	    <ma-input-field field="::field" value="entry.values.googlegcmapi"></ma-input-field>
+	    <span ng-show="formController.form.googlegcmapi.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.googlegcmapi.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[33]" class="form-group has-feedback" ng-class="formController.form.applekgooglegcmapieyid.$dirty ? (formController.form.applekgooglegcmapieyid.$valid ? 'has-success' : 'has-error') : ''">
+	  	<h5>Apple Key Id</h5>
+	    <ma-input-field field="::field" value="entry.values.applekgooglegcmapieyid"></ma-input-field>
+	    <span ng-show="formController.form.applekgooglegcmapieyid.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.applekgooglegcmapieyid.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[34]" class="form-group has-feedback" ng-class="formController.form.appleteamid.$dirty ? (formController.form.appleteamid.$valid ? 'has-success' : 'has-error') : ''">
+	  	<h5>Apple Team Id</h5>
+	    <ma-input-field field="::field" value="entry.values.appleteamid"></ma-input-field>
+	    <span ng-show="formController.form.appleteamid.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.appleteamid.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[35]" class="form-group has-feedback" ng-class="formController.form.applecertificate.$dirty ? (formController.form.applecertificate.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Apple P8 Certificate</h5>
+		<ma-text-field field="field" value="entry.values.applecertificate"></ma-text-field>
+	    <span ng-show="formController.form.applecertificate.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.applecertificate.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+  </section>
+    
+  <section id="content2">
+
+	  <div ng-init="field=formController.fields[25]" class="form-group has-feedback" ng-class="formController.form.menu_timestamp.$dirty ? (formController.form.menu_timestamp.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Menu Timestamp</h5>
+	    <ma-input-field field="::field" value="entry.values.menu_timestamp"></ma-input-field>
+	    <span ng-show="formController.form.menu_timestamp.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.menu_timestamp.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[26]" class="form-group has-feedback" ng-class="formController.form.livetv_timestamp.$dirty ? (formController.form.livetv_timestamp.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Live Tv Timestamp</h5>
+	    <ma-input-field field="::field" value="entry.values.livetv_timestamp"></ma-input-field>
+	    <span ng-show="formController.form.livetv_timestamp.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.livetv_timestamp.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[27]" class="form-group has-feedback" ng-class="formController.form.vod_timestamp.$dirty ? (formController.form.vod_timestamp.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Vod Timestamp</h5>
+	    <ma-input-field field="::field" value="entry.values.vod_timestamp"></ma-input-field>
+	    <span ng-show="formController.form.vod_timestamp.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.vod_timestamp.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[28]" class="form-group has-feedback" ng-class="formController.form.vodlastchange.$dirty ? (formController.form.vodlastchange.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Vod Last Change</h5>
+	     <h5>{{ entry.values.vodlastchange }}</h5>
+	    <span ng-show="formController.form.vodlastchange.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.vodlastchange.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[36]" class="form-group has-feedback" ng-class="formController.form.updatevod.$dirty ? (formController.form.updatevod.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Update VOD</h5>
+	    <ma-checkbox-field class="form-horizontal" field="::field" value="entry.values.updatevod"></ma-checkbox-field>
+	    <span ng-show="formController.form.updatevod.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.updatevod.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[29]" class="form-group has-feedback" ng-class="formController.form.livetvlastchange.$dirty ? (formController.form.livetvlastchange.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Live Tv Last Change</h5>
+	     <h5>{{ entry.values.livetvlastchange }}</h5>
+	    <span ng-show="formController.form.livetvlastchange.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.livetvlastchange.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[37]" class="form-group has-feedback" ng-class="formController.form.updatelive.$dirty ? (formController.form.updatelive.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Update LIVE TV</h5>
+	    <ma-checkbox-field class="form-horizontal" field="::field" value="entry.values.updatelive"></ma-checkbox-field>
+	    <span ng-show="formController.form.updatelive.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.updatelive.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[30]" class="form-group has-feedback" ng-class="formController.form.menulastchange.$dirty ? (formController.form.menulastchange.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Menu Last Change</h5>
+	     <h5>{{ entry.values.menulastchange }}</h5>
+	    <span ng-show="formController.form.menulastchange.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.menulastchange.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[38]" class="form-group has-feedback" ng-class="formController.form.updatemenu.$dirty ? (formController.form.updatemenu.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Update MENU</h5>
+	    <ma-checkbox-field class="form-horizontal" field="::field" value="entry.values.updatemenu"></ma-checkbox-field>
+	    <span ng-show="formController.form.updatemenu.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.updatemenu.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+  </section>
+    
+  <section id="content3">
+
+  	  <div ng-init="field=formController.fields[5]" class="form-group has-feedback" ng-class="formController.form.activity_timeout.$dirty ? (formController.form.activity_timeout.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Activity Timeout</h5>
+	    <ma-input-field field="::field" value="entry.values.activity_timeout"></ma-input-field>
+	    <span ng-show="formController.form.activity_timeout.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.activity_timeout.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[6]" class="form-group has-feedback" ng-class="formController.form.log_event_interval.$dirty ? (formController.form.log_event_interval.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Log Event Internal</h5>
+	    <ma-input-field field="::field" value="entry.values.log_event_interval"></ma-input-field>
+	    <span ng-show="formController.form.log_event_interval.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.log_event_interval.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[8]" class="form-group has-feedback" ng-class="formController.form.channel_log_time.$dirty ? (formController.form.channel_log_time.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Channel Log Time</h5>
+	    <ma-input-field field="::field" value="entry.values.channel_log_time"></ma-input-field>
+	    <span ng-show="formController.form.channel_log_time.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.channel_log_time.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[9]" class="form-group has-feedback" ng-class="formController.form.analytics_id.$dirty ? (formController.form.analytics_id.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Analytics ID</h5>
+	    <ma-input-field field="::field" value="entry.values.analytics_id"></ma-input-field>
+	    <span ng-show="formController.form.analytics_id.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.analytics_id.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+  </section>
+    
+  <section id="content5">
+  
+
+  	  <div ng-init="field=formController.fields[3]" class="form-group has-feedback" ng-class="formController.form.menucode.$dirty ? (formController.form.menucode.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Menu Code</h5>
+	    <ma-input-field field="::field" value="entry.values.menucode"></ma-input-field>
+	    <span ng-show="formController.form.menucode.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.menucode.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[4]" class="form-group has-feedback" ng-class="formController.form.position.$dirty ? (formController.form.position.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Position</h5>
+	    <ma-input-field field="::field" value="entry.values.position"></ma-input-field>
+	    <span ng-show="formController.form.position.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.position.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[7]" class="form-group has-feedback" ng-class="formController.form.company_url.$dirty ? (formController.form.company_url.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Company URL</h5>
+	    <ma-input-field field="::field" value="entry.values.company_url"></ma-input-field>
+	    <span ng-show="formController.form.company_url.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.company_url.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+
+  	  <div ng-init="field=formController.fields[15]" class="form-group has-feedback" ng-class="formController.form.api_token.$dirty ? (formController.form.api_token.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Api Token</h5>
+	    <ma-input-field field="::field" value="entry.values.api_token"></ma-input-field>
+	    <span ng-show="formController.form.api_token.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.api_token.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[16]" class="form-group has-feedback" ng-class="formController.form.locale.$dirty ? (formController.form.locale.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Locale</h5>
+	    <ma-input-field field="::field" value="entry.values.locale"></ma-input-field>
+	    <span ng-show="formController.form.locale.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.locale.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[17]" class="form-group has-feedback" ng-class="formController.form.assets_url.$dirty ? (formController.form.assets_url.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Assets URL</h5>
+	    <ma-input-field field="::field" value="entry.values.assets_url"></ma-input-field>
+	    <span ng-show="formController.form.assets_url.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.assets_url.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	   <div ng-init="field=formController.fields[18]" class="form-group has-feedback" ng-class="formController.form.epg_url.$dirty ? (formController.form.epg_url.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Epg URL</h5>
+	    <ma-input-field field="::field" value="entry.values.epg_url"></ma-input-field>
+	    <span ng-show="formController.form.epg_url.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.epg_url.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[19]" class="form-group has-feedback" ng-class="formController.form.vod_url.$dirty ? (formController.form.vod_url.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Vod URL</h5>
+	    <ma-input-field field="::field" value="entry.values.vod_url"></ma-input-field>
+	    <span ng-show="formController.form.vod_url.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.vod_url.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[20]" class="form-group has-feedback" ng-class="formController.form.personal_url.$dirty ? (formController.form.personal_url.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Personal URL</h5>
+	    <ma-input-field field="::field" value="entry.values.personal_url"></ma-input-field>
+	    <span ng-show="formController.form.personal_url.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.personal_url.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[21]" class="form-group has-feedback" ng-class="formController.form.ip_service_url.$dirty ? (formController.form.ip_service_url.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>IP Service URL</h5>
+	    <ma-input-field field="::field" value="entry.values.ip_service_url"></ma-input-field>
+	    <span ng-show="formController.form.ip_service_url.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.ip_service_url.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[22]" class="form-group has-feedback" ng-class="formController.form.new_encryption_key.$dirty ? (formController.form.new_encryption_key.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>New Encryption Key</h5>
+	    <ma-input-field field="::field" value="entry.values.new_encryption_key"></ma-input-field>
+	    <span ng-show="formController.form.new_encryption_key.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.new_encryption_key.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[23]" class="form-group has-feedback" ng-class="formController.form.old_encryption_key.$dirty ? (formController.form.old_encryption_key.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Old Encryption Key</h5>
+	    <ma-input-field field="::field" value="entry.values.old_encryption_key"></ma-input-field>
+	    <span ng-show="formController.form.old_encryption_key.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.old_encryption_key.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	   <div ng-init="field=formController.fields[24]" class="form-group has-feedback" ng-class="formController.form.key_transition.$dirty ? (formController.form.key_transition.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Key Transition</h5>
+	    <ma-checkbox-field class="form-horizontal" field="::field" value="entry.values.key_transition"></ma-checkbox-field>
+	    <span ng-show="formController.form.key_transition.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.key_transition.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[31]" class="form-group has-feedback" ng-class="formController.form.updatedAt.$dirty ? (formController.form.updatedAt.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Update AT</h5>
+	    <h5> {{ entry.values.updatedAt}} </h5>
+	    <span ng-show="formController.form.updatedAt.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.updatedAt.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>	
+
+  </section>
+
+  <section id="content4">
+
+	  <div ng-init="field=formController.fields[10]" class="form-group has-feedback" ng-class="formController.form.box_logo_url.$dirty ? (formController.form.box_logo_url.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Box Logo URL</h5>
+		<div class="row">
+			<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.box_logo_url }}" height="40" width="40" /></div>
+			<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.box_logo_url"></ma-file-field></div>
+		</div>
+	    <span ng-show="formController.form.box_logo_url.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.box_logo_url.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[11]" class="form-group has-feedback" ng-class="formController.form.box_background_url.$dirty ? (formController.form.box_background_url.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Box Background URL</h5>
+		<div class="row">
+			<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.box_background_url }}" height="40" width="40" /></div>
+			<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.box_background_url"></ma-file-field></div>
+		</div>
+	    <span ng-show="formController.form.box_background_url.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.box_background_url.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[12]" class="form-group has-feedback" ng-class="formController.form.mobile_background_url.$dirty ? (formController.form.mobile_background_url.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Mobile Background URL</h5>
+		<div class="row">
+			<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.mobile_background_url }}" height="40" width="40" /></div>
+			<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.mobile_background_url"></ma-file-field></div>
+		</div>
+	    <span ng-show="formController.form.mobile_background_url.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.mobile_background_url.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[13]" class="form-group has-feedback" ng-class="formController.form.mobile_logo_url.$dirty ? (formController.form.mobile_logo_url.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Mobile Logo URL</h5>
+		<div class="row">
+			<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.mobile_logo_url }}" height="40" width="40" /></div>
+			<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.mobile_logo_url"></ma-file-field></div>
+		</div>
+	    <span ng-show="formController.form.mobile_logo_url.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.mobile_logo_url.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+	  <div ng-init="field=formController.fields[14]" class="form-group has-feedback" ng-class="formController.form.vod_background_url.$dirty ? (formController.form.vod_background_url.$valid ? 'has-success' : 'has-error') : ''">
+	    <h5>Vod Background URL</h5>
+		<div class="row">
+			<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.vod_background_url }}" height="40" width="40" /></div>
+			<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.vod_background_url"></ma-file-field></div>
+		</div>
+	    <span ng-show="formController.form.vod_background_url.$dirty" class="glyphicon form-control-feedback" ng-class="formController.form.vod_background_url.$valid ? 'glyphicon-ok' : 'glyphicon-remove'"></span>
+	  </div>
+
+  </section>
+
+  		<hr>
+		<div class="row">
+		    <div class="btn-group inline pull-right"> 
+		      <div class="btn btn-small"><ma-submit-button class="pull-right" label="Submit"></ma-submit-button></div> 
+		      <div class="btn btn-small"><ma-back-button class="pull-right" label="Cancel"></ma-back-button></div> 
+		    </div>
+		</div>
+
+          </div>
+    </form>
+ </div>
+
+</main>

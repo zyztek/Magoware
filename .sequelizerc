@@ -1,0 +1,7 @@
+var path = require('path');
+
+module.exports = {
+    'config': path.resolve('./config/env/db.connection.js'),
+    'migrations-path': path.resolve('./migrations'),
+    //'models-path': path.resolve('./modules/mago/server/models', 'models')
+}

@@ -1,0 +1,146 @@
+[
+
+  {
+    "api_url": "/api/CustomerGroups","description": "List of customer groups","api_group_id": 1
+  },
+  {
+    "api_url": "/api/logindata","description": "List of user accounts","api_group_id": 1
+  },
+  {
+    "api_url": "/api/customerdata","description": "List of customer groups","api_group_id": 1
+  },
+  {
+    "api_url": "/api/ChannelStreamSources","description": "List of livetv stream sources","api_group_id": 1
+  },
+  {
+    "api_url": "/api/Subscriptions","description": "sescription","api_group_id": 1
+  },
+  {
+    "api_url": "/api/Packages","description": "List of packages","api_group_id": 1
+  },
+
+
+  {
+    "api_url": "/api/subscriptions","description": "sales 1 api","api_group_id": 2
+  },
+  {
+    "api_url": "/api/Packages","description": "list of packages","api_group_id": 2
+  },
+  {
+    "api_url": "/api/salesreports","description": "sales report","api_group_id": 2
+  },
+   {
+    "api_url": "/api/vodpackages","description": "vod packages","api_group_id": 2
+  },
+  {
+    "api_url": "/api/packagetypes","description": "package type","api_group_id": 2
+  },
+  {
+    "api_url": "/api/combos","description": "combo","api_group_id": 2
+  },
+  {
+    "api_url": "/api/combopackages","description": "cmobo package","api_group_id": 2
+  },
+
+
+
+  {
+    "api_url": "/api/genres","description": "genres","api_group_id": 3
+  },
+  {
+    "api_url": "/api/channels","description": "sales 2 api","api_group_id": 3
+  },
+  {
+    "api_url": "/api/Packages","description": "sescription","api_group_id": 3
+  },
+  {
+    "api_url": "/api/channelstreams","description": "sales 1 api","api_group_id": 3
+  },
+  {
+    "api_url": "/api/channelstreamsources","description": "sales 2 api","api_group_id": 3
+  },
+  {
+    "api_url": "/api/packagechannels","description": "sales 1 api","api_group_id": 3
+  },
+  {
+    "api_url": "/api/mychannels","description": "sales 2 api","api_group_id": 3
+  },
+  {
+    "api_url": "/api/packagetypes","description": "sescription","api_group_id": 3
+  },
+
+
+
+  {
+    "api_url": "/api/vods","description": "sales 1 api","api_group_id": 4
+  },
+  {
+    "api_url": "/api/vodsubtitles","description": "sales 2 api","api_group_id": 4
+  },
+  {
+    "api_url": "/api/vodstreams","description": "sales 1 api","api_group_id": 4
+  },
+  {
+    "api_url": "/api/vodstreamsources","description": "sales 2 api","api_group_id": 4
+  },
+  {
+    "api_url": "/api/vodcategories","description": "sales 1 api","api_group_id": 4
+  },
+  {
+    "api_url": "/api/Packages","description": "sales 1 api","api_group_id": 4
+  },
+  {
+    "api_url": "/api/vodPackages","description": "sales 1 api","api_group_id": 4
+  },
+  {
+    "api_url": "/api/packagetypes","description": "sales 1 api","api_group_id": 4
+  },
+
+
+
+  {
+    "api_url": "/api/messages","description": "clients 1 api","api_group_id": 5
+  },
+  {
+    "api_url": "/api/logs","description": "clients 2 api","api_group_id": 5
+  },
+  {
+    "api_url": "/api/epgdata","description": "clients 3 api","api_group_id": 5
+  },
+  {
+    "api_url": "/api/epgimport","description": "clients 3 api","api_group_id": 5
+  },
+  {
+    "api_url": "/file-upload/single-file","description": "clients 3 api","api_group_id": 5
+  },
+
+
+
+  {
+    "api_url": "/api/settings","description": "sales 1 api","api_group_id": 6
+  },
+  {
+    "api_url": "/api/devicemenus","description": "sales 2 api","api_group_id": 6
+  },
+  {
+    "api_url": "/api/groups","description": "sales 1 api","api_group_id": 6
+  },
+  {
+    "api_url": "/api/grouprights","description": "sales 2 api","api_group_id": 6
+  },
+  {
+    "api_url": "/api/appmanagement","description": "sales 1 api","api_group_id": 6
+  },
+  {
+    "api_url": "/api/appgroup","description": "sales 2 api","api_group_id": 6
+  },
+  {
+    "api_url": "/api/users","description": "sales 2 api","api_group_id": 6
+  },
+  {
+    "api_url": "/api/change-password","description": "sales 1 api","api_group_id": 6
+  },
+  {
+    "api_url": "/api/user/change-password", "description": "sales 2 api","api_group_id": 6
+  }
+]

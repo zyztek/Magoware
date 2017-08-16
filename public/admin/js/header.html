@@ -1,0 +1,33 @@
+<div class="navbar-header">
+    <button type="button" class="navbar-toggle" ng-click="isCollapsed = !isCollapsed">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+    </button>
+    <a class="navbar-brand" href="#" ng-click="appController.displayHome()">MAGOWARE - Administration System</a>
+</div>
+
+<ul class="nav navbar-top-links navbar-right hidden-xs">
+    <li uib-dropdown>
+        <a uib-dropdown-toggle href="#" aria-expanded="true" ng-controller="username">
+            <i class="fa fa-user fa-lg"></i>&nbsp; {{ username }}&nbsp;<i class="fa fa-caret-down"></i>
+        </a>
+        <ul class="dropdown-menu dropdown-user" role="menu">
+            <li><a href="#/personal" onClick="window.location.reload()"><i class="fa fa-user fa-fw"></i> Personal Details</a></li>
+            <li><a href="#/change-password"><i class="fa fa-cog fa-fw"></i> Change Password</a></li>
+            <li><a href="#" onclick="logout()"><i class="fa fa-sign-out fa-fw"></i> Logout</a></li>
+        </ul>
+    </li>
+</ul>
+
+<ul class="nav navbar-top-links navbar-right hidden-xs">
+    <li uib-dropdown ng-controller="languageCtrl">
+        <a uib-dropdown-toggle href="#" aria-expanded="true">
+            <i class="fa fa-user fa-lg"></i>&nbsp; Language&nbsp;<i class="fa fa-caret-down"></i>
+        </a>
+        <ul class="dropdown-menu dropdown-user" role="menu">
+            <li><a ng-click="serve_language('en')"><i class="fa fa-sign-out fa-fw"></i> English</a></li>
+            <li><a ng-click="serve_language('fr')"><i class="fa fa-sign-out fa-fw"></i> French</a></li>
+        </ul>
+    </li>
+</ul>

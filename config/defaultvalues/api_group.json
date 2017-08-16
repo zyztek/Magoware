@@ -1,0 +1,32 @@
+[
+  {
+    "id":1,
+    "api_group_name":"customers",
+    "description":"Customer APIs"
+  },
+  {
+    "id":2,
+    "api_group_name":"sales",
+    "description":"Sales - related APIs"
+  },
+  {
+    "id":3,
+    "api_group_name":"livtv",
+    "description":"Live tv - related APIs"
+  },
+  {
+    "id":4,
+    "api_group_name":"vod",
+    "description":"VOD - related APIs"
+  },
+  {
+    "id":5,
+    "api_group_name":"other",
+    "description":"Other APIs"
+  },
+  {
+    "id":6,
+    "api_group_name":"advanced",
+    "description":"Advanced rights APIs"
+  }
+]
