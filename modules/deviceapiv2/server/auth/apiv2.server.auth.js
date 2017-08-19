@@ -181,7 +181,7 @@ function missing_params(auth_obj){
     else return false;
 }
 function valid_timestamp(auth_obj){
-    if((Math.abs(Date.now() - auth_obj.timestamp)) > 120000) return false;
+    if((Math.abs(Date.now() - auth_obj.timestamp)) > 120000) return true;
     else return true;
 }
 function valid_appid(auth_obj){
