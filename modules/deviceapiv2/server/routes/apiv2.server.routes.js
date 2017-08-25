@@ -126,7 +126,7 @@ module.exports = function(app) {
 
     //main device menu
     app.route('/apiv2/main/device_menu')
-        //.all(authpolicy.isAllowed)
+        .all(authpolicy.isAllowed)
         .post(mainController.device_menu);
 
     /*******************************************************************
