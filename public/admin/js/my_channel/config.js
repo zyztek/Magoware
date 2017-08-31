@@ -38,6 +38,7 @@ export default function (nga, admin) {
 				nga.field('login_id', 'reference')
 					.targetEntity(admin.getEntity('LoginData'))
                 	.targetField(nga.field('username'))
+					.perPage(-1)
 					.label('Username'),
                 nga.field('title', 'string')
                     .label('Title'),

@@ -8,8 +8,12 @@ export default function (nga, admin) {
         .fields([
             nga.field('customer_id','reference')
                 .targetEntity(admin.getEntity('CustomerData'))
-                .targetField(nga.field('firstname'))
-                .targetField(nga.field('firstname'))
+                .targetField(
+                        nga.field('firstname')
+                        .map(function (value, entry) {
+                            return entry.firstname + ' ' + entry.lastname;
+                        })
+                )
                 .cssClasses('hidden-xs')
                 .label('Customer'),
             nga.field('username')
@@ -53,6 +57,11 @@ export default function (nga, admin) {
 
     logindata.creationView()
         .title('<h4>Login Accounts <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Login Account</h4>')
+        .onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
+            progression.done();
+            $state.go($state.get('edit'), { entity: entity.name(), id: entry._identifierValue });
+            return false;
+        }])
         .fields([
             nga.field('customer_id', 'reference')
                 .targetEntity(admin.getEntity('CustomerData'))
@@ -60,7 +69,7 @@ export default function (nga, admin) {
                         .map((v, e) => e.firstname + ' ' + e.lastname))
         .attributes({ placeholder: 'Select Customer' })
         .label('Customer')
-        .perPage(1000)
+        .perPage(-1)
         .validation({ required: true}),
         nga.field('username', 'string')
             .attributes({ placeholder: 'Username' })
@@ -75,12 +84,14 @@ export default function (nga, admin) {
             .targetField(nga.field('stream_source'))
             .attributes({ placeholder: 'Select Channel Stream Source' })
             .label('Channel Stream Source')
+            .perPage(-1)
             .validation({ required: true}),
         nga.field('vod_stream_source', 'reference')
             .targetEntity(admin.getEntity('VodStreamSources'))
             .targetField(nga.field('description'))
             .attributes({ placeholder: 'Select Vod Stream Source' })
             .label('VOD Stream Source')
+            .perPage(-1)
             .validation({ required: true}),
         nga.field('pin', 'string')
             .attributes({ placeholder: 'Pin' })

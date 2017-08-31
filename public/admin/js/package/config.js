@@ -6,7 +6,6 @@ export default function (nga, admin) {
 
     packages.listView()
         .title('<h4>Packages <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
-        .permanentFilters({package_type_id: [1,2]})
         .batchActions([])
         .fields([
             nga.field('package_name')
@@ -56,9 +55,8 @@ export default function (nga, admin) {
             nga.field('package_type_id', 'reference')
                 .targetEntity(admin.getEntity('packagetypes'))
                 .targetField(nga.field('description'))
-                .attributes({ placeholder: 'Select Package Type' })
-              	.editable(false)
                 .validation({ required: true })
+                .attributes({ placeholder: 'Select Package Type' })
                 .label('Package Type'),
             nga.field('template')
                 .label('')

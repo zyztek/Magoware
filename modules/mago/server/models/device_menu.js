@@ -22,7 +22,7 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false
         },
         appid: {
-            type: DataTypes.INTEGER(11),
+            type: DataTypes.STRING(128),
             allowNull: false
         },
         menu_code: {
@@ -31,10 +31,6 @@ module.exports = function(sequelize, DataTypes) {
         },
         position: {
             type: DataTypes.INTEGER(11),
-            allowNull: false
-        },
-        applications: {
-            type: DataTypes.STRING(128),
             allowNull: false
         },
         locale: {

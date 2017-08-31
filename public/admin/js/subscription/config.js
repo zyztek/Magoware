@@ -75,6 +75,7 @@ export default function (nga, admin){
                 .targetField(nga.field('username'))
 				.attributes({ placeholder: 'Select Account' })
 				.validation({ required: true })
+				.perPage(-1)
 				.remoteComplete(true, {
 					refreshDelay: 300,
 					// populate choices from the response of GET /posts?q=XXX
@@ -87,6 +88,7 @@ export default function (nga, admin){
                 .targetField(nga.field('name'))
 				.attributes({ placeholder: 'Select Product' })
 				.validation({ required: true })
+				.perPage(-1)
 				.label('Combo'),
 			nga.field('start_date','date')
 				.attributes({ placeholder: 'Start Date' })

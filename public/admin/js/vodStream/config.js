@@ -39,19 +39,26 @@ export default function (nga, admin) {
         .actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>'])
 
 	vodstream.creationView()
-		.title('<h4>Vod Streams <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Vod Stream</h4>')            
+		.title('<h4>Vod Streams <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Vod Stream</h4>')
+		.onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
+			progression.done();
+			$state.go($state.get('edit'), { entity: 'Vods', id: entry.values.vod_id });
+			return false;
+		}])
         .fields([
             nga.field('vod_id', 'reference')
             	.targetEntity(admin.getEntity('Vods'))
                 .targetField(nga.field('title'))
 				.attributes({ placeholder: 'Vod' })
 				.validation({ required: true })
+				.perPage(-1)
 				.label('Vod'),
 			nga.field('stream_source_id', 'reference')
 				.targetEntity(admin.getEntity('VodStreamSources'))
                 .targetField(nga.field('description'))
 				.attributes({ placeholder: 'Stream Source' })
 				.validation({ required: true })
+				.perPage(-1)
 				.label('Stream Source'),
 			nga.field('url', 'string')
 				.attributes({ placeholder: 'Url' })

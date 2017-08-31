@@ -6,6 +6,7 @@ var path = require('path'),
     winston = require(path.resolve('./config/lib/winston')),
     dateFormat = require('dateformat'),
     async = require('async'),
+    schedule = require(path.resolve("./modules/deviceapiv2/server/controllers/schedule.server.controller.js")),
     models = db.models;
 
 exports.list = function(req, res) {
@@ -14,17 +15,32 @@ exports.list = function(req, res) {
     if(req.thisuser.show_adult == 0) qwhere.pin_protected = 0; //show adults filter
     else qwhere.pin_protected != ''; //avoid adult filter
 
+    // requisites for streams provided by the user
+    var userstream_qwhere = {"isavailable": true, "login_id": req.thisuser.id};
+
+    // requisites for streams served by the company
+    var stream_qwhere = {};
+    if(req.thisuser.player.toUpperCase() === 'default'.toUpperCase()) stream_qwhere.stream_format = {$not: 0}; //don't send mpd streams for default player
+    if(req.auth_obj.appid === 3) stream_qwhere.stream_format = 2; // send only hls streams for ios application
+    stream_qwhere.stream_source_id = req.thisuser.channel_stream_source_id; // streams come from the user's stream source
+    stream_qwhere.stream_mode = 'live';
+
+    // requisites for catchup streams
+    var catchupstream_where = {stream_source_id: req.thisuser.channel_stream_source_id, stream_mode: 'catchup'};
+    if(req.thisuser.player.toUpperCase() === 'default'.toUpperCase()) catchupstream_where.stream_format = {$not: 0}; //don't send mpd streams for default player
+    if(req.auth_obj.appid === 3) catchupstream_where.stream_format = 2; // send only hls streams for ios application
+
 //find user channels and subscription channels for the user
     models.my_channels.findAll({
         attributes: ['id', 'channel_number', 'genre_id', 'title', 'description', 'stream_url'],
-        where: {login_id: req.thisuser.id, isavailable: true},
+        where: userstream_qwhere,
         include: [{ model: models.genre, required: true, attributes: ['icon_url'], where: {is_available: true} }],
         order: [[ 'channel_number', 'ASC' ]],
         raw: true
     }).then(function (my_channel_list) {
         models.channel_stream.findAll({
             attributes: ['channel_id'],
-            where: {stream_source_id: req.thisuser.channel_stream_source_id, stream_mode: 'catchup'}
+            where: catchupstream_where
         }).then(function (catchup_streams) {
             models.channels.findAll({
                 raw:true,
@@ -34,7 +50,7 @@ exports.list = function(req, res) {
                     {model: models.channel_stream,
                         required: true,
                         attributes: ['stream_source_id','stream_url','stream_format','token','token_url','is_octoshape','encryption','encryption_url'],
-                        where: {stream_source_id: req.thisuser.channel_stream_source_id, stream_mode: 'live'}
+                        where: stream_qwhere
                     },
                     { model: models.genre, required: true, attributes: [], where: {is_available: true} },
                     {model: models.packages_channels,
@@ -457,7 +473,7 @@ exports.program_info = function(req, res) {
 exports.schedule = function(req, res) {
     //todo: dynamic multi-language  response object for success cases
     models.epg_data.findOne({
-        attributes: ['id'],
+        attributes: ['id', 'channel_number', 'program_start'],
         where: {id: req.body.program_id}
     }).then(function (epg_program) {
         if(epg_program){
@@ -473,6 +489,7 @@ exports.schedule = function(req, res) {
                         clear_response.response_object = [{
                             "action": 'created'
                         }];
+                        schedule.schedule_program(epg_program.program_start, scheduled.id, req.thisuser.id, epg_program.channel_number, req.body.program_id);
                         res.send(clear_response);
                     }).catch(function(error) {
                         console.log(error)
@@ -481,13 +498,17 @@ exports.schedule = function(req, res) {
                     });
                 }
                 else{
+                    var eventid = scheduled.id;
                     models.program_schedule.destroy({
                         where: {login_id: req.thisuser.id, program_id: req.body.program_id}
-                    }).then(function (scheduled){
+                    }).then(function (result){
                         var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
                         clear_response.response_object = [{
                             "action": 'destroyed'
                         }];
+                        console.log("----------------------- unschedule")
+                        console.log(eventid);
+                        schedule.unschedule_program(eventid);
                         res.send(clear_response);
                     }).catch(function(error) {
                         console.log(error)

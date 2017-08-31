@@ -13,7 +13,7 @@
     "WRONG_PASSWORD_DESCRIPTION": "INCORRECT_MOT_DE_PASSE",
     "WRONG_PASSWORD_DATA": "Le mot de passe ne correspond pas",
     "DUAL_LOGIN_ATTEMPT_DESCRIPTION": "ATELIER_DE_LOGIN_DOUBLE",
-    "DUAL_LOGIN_ATTEMPT_DATA": "Tentative de connexion sur un autre appareil",
+    "DUAL_LOGIN_ATTEMPT_DATA": "Vous êtes connecté sur un autre appareil. Voulez-vous vous déconnecter d'autres appareils et vous connecter à celui-ci?",
     "DATABASE_ERROR_DESCRIPTION": "ERREUR_BASE_DE_DONNÉES",
     "DATABASE_ERROR_DATA": "Erreur de connexion de base de données",
     "EMAIL_SENT_DESCRIPTION": "EMAIL_ENVOYÉ",

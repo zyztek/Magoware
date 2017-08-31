@@ -43,7 +43,7 @@ export default function (nga, admin) {
 			nga.field('position', 'string')
 				.label('Position'),
 
-			nga.field('applications','template')
+			nga.field('appid','template')
 					.map(function toarray(value) {
 						var thearray = JSON.parse("["+value+"]");
 						var returnobj = {};
@@ -52,7 +52,7 @@ export default function (nga, admin) {
 						});
 						return returnobj;
 					})
-					.template('<span ng-repeat="theappid in entry.values.applications track by $index" class="label label-default">{{theappid}}</span>')
+					.template('<span ng-repeat="theappid in entry.values.appid track by $index" class="label label-default">{{theappid}}</span>')
 					.label('Applications IDs'),
 
 			nga.field('isavailable', 'boolean')
@@ -63,9 +63,6 @@ export default function (nga, admin) {
               	.label('')
               	.template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>')
               	.pinned(true),
-            nga.field('appid', 'number')
-           	  .attributes({ placeholder: 'App Id' })
-        	  .label('App ID'),
         ])
 		.listActions(['edit'])
 
@@ -120,7 +117,7 @@ export default function (nga, admin) {
 				.validation({ required: true })
 				.label('Menu Code'),
 
-			nga.field('applications', 'choices')
+			nga.field('appid', 'choices')
 					.attributes({ placeholder: 'App ID' })
 					.choices([
 						{ value: 1, label: 'Android Set Top Box' },

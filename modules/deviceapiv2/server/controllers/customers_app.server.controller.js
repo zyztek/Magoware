@@ -123,7 +123,8 @@ exports.update_user_settings = function(req, res) {
             auto_timezone: req.body.auto_timezone,
             show_adult: req.body.show_adult,
             player: req.body.player,
-            get_messages: req.body.get_messages
+            get_messages: req.body.get_messages,
+            livetvlastchange: (req.thisuser.player.toUpperCase() !== req.body.player.toUpperCase()) ? Date.now() : req.thisuser.livetvlastchange //if player changes, livetv data should be updated
         },
         {where: {username: req.auth_obj.username}}
     ).then(function (result) {

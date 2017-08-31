@@ -16,7 +16,7 @@ var path = require('path'),
  */
 exports.create = function(req, res) {
 
-    req.body.applications = req.body.applications.toString();
+    req.body.appid = req.body.appid.toString();
 
     DBModel.create(req.body).then(function(result) {
         if (!result) {
@@ -51,7 +51,7 @@ exports.update = function(req, res) {
     if(updateData.icon_url != req.body.icon_url) {
         var deletefile = path.resolve('./public'+updateData.icon_url);
     }
-    req.body.applications = req.body.applications.toString();
+    req.body.appid = req.body.appid.toString();
 
     updateData.updateAttributes(req.body).then(function(result){
         if(deletefile) {
@@ -162,7 +162,8 @@ exports.dataByID = function(req, res, next, id) {
       });
     } else {
       req.deviceMenu = result;
-      req.deviceMenu.applications = JSON.parse("[" + req.deviceMenu.applications + "]");
+      req.deviceMenu.appid = JSON.parse("[" + req.deviceMenu.appid + "]");
+        console.log(req.deviceMenu);
       next();
       return null;
     }

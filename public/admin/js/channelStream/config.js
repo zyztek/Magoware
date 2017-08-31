@@ -85,13 +85,14 @@ export default function (nga, admin) {
                 .targetField(nga.field('title'))
                 .attributes({ placeholder: 'Select Channel' })
                 .validation({ required: true })
-                .label('Channel')
-                .perPage(1000),
+                .perPage(-1)
+                .label('Channel'),
             nga.field('stream_source_id', 'reference')
                 .targetEntity(admin.getEntity('ChannelStreamSources'))
                 .targetField(nga.field('stream_source'))
                 .attributes({ placeholder: 'Select Stream Source' })
                 .validation({ required: true })
+                .perPage(-1)
                 .label('Stream Source Id'),
             nga.field('stream_url', 'string')
                 .attributes({ placeholder: 'Stream Url' })

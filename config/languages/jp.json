@@ -13,7 +13,7 @@
     "WRONG_PASSWORD_DESCRIPTION": "間違ったパスワード",
     "WRONG_PASSWORD_DATA": "パスワードが一致しません",
     "DUAL_LOGIN_ATTEMPT_DESCRIPTION": "二重ログイン試行",
-    "DUAL_LOGIN_ATTEMPT_DATA": "別のデバイス上ログインしようとする試み",
+    "DUAL_LOGIN_ATTEMPT_DATA": "あなたは別のデバイスにログインしています。 他のデバイスからログアウトしてこのデバイスにログインしますか？",
     "DATABASE_ERROR_DESCRIPTION": "データベースエラー",
     "DATABASE_ERROR_DATA": "データベースへの接続エラー",
     "EMAIL_SENT_DESCRIPTION": "メール送信され",

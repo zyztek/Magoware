@@ -48,7 +48,7 @@ db.connect = function(database, username, password, options) {
         Object.keys(db.models).forEach(function(modelName) {
             if (db.models[modelName].options.hasOwnProperty('associate')) {
                 db.models[modelName].options.associate(db.models);
-                winston.info("Associating Model: " + modelName);
+                //winston.info("Associating Model: " + modelName);
             }
         });
 

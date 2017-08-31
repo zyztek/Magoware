@@ -91,7 +91,7 @@ export default function (nga, admin) {
                 .title('Live TV Stream Source')
                 .icon('<span class="fa fa-signal fa-fw"></span>')
             )
-                .addChild(nga.menu(admin.getEntity('Packages'))
+                .addChild(nga.menu(admin.getEntity('livepackages'))
                     .title('Channel Packages')
                     .icon('<span class="fa fa-th fa-fw"></span>')
         		)

@@ -20,7 +20,7 @@ function approveReview(Restangular, $state, notification) {
 
                 var theobj = {};
                     //todo: user better method
-                    theobj.group_id = scope.$parent.datastore._entries.Groups_22["0"]._identifierValue;
+                    theobj.group_id = scope.$parent.datastore._entries.Groups_23["0"]._identifierValue;
                     theobj.api_group_id = scope.review.values.id;
 
                 if(method == 'read') theobj.read = value;

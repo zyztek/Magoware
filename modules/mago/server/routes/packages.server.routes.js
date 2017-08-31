@@ -18,18 +18,29 @@ module.exports = function(app) {
         .get(packages.list)
         .post(packages.create);
 
-    app.route('/api/vodpackages')
-        .all(policy.isAllowed)
-        .get(packages.list)
-        .post(packages.create);
-
     app.route('/api/packages/:packageId')
         .all(policy.isAllowed)
         .get(packages.read)
         .put(packages.update)
         .delete(packages.delete);
 
+    app.route('/api/vodpackages')
+        .all(policy.isAllowed)
+        .get(packages.list)
+        .post(packages.create);
+
     app.route('/api/vodpackages/:packageId')
+        .all(policy.isAllowed)
+        .get(packages.read)
+        .put(packages.update)
+        .delete(packages.delete);
+
+    app.route('/api/livepackages')
+        .all(policy.isAllowed)
+        .get(packages.list)
+        .post(packages.create);
+
+    app.route('/api/livepackages/:packageId')
         .all(policy.isAllowed)
         .get(packages.read)
         .put(packages.update)

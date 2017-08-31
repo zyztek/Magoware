@@ -13,7 +13,7 @@
         "WRONG_PASSWORD_DESCRIPTION": "WRONG_PASSWORD",
         "WRONG_PASSWORD_DATA": "Password does not match",
         "DUAL_LOGIN_ATTEMPT_DESCRIPTION": "DUAL_LOGIN_ATTEMPT",
-        "DUAL_LOGIN_ATTEMPT_DATA": "Attempt to login on another device",
+        "DUAL_LOGIN_ATTEMPT_DATA": "You are logged in on another device. Do you want to log out from other devices and login on this one?",
         "DATABASE_ERROR_DESCRIPTION": "DATABASE_ERROR",
         "DATABASE_ERROR_DATA": "Error connecting to database",
         "EMAIL_SENT_DESCRIPTION": "EMAIL_SENT",

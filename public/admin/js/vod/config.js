@@ -15,6 +15,7 @@ export default function (nga, admin) {
                 .label('Category'),
             nga.field('package_id', 'reference')
                 .targetEntity(admin.getEntity('Packages'))
+				.permanentFilters({ package_type_id: [3,4] })
                 .targetField(nga.field('package_name'))
                 .cssClasses('hidden-xs')
                 .label('Package'),
@@ -49,7 +50,7 @@ export default function (nga, admin) {
 		.title('<h4>Vods <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Movie</h4>')
 			.onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
 				progression.done();
-				$state.go($state.get('list'), { entity: 'Vods'  });
+				$state.go($state.get('edit'), { entity: entity.name(), id: entry._identifierValue });
 				return false;
 			}])
         .fields([
@@ -62,12 +63,15 @@ export default function (nga, admin) {
 				.targetField(nga.field('name'))
 				.attributes({placeholder: 'Select Category'})
 				.validation({ required: true })
+				.perPage(-1)
 				.label('Category'),
 			nga.field('package_id', 'reference')
 				.targetEntity(admin.getEntity('Packages'))
 				.targetField(nga.field('package_name'))
 				.attributes({ placeholder: 'Select Package' })
+				.permanentFilters({ package_type_id: [3,4] })
 				.validation({ required: true })
+				.perPage(-1)
 				.label('Package'),
 			nga.field('year', 'string')
 				.attributes({ placeholder: 'Year' })

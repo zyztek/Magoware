@@ -73,8 +73,6 @@ export default function (nga, admin) {
 								.map(function getpckdes(value, entry) {
 									return (entry["package_type.description"]);
 								}))
-								//.validation({ required: true })
-								//.attributes({ placeholder: 'Select Packages' })
 								.label('Package Type'),
                     ])
                     .listActions(['<ma-delete-button label="Remove" entry="entry" entity="entity" size="xs"></ma-delete-button>']),

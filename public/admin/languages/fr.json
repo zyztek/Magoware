@@ -54,10 +54,26 @@
   "Device Active": "Dispositif actif",
   "Api Version": "Version Api",
 
+  "Firstname": "Prénom",
+  "Lastname": "Nom de famille",
+  "Address": "Adresse",
+  "City": "Ville",
+  "Country": "Pays",
+  "Telephone": "Téléphone",
+  "Group": "Groupe",
+  "Login Data ": "Données de connexion",
+  "Account Lock": "Verrouillage de compte",
+  "Forced Upgrade": "Mise à jour forcée",
+  "Auto Time Zone": "Fuseau horaire automatique",
+
 
   "List": "Liste ",
   "Create": "Ajouter ",
   "ACTIONS": "Action1",
+
+  "Activity Time Out": "Temps limite d'activité ",
+  "Timezone": "Fuseau horaire ",
+  "Auto Timezone": "Fuseau horaire automatique",
 
 
   "Language": "Langue",

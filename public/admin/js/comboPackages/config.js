@@ -46,6 +46,7 @@ export default function (nga, admin) {
             nga.field('combo_id', 'reference')
 				.targetEntity(admin.getEntity('Combos'))
                 .targetField(nga.field('name'))
+				.perPage(-1)
 				.validation({ required: true })
 				.label('Product'),
             nga.field('package_id', 'reference')
@@ -54,6 +55,7 @@ export default function (nga, admin) {
 				.map(function getpckdes(value, entry) {
 					return (entry["package_name"] + ' - ' + entry["package_type.description"]);
 				}))
+				.perPage(-1)
 				.validation({ required: true })
                 .attributes({ placeholder: 'Select Packages' })
 				.label('Package'),

@@ -13,7 +13,7 @@
     "WRONG_PASSWORD_DESCRIPTION": "FJALËKALIM_I_GABUAR",
     "WRONG_PASSWORD_DATA": "Fjalëkalimi është i gabuar",
     "DUAL_LOGIN_ATTEMPT_DESCRIPTION": "PËRPJEKJE_E_DYFISHTË_LOGIN",
-    "DUAL_LOGIN_ATTEMPT_DATA": "Përpjekje për tu loguar në një pajisje tjetër",
+    "DUAL_LOGIN_ATTEMPT_DATA": "Jeni i loguar në pajisje të tjera. Dëshironi të dilni nga pajisjet e tjera dhe të logoheni në këtë?",
     "DATABASE_ERROR_DESCRIPTION": "GABIMI_I_BAZËS_SË_TË_DHËNAVE",
     "DATABASE_ERROR_DATA": "Gabim gjatë lidhjes me bazën e të dhënave",
     "EMAIL_SENT_DESCRIPTION": "U_DËRGUA_EMAILI",

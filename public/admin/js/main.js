@@ -203,6 +203,7 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     admin.addEntity(nga.entity('mychannels'));
     admin.addEntity(nga.entity('Genres'));
     admin.addEntity(nga.entity('LoginData'));
+    admin.addEntity(nga.entity('livepackages'));
     admin.addEntity(nga.entity('Packages'));
     admin.addEntity(nga.entity('vodPackages'));
     admin.addEntity(nga.entity('packagechannels'));
@@ -239,6 +240,7 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     require('./epgimport/config')(nga, admin);
     require('./genre/config')(nga, admin);
     require('./loginData/config')(nga, admin);
+    require('./livepackages/config')(nga, admin);
     require('./package/config')(nga, admin);
     require('./vod_package/config')(nga, admin);
     require('./my_channel/config')(nga, admin);

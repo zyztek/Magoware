@@ -52,7 +52,8 @@ export default function (nga, admin) {
                 			user[i] = value[i].username;
 							return value;
                 		}
-                })),
+                }))
+				.perPage(-1),
 			nga.field('toandroidsmartphone', 'boolean')
 					.validation({ required: true })
 					.label('Android Smartphone'),

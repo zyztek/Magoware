@@ -92,10 +92,14 @@ exports.list = function(req, res) {
     qwhere.$or.description.$like = '%'+query.q+'%';
   }
 
+  if(query.package_type_id) qwhere.id = {in : query.package_type_id};
+
   final_where.where = qwhere;
+
   if(parseInt(query._start)) final_where.offset = parseInt(query._start);
   if(parseInt(query._end)) final_where.limit = parseInt(query._end)-parseInt(query._start);
   if(query._orderBy) final_where.order = query._orderBy + ' ' + query._orderDir;
+
 
   DBModel.findAndCountAll(
       final_where

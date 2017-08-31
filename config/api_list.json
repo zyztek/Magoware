@@ -131,6 +131,10 @@
         "description": "sales 1 api"
       },
       {
+        "api_url": "/api/livepackages",
+        "description": "live tv packages"
+      },
+      {
         "api_url": "/api/Packages",
         "description": "sales 1 api"
       },

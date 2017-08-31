@@ -46,10 +46,10 @@ exports.update = function(req, res) {
     else delete req.body.menulastchange;
     //VOD
     if(req.body.updatevodtimestamp){
-        delete req.body.livetvlastchange
+        delete req.body.vodlastchange;
         new_setting.vodlastchange = Date.now()
     }
-    else delete req.body.vodlastchange
+    else delete req.body.vodlastchange;
 
     new_settings = merge(req.body, new_setting); //merge values left @req.body with values stored @temp object into a new object
     logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(new_settings)); //write new values in logs

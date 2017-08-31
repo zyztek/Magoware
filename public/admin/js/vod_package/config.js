@@ -28,6 +28,11 @@ export default function (nga, admin) {
    
 	vpackages.creationView()
         .title('<h4>Packages <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Package</h4>')
+        .onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
+            progression.done();
+            $state.go($state.get('edit'), { entity: entity.name(), id: entry._identifierValue });
+            return false;
+        }])
         .fields([
             nga.field('package_name', 'string')
                 .attributes({ placeholder: 'Package Name' })
@@ -58,10 +63,9 @@ export default function (nga, admin) {
             nga.field('package_type_id', 'reference')
                 .targetEntity(admin.getEntity('packagetypes'))
                 .targetField(nga.field('description'))
-                .permanentFilters({ package_type_id: [2,4] })
-                .attributes({ placeholder: 'Select Package Type' })
-                .editable(false)
                 .validation({ required: true })
+                .permanentFilters({ package_type_id: [3,4] })
+                .attributes({ placeholder: 'Select Package Type' })
                 .label('Package Type'),
             nga.field('template')
                 .label('')

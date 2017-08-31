@@ -60,6 +60,7 @@ export default function (nga, admin) {
                 .targetField(nga.field('description'))
                 .attributes({ placeholder: 'Select Group' })
                 .label('Group')
+                .perPage(-1)
 				.validation({ required: true}),
             nga.field('firstname', 'string')
                 .attributes({ placeholder: 'First Name' })

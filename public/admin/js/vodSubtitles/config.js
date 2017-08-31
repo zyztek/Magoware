@@ -50,6 +50,7 @@ export default function (nga, admin) {
                 .targetField(nga.field('title'))
 				.attributes({ placeholder: 'Select Vod' })
 				.validation({ required: true })
+				.perPage(-1)
 				.label('Vod'),
 			nga.field('title')
 				.attributes({ placeholder: 'Title' })

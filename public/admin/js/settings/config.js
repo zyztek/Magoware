@@ -180,16 +180,13 @@ export default function (nga, admin) {
 	settings.editionView()
 		.title('<h4><i class="fa fa-angle-right" aria-hidden="true"></i> Company Settings</h4>')
 		.actions([''])
-		.onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
-			// stop the progress bar
-			progression.done();
-			// add a notification
-			notification.log(`Element #${entry._identifierValue} successfully edited.`, { addnCls: 'humane-flatty-success' });
-			// redirect to the list view
-			$state.go($state.get('edit'), { entity: entity.name() });
-			// cancel the default action (redirect to the edition view)
-			return false;
-		}])
+			.onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
+				progression.done(); // stop the progress bar
+				notification.log(`Element #${entry._identifierValue} successfully edited.`, { addnCls: 'humane-flatty-success' }); // add a notification
+				// redirect to the list view
+				$state.go($state.current, {}, {reload : true}); // cancel the default action (redirect to the edition view)
+				return false;
+			}])
 		.fields([
             settings.listView().fields(),
             nga.field('template')

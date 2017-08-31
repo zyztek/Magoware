@@ -78,20 +78,26 @@ exports.list = function(req, res) {
     var qwhere = {},
         final_where = {},
         query = req.query;
-    final_where.where = qwhere; //start building where
+        final_where.where = qwhere; //start building where
 
     if(req.query.user_username) final_where.where.user_username = {like: '%'+req.query.user_username+'%'};
-    if(query.login_data_id) qwhere.login_data_id = query.login_data_id;
+    if(query.login_data_id) final_where.where.login_data_id = query.login_data_id;
     if(req.query.distributorname) final_where.where.distributorname = {like: '%'+req.query.distributorname+'%'};
-    if(req.query.startsaledate || req.query.endsaledate)
-        final_where.where.saledate = {between: [(req.query.startsaledate) ? req.query.startsaledate : '0000-00-00', (req.query.endsaledate) ? req.query.endsaledate : '3000-00-00']}
+
+    if(req.query.name) final_where.where.combo_id = req.query.name;
+
+    //if(req.query.startsaledate || req.query.endsaledate)
+    //    final_where.where.saledate = {between: [(req.query.startsaledate) ? req.query.startsaledate : '0000-00-00', (req.query.endsaledate) ? req.query.endsaledate : '3000-00-00']}
+    if(req.query.startsaledate) final_where.where.saledate = {gte:req.query.startsaledate};
+    if(req.query.endsaledate) final_where.where.saledate = {lte:req.query.endsaledate};
+
+    if((req.query.startsaledate) && (req.query.endsaledate)) final_where.where.saledate = {gte:req.query.startsaledate,lte:req.query.endsaledate};
 
     //fetch records for specified page
     if(parseInt(query._start)) final_where.offset = parseInt(query._start);
     if(parseInt(query._end)) final_where.limit = parseInt(query._end)-parseInt(query._start);
 
     if(query._orderBy) final_where.order = query._orderBy + ' ' + query._orderDir; //sort by specified field and specified order
-    final_where.include = [{model: db.combo, required: true, where: {name: {like: (req.query.name)? '%'+req.query.name+'%' : '%%'} }}]; //filter combos by name or return all combos
 
     DBModel.findAndCountAll(
         final_where
