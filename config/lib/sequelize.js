@@ -152,47 +152,6 @@ db.connect = function(database, username, password, options) {
                                 callback(null);
                             });
                         },
-                        /*
-                        function(callback){
-                            async.forEachOf(api_list, function (value, key, callback) {
-                                db.models['api_group'].findOrCreate({
-                                    where: {api_group_name: value.api_group},
-                                    defaults: {api_group_name: value.api_group, description: value.description}
-                                }).then(function(api_group) {
-                                    winston.info('Api group record created successfully');
-                                    async.forEachOf(api_list[key].api_urls, function (apivalue, apikey, callback) {
-                                        db.models['api_url'].findOrCreate({
-                                            where: {api_url: apivalue.api_url, api_group_id: api_group[0].id},
-                                            defaults: {api_url: apivalue.api_url, description: apivalue.description, api_group_id: api_group[0].id}
-                                        }).then(function(done) {
-                                            winston.info('Api record created successfully');
-                                            callback(null);
-                                            return null;
-                                        }).catch(function(err) {
-                                            console.log(err);
-                                            winston.info('Error creating Api record');
-                                            callback(null);
-                                        });
-                                        return null;
-                                    }, function (err) {
-                                        if(err) {
-                                            winston.info('Error creating Api records');
-                                            callback(null);
-                                        }
-                                    });
-                                    return null;
-                                }).catch(function(err) {
-                                    console.log(err);
-                                    winston.info('Error creating Api group record');
-                                    callback(null);
-                                });
-                            }, function (err) {
-                                if(err){
-                                    winston.info('Error creating Api group record');
-                                    callback(null);
-                                }
-                            });
-                        },*/
                         function(callback){
                             var protocol = (config.port === 443) ? 'https://' : 'http://'; //port 443 means we are running https, otherwise we are running http (preferably on port 80)
                             var baseurl = process.env.NODE_HOST || 'localhost' + ":" + config.port;
@@ -234,96 +193,93 @@ db.connect = function(database, username, password, options) {
                     winston.info("Database synchronized");
                     return null;
                 }).then(function() {
-                    //Populating app_group table
-                    db.models['app_group'].bulkCreate(
-                        default_app_groups
-                    ).then(function(done) {
-                        winston.info('Default app_groups data created successfuly.');
-                        return null;
-                    }).catch(function(err) {
-                        winston.info('Error creating app_group items.',err);
-                        return null;
-                    });
+                //Populating app_group table
+                db.models['app_group'].bulkCreate(
+                    default_app_groups
+                ).then(function(done) {
+                    winston.info('Default app_groups data created successfuly.');
                     return null;
-                }).then(function() {
-                    //Populating activity table
-                    db.models['activity'].bulkCreate(
-                        default_activity
-                    ).then(function(done) {
-                        winston.info('Default activity data created successfuly.');
-                        return null;
-                    }).catch(function(err) {
-                        winston.info('Error creating activity itmes',err);
-                        return null;
-                    });
+                }).catch(function(err) {
+                    winston.info('Error creating app_group items.',err);
                     return null;
-                }).then(function() {
-                    //Populating main menu items
-                    db.models['device_menu'].bulkCreate(
-                        default_device_menu
-                    ).then(function(done) {
-                        winston.info('Default menu created successfuly.');
-                        return null;
-                    }).catch(function(err) {
-                        winston.info('Error creating Deafult Menu',err);
-                        return null;
-                    });
+                });
+                return null;
+            }).then(function() {
+                //Populating activity table
+                db.models['activity'].bulkCreate(
+                    default_activity
+                ).then(function(done) {
+                    winston.info('Default activity data created successfuly.');
                     return null;
-                }).then(function() {
-                    //Populating app_group table
-                    db.models['package_type'].bulkCreate(
-                        default_package_type
-                    ).then(function(done) {
-                        winston.info('Default package_type data created successfuly.');
-                        return null;
-                    }).catch(function(err) {
-                        winston.info('Error creating package_type items.',err);
-                        return null;
-                    });
+                }).catch(function(err) {
+                    winston.info('Error creating activity itmes',err);
                     return null;
-                }).then(function() {
-                    //Populating api_group table
-                    db.models['api_group'].bulkCreate(
-                        default_api_group
-                    ).then(function(done) {
-                        winston.info('Default api_group data created successfuly.');
-                        return null;
-                    }).catch(function(err) {
-                        winston.info('Error creating api_group items.',err);
-                        return null;
-                    });
+                });
+                return null;
+            }).then(function() {
+                //Populating main menu items
+                db.models['device_menu'].bulkCreate(
+                    default_device_menu
+                ).then(function(done) {
+                    winston.info('Default menu created successfuly.');
                     return null;
-                }).then(function() {
-                    //Populating api_url table
-                    db.models['api_url'].bulkCreate(
-                        default_api_url
-                    ).then(function(done) {
-                        winston.info('Default api_url data created successfuly.');
-                        return null;
-                    }).catch(function(err) {
-                        winston.info('Error creating api_url items.',err);
-                        return null;
-                    });
+                }).catch(function(err) {
+                    winston.info('Error creating Deafult Menu',err);
                     return null;
+                });
+                return null;
+            }).then(function() {
+                //Populating app_group table
+                db.models['package_type'].bulkCreate(
+                    default_package_type
+                ).then(function(done) {
+                    winston.info('Default package_type data created successfuly.');
+                    return null;
+                }).catch(function(err) {
+                    winston.info('Error creating package_type items.',err);
+                    return null;
+                });
+                return null;
+            }).then(function() {
+                //Populating api_group table
+                db.models['api_group'].bulkCreate(
+                    default_api_group
+                ).then(function(done) {
+                    winston.info('Default api_group data created successfuly.');
+                    return null;
+                }).catch(function(err) {
+                    winston.info('Error creating api_group items.',err);
+                    return null;
+                });
+                return null;
+            }).then(function() {
+                //Populating api_url table
+                db.models['api_url'].bulkCreate(
+                    default_api_url
+                ).then(function(done) {
+                    winston.info('Default api_url data created successfuly.');
+                    return null;
+                }).catch(function(err) {
+                    winston.info('Error creating api_url items.',err);
+                    return null;
+                });
+                return null;
+            }).then(function() {
+                    var schedule = require(path.resolve("./modules/deviceapiv2/server/controllers/schedule.server.controller.js"));
+                    schedule.reload_scheduled_programs(); //reloading the scheduled future programs into the event loop
                 })
                 .catch(function(err) {
                     winston.error("An error occured: %j", err);
-            });
+                });
+        }
+        else{
+            var schedule = require(path.resolve("./modules/deviceapiv2/server/controllers/schedule.server.controller.js"));
+            schedule.reload_scheduled_programs(); //reloading the scheduled future programs into the event loop
         }
         return null;
     }).catch(function(error) {
         winston.error("Error connecting to database");
         console.log(error);
-        /*
-        if(error.message.split(':', 1)[0] === "ER_BAD_DB_ERROR"){
-            //database does not exist
-            //todo: create database here
-        }
-        else {
-            winston.error("Error connecting to database");
-            console.log(error)
-        }
-        */
     });
 
     db.sequelize = sequelize;

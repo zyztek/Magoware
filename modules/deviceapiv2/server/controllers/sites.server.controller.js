@@ -1,17 +1,17 @@
 'use strict';
 var path = require('path'),
-    db = require(path.resolve('./config/lib/sequelize')).models,
-	crypto = require('crypto'),
-	async = require('async'),
-	nodemailer = require('nodemailer'),
-	response = require(path.resolve("./config/responses.js")),
-	authentication = require(path.resolve('./modules/deviceapiv2/server/controllers/authentication.server.controller.js')),
-	subscription = db.subscription,
-    Combo = db.combo,
-    login_data = db.login_data,
-    SalesData = db.salesreport,
-    dateFormat = require('dateformat'),
-    customer_data = db.customer_data;
+		db = require(path.resolve('./config/lib/sequelize')).models,
+		crypto = require('crypto'),
+		async = require('async'),
+		nodemailer = require('nodemailer'),
+		response = require(path.resolve("./config/responses.js")),
+		authentication = require(path.resolve('./modules/deviceapiv2/server/controllers/authentication.server.controller.js')),
+		subscription = db.subscription,
+		Combo = db.combo,
+		login_data = db.login_data,
+		SalesData = db.salesreport,
+		dateFormat = require('dateformat'),
+		customer_data = db.customer_data;
 
 exports.createaccount = function(req,res) {
 
@@ -31,7 +31,7 @@ exports.createaccount = function(req,res) {
 		// Generate random token
 		function(done) {
 			crypto.randomBytes(20, function(err, buffer) {
-				var token = Buffer.from('tokensample').toString('hex');
+				var token = crypto.randomBytes(Math.ceil(64)).toString('hex').slice(0,128); //generates random string of 128 characters
 				done(err, token);
 			});
 		},
@@ -77,19 +77,19 @@ exports.createaccount = function(req,res) {
 		function(token, done) {
 			if(token !== 1){
 				var salt = authentication.makesalt();
-				var password = authentication.encryptPassword(req.body.password, salt);
 
 				customer_data.create({
 					firstname:	req.body.firstname,
 					lastname:	req.body.lastname,
 					email:		req.body.email,
-					telephone:	req.body.telephone
+					telephone:	req.body.telephone,
+					group_id:   1
 				}).then(function(new_customer){
 					login_data.create({
-						customer_id:			 new_customer.id,
-						username:				 req.body.username,
+						customer_id:			  new_customer.id,
+						username:				  req.body.username,
 						salt:                     salt,
-						password:				  password,
+						password:				  req.body.password,
 						channel_stream_source_id: 1,
 						vod_stream_source:		  1,
 						pin:					  1234,
@@ -131,8 +131,8 @@ exports.createaccount = function(req,res) {
 		function(emailHTML, email, done) {
 			var mailOptions = {
 				to: email, //user.email,
-				from: 'noreply@magoware.tv', //config.mailer.from,
-				subject: 'account confirmation email',
+				from: req.app.locals.settings.email_username, //the from field matches the account username
+				subject: 'Account confirmation',
 				html: emailHTML
 			};
 
@@ -166,85 +166,85 @@ exports.confirmNewAccountToken = function(req, res) {
 		}
 	}).then(function(user) {
 		if (!user) {
-			return res.send(languages[req.body.language].language_variables['ACCOUNT_NOT_CREATED']);
+			return res.send('This link is no longer valid. Could not confirm account.');
 		}
 		user.resetPasswordExpires = 0;
 		user.account_lock = 0;
 		user.save().then(function (result) {
-            add_default_subscription(result.id);
-			res.send(languages[req.body.language].language_variables['ACCOUNT_CREATED']);
+			add_default_subscription(result.id);
+			res.send('Account confirmed, you can now login');
 		});
 	});
 
 
-    //Adds a default package
+	//Adds a default package
 	function add_default_subscription(account_id){
 
-        // Loading Combo with All its packages
-        Combo.findOne({
-            where: {
-                id: 1
-            }, include: [{model:db.combo_packages,include:[db.package]}]
-        }).then(function(combo) {
-            if (!combo)
-                return res.status(404).send({message: 'No Product with that identifier has been found'});
-            else {
-                // Load Customer by LoginID
-                login_data.findOne({
-                    where: {
-                        id: account_id
-                    }, include: [{model:db.customer_data},{model:db.subscription}]
-                }).then(function(loginData) {
-                    if (!loginData) return res.status(404).send({message: 'No Login with that identifier has been found'});
+		// Loading Combo with All its packages
+		Combo.findOne({
+			where: {
+				id: 1
+			}, include: [{model:db.combo_packages,include:[db.package]}]
+		}).then(function(combo) {
+			if (!combo)
+				return res.status(404).send({message: 'No Product with that identifier has been found'});
+			else {
+				// Load Customer by LoginID
+				login_data.findOne({
+					where: {
+						id: account_id
+					}, include: [{model:db.customer_data},{model:db.subscription}]
+				}).then(function(loginData) {
+					if (!loginData) return res.status(404).send({message: 'No Login with that identifier has been found'});
 
-                    // Subscription Processing
-                    // For Each package in Combo
-                    combo.combo_packages.forEach(function(item,i,arr){
-                        var startDate = Date.now();
+					// Subscription Processing
+					// For Each package in Combo
+					combo.combo_packages.forEach(function(item,i,arr){
+						var startDate = Date.now();
 
-                        var sub = {
-                            login_id: loginData.id,
-                            package_id: item.package_id,
-                            customer_username: loginData.username,
-                            user_username: 'registration' //live
-                        };
+						var sub = {
+							login_id: loginData.id,
+							package_id: item.package_id,
+							customer_username: loginData.username,
+							user_username: 'registration' //live
+						};
 
-                        sub.start_date = Date.now();
-                        sub.end_date =  addDays(Date.now(), combo.duration);
+						sub.start_date = Date.now();
+						sub.end_date =  addDays(Date.now(), combo.duration);
 
-                        // Saving Subscription
-                        subscription.create(sub).then(function(savedSub) {
-                            if (!savedSub) return res.status(400).send({message: 'fail create data'});
-                        })
+						// Saving Subscription
+						subscription.create(sub).then(function(savedSub) {
+							if (!savedSub) return res.status(400).send({message: 'fail create data'});
+						})
 
-                    });
+					});
 
-                    // Insert Into SalesData
-                    var sData = {
-                        user_id: 1,
-                        user_username: loginData.username,
-                        login_data_id: loginData.id,
-                        distributorname: 'admin',
-                        saledate: new Date(),
-                        combo_id: combo.id
-                    };
-                    SalesData.create(sData)
-                        .then(function(salesData){
-                            if (!salesData) return res.status(400).send({message: 'fail create sales data'});
-                        });
+					// Insert Into SalesData
+					var sData = {
+						user_id: 1,
+						user_username: loginData.username,
+						login_data_id: loginData.id,
+						distributorname: 'admin',
+						saledate: new Date(),
+						combo_id: combo.id
+					};
+					SalesData.create(sData)
+							.then(function(salesData){
+								if (!salesData) return res.status(400).send({message: 'fail create sales data'});
+							});
 
 
-                });
-                return null;
-            }
-        });
+				});
+				return null;
+			}
+		});
 	}
 
 
-    function addDays(startdate_ts, duration) {
-        var end_date_ts = startdate_ts + duration * 86400000; //add duration in number of seconds
-        var end_date =  dateFormat(end_date_ts, "yyyy-mm-dd hh:MM:ss"); // convert enddate from timestamp to datetime
-        return end_date;
-    }
+	function addDays(startdate_ts, duration) {
+		var end_date_ts = startdate_ts + duration * 86400000; //add duration in number of seconds
+		var end_date =  dateFormat(end_date_ts, "yyyy-mm-dd hh:MM:ss"); // convert enddate from timestamp to datetime
+		return end_date;
+	}
 
 };

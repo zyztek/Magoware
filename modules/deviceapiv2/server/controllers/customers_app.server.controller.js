@@ -98,8 +98,14 @@ exports.update_user_data = function(req, res) {
             var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
             res.send(clear_response);
         }).catch(function(error) {
-            var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-            res.send(database_error); //request not executed
+            if(error.name === "SequelizeUniqueConstraintError" && error.errors[0].path === "email"){
+                var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'EMAIL_ALREADY_EXISTS');
+                res.send(database_error);
+            }
+            else{
+                var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
+                res.send(database_error); //request not executed
+            }
         });
         return null;
     }).catch(function(error) {
@@ -112,7 +118,7 @@ exports.update_user_data = function(req, res) {
 //API UPDATES SETTINGS FOR THIS USER, RETURNS STATUS
 exports.update_user_settings = function(req, res) {
     var salt = authentication.makesalt();
-    var encrypted_password = authentication.encryptPassword(decodeURIComponent(req.auth_obj.password), salt);
+    var encrypted_password = authentication.encryptPassword(decodeURIComponent(req.body.password), salt);
 
     models.login_data.update(
         {

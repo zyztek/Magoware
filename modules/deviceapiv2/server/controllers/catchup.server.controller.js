@@ -6,6 +6,7 @@ var path = require('path'),
     winston = require(path.resolve('./config/lib/winston')),
     dateFormat = require('dateformat'),
     async = require('async'),
+    schedule = require(path.resolve("./modules/deviceapiv2/server/controllers/schedule.server.controller.js")),
     models = db.models;
 
 // returns list of epg data for the given channel
@@ -52,12 +53,11 @@ exports.catchup_events =  function(req, res) {
                     Object.keys(obj[k]).forEach(function(j) {
                         var programstart = parseInt(obj.program_start.getTime()) +  parseInt((client_timezone) * 3600000);
                         var programend = parseInt(obj.program_end.getTime()) +  parseInt((client_timezone) * 3600000);
-
                         raw_obj.channelName = obj[k].title;
                         raw_obj.id = obj.id;
                         raw_obj.number = obj[k].channel_number;
                         raw_obj.title = obj.title;
-                        raw_obj.scheduled = (obj.program_schedules[0]) ? true : false; //todo: shouldn't this value always be false?
+                        raw_obj.scheduled = (!obj.program_schedules[0]) ? false : schedule.is_scheduled(obj.program_schedules[0].id); //if there is an event in the local memory, return true
                         raw_obj.description = obj.short_description;
                         raw_obj.shortname = obj.short_name;
                         raw_obj.programstart = dateFormat(programstart, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
@@ -97,17 +97,15 @@ exports.catchup_stream =  function(req, res) {
         where: {channel_number: channel_number}
     }).then(function (catchup_streams) {
         var okresponse = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-            //catchup stream format for hls streams
-            okresponse.response_object = [{
-                "streamurl": catchup_streams.channel_streams[0].stream_url.replace('[epochtime]', req.body.timestart)
-            }];
-            res.send(okresponse);
+        //catchup stream format for hls streams
+        okresponse.response_object = [{
+            "streamurl": catchup_streams.channel_streams[0].stream_url.replace('[epochtime]', req.body.timestart)
+        }];
+        res.send(okresponse);
     }).catch(function(error) {
         console.log(error);
         var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
         res.send(database_error);
     });
-
-
 
 };

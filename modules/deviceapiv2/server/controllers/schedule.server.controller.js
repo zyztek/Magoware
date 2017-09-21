@@ -34,47 +34,53 @@ function unschedule_program(event_id){
 
 function send_notification(event_time, login_data_id, channel_number, program_id){
     console.log("mustwatchthisprogram")
-    models.devices.findAll(
-        {
-            attributes: ['googleappid', 'appid'],
-            where: {
-                login_data_id: login_data_id,
-                device_active: true
-            }
-        }
-    ).then(function(result) {
-        console.log("@result")
-        var data = {
-            "title": 'Scheduled program',
-            "body": "Scheduled program, channel "+channel_number
-        };
-        if (!result) {
-            console.log("@notresult")
-            //
-        } else {
-            for (var j = 0; j < result.length; j++) {
-                //start dergimi
-                if(result[j].appid == 1 || result[j].appid == 2 || result[j].appid == 4) {
-                    try{
-                        var data = {
-                            "CLIENT_MESSAGE": 'Scheduled program',
-                            "EVENT": 'scheduling',
-                            "PROGRAM_ID": program_id,
-                            "CHANNEL_NUMBER": channel_number,
-                            "EVENT_TIME": event_time
-                        };
-                        send_android_notifications(result[j].googleappid, data);
-                    } catch(error){
-                        console.log("error while calling function")
-                        console.log(error)
+    models.devices.findAll({
+        attributes: ['googleappid', 'appid'],
+        where: {login_data_id: login_data_id, device_active: true}
+    }).then(function(result) {
+        models.epg_data.findOne({
+            attributes: ['id', 'channel_number', 'program_start', 'title', 'long_description'],
+            where: {id: program_id},
+            logging: console.log
+        }).then(function (epg_program) {
+            console.log("@result")
+            var data = {
+                "title": 'Scheduled program',
+                "body": "Scheduled program, channel "+channel_number
+            };
+            if (!result) {
+                console.log("@notresult");
+            } else {
+                for (var j = 0; j < result.length; j++) {
+                    //start dergimi
+                    if(result[j].appid == 1 || result[j].appid == 2 || result[j].appid == 4) {
+                        try{
+                            var data = {
+                                "CLIENT_MESSAGE": 'Scheduled program',
+                                "EVENT": 'scheduling',
+                                "PROGRAM_ID": program_id,
+                                "CHANNEL_NUMBER": channel_number,
+                                "EVENT_TIME": event_time,
+                                "program_name": epg_program.title,
+                                "program_description": epg_program.long_description
+                            };
+                            send_android_notifications(result[j].googleappid, data);
+                        } catch(error){
+                            console.log("error while calling function")
+                            console.log(error)
+                        }
                     }
+                    if(result[j].appid == 3) {
+                        send_ios_notifications(result[j].googleappid,data, channel_number)
+                    }
+                    //mbaron dergimi
                 }
-                if(result[j].appid == 3) {
-                    send_ios_notifications(result[j].googleappid,data, channel_number)
-                }
-                //mbaron dergimi
             }
-        }
+            return null;
+        }).catch(function(error) {
+            console.log(error)
+        });
+        return null;
     }).catch(function(error) {
         console.log(error)
     });
@@ -136,23 +142,29 @@ function send_ios_notifications(google_app_id, data, channel_number){
 
 }
 
-exports.reload_scheduled_programs = function(req, res) {
+exports.reload_scheduled_programs = function() {
     var now = new Date();
     var current_time = dateFormat(now.setMinutes(now.getMinutes() + 5), "yyyy-mm-dd HH:MM:ss");
 
-    models.program_schedule.findAll({
-        attributes: ['id', 'login_id', 'program_id'],
-        include: [{ model: models.epg_data, required: true, attributes: ['channel_number', 'program_start'], where: {program_start: {gte: current_time}}}]
+    models.epg_data.findAll({
+        attributes: ['channel_number', 'program_start'],
+        include: [{ model: models.program_schedule, required: true, attributes: ['id', 'login_id', 'program_id']}],
+        where: {program_start: {gte: current_time}}
     }).then(function(result){
         //foreach record call schedule program
         for(var i = 0; i<result.length; i++){
-            schedule_program(result[i].epg_datum.program_start.getTime() - Date.now() - 300000, result[i].id, result[i].login_id, result[i].epg_datum.channel_number, result[i].program_id);
+            schedule_program(result[i].program_start.getTime() - Date.now() - 300000, result[i].program_schedules[0].id, result[i].program_schedules[0].login_id, result[i].channel_number, result[i].program_schedules[0].program_id);
         }
-        res.send(result)
     }).catch(function(error){
         console.log(error)
     });
 }
+
+//checks if there is a stored push event in local memory
+exports.is_scheduled = function(event_id){
+    if(!scheduled_tasks[event_id]) return false;
+    else return true;
+};
 
 exports.schedule_program = schedule_program;
 exports.unschedule_program = unschedule_program;

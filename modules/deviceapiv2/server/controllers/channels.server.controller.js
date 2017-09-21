@@ -5,6 +5,7 @@ var path = require('path'),
     response = require(path.resolve("./config/responses.js")),
     winston = require(path.resolve('./config/lib/winston')),
     dateFormat = require('dateformat'),
+    moment = require('moment'),
     async = require('async'),
     schedule = require(path.resolve("./modules/deviceapiv2/server/controllers/schedule.server.controller.js")),
     models = db.models;
@@ -45,6 +46,7 @@ exports.list = function(req, res) {
             models.channels.findAll({
                 raw:true,
                 attributes: ['id','genre_id', 'channel_number', 'title', 'icon_url','pin_protected'],
+                group: ['id'],
                 where: qwhere,
                 include: [
                     {model: models.channel_stream,
@@ -86,7 +88,6 @@ exports.list = function(req, res) {
                     temp_obj.title = my_channel_list[i].title;
                     temp_obj.icon_url = req.app.locals.settings.assets_url + my_channel_list[i]["genre.icon_url"];
                     temp_obj.stream_url = my_channel_list[i]["stream_url"];
-
                     temp_obj.genre_id = my_channel_list[i].genre_id;
                     temp_obj.channel_mode = 'live';
                     temp_obj.pin_protected = 'false';
@@ -207,7 +208,7 @@ exports.epg = function(req, res) {
                             raw_obj.channelName = obj[k].title;
                             raw_obj.number = obj[k].channel_number;
                             raw_obj.id = obj.id;
-                            raw_obj.scheduled = (obj.program_schedules[0]) ? true : false;
+                            raw_obj.scheduled = (!obj.program_schedules[0]) ? false : schedule.is_scheduled(obj.program_schedules[0].id);
                             raw_obj.title = obj.title;
                             raw_obj.description = obj.short_description;
                             raw_obj.shortname = obj.short_name;
@@ -293,7 +294,7 @@ exports.event =  function(req, res) {
                                 raw_obj.id = obj.id;
                                 raw_obj.number = obj[k].channel_number;
                                 raw_obj.title = obj.title;
-                                raw_obj.scheduled = (obj.program_schedules[0]) ? true : false;
+                                raw_obj.scheduled = (!obj.program_schedules[0]) ? false : schedule.is_scheduled(obj.program_schedules[0].id);
                                 raw_obj.description = obj.short_description;
                                 raw_obj.shortname = obj.short_name;
                                 raw_obj.programstart = dateFormat(programstart, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
@@ -458,7 +459,7 @@ exports.program_info = function(req, res) {
                 "channel_title": (epg_program.channel.title) ? epg_program.channel.title : '',
                 "channel_description": (epg_program.channel.description) ? epg_program.channel.description : '',
                 "status": status,
-                "scheduled": (epg_program.program_schedules[0]) ? true : false
+                "scheduled": (!epg_program.program_schedules[0]) ? false : schedule.is_scheduled(epg_program.program_schedules[0].id)
             }];
         }
         res.send(clear_response)
@@ -489,7 +490,8 @@ exports.schedule = function(req, res) {
                         clear_response.response_object = [{
                             "action": 'created'
                         }];
-                        schedule.schedule_program(epg_program.program_start, scheduled.id, req.thisuser.id, epg_program.channel_number, req.body.program_id);
+                        //programstart is converted to unix time, decreased by 5 min, decreased by current time. This gives the difference between the current time and 5 min before the start of the program
+                        schedule.schedule_program(moment(epg_program.program_start).format('x') - Date.now() - 300000, scheduled.id, req.thisuser.id, epg_program.channel_number, req.body.program_id);
                         res.send(clear_response);
                     }).catch(function(error) {
                         console.log(error)

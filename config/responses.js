@@ -103,6 +103,14 @@ module.exports = {
         this.extra_data = 'Error connecting to database';
         this.response_object = [{}];
     },
+    UPDATE_FAILED: function(language, status_code, error_code, error_description, extra_data) {
+        this.status_code = status_code;
+        this.error_code = error_code;
+        this.timestamp = Date.now();
+        this.error_description = (languages[language]) ? languages[language].language_variables[error_description] : languages['eng'].language_variables[error_description];
+        this.extra_data = (languages[language]) ? languages[language].language_variables[extra_data] : languages['eng'].language_variables[extra_data];
+        this.response_object = [];
+    },
     EMAIL_SENT: {
         "status_code": 200,
         "error_code": -1,

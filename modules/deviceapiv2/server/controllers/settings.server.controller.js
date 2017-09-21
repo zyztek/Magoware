@@ -163,7 +163,7 @@ exports.settings = function(req, res) {
                             if(JSON.parse(ip_info).gmtOffset !== undefined && isvalidoffset(JSON.parse(ip_info).gmtOffset) !== false) {
                                 callback(null, login_data, daysleft, refresh, available_upgrade, isvalidoffset(JSON.parse(ip_info).gmtOffset)); //iptimezone calculated only for large screen devices, after login, for autotimezone true
                             }
-                                else callback(null, login_data, daysleft, refresh, available_upgrade, login_data.timezone); //return client timezone on error
+                            else callback(null, login_data, daysleft, refresh, available_upgrade, login_data.timezone); //return client timezone on error
                         });
                     }).on("error", function(e){
                         callback(null, login_data, daysleft, refresh, available_upgrade, login_data.timezone); //return client timezone on error
@@ -242,7 +242,8 @@ exports.settings = function(req, res) {
             var vod_background_url = (req.auth_obj.appid == 1) ?  req.app.locals.settings.vod_background_url :  req.app.locals.settings.vod_background_url;
 
             //days_left message is empty if user still has subscription
-            var days_left_message = (daysleft > 0) ? "" : languages[req.body.language].language_variables['NO_SUBSCRIPTION'];
+            var lang = (languages[req.body.language]) ? req.body.language : 'eng'; //handle missing language variables, serving english as default
+            var days_left_message = (daysleft > 0) ? "" : languages[lang].language_variables['NO_SUBSCRIPTION'];
 
             okresponse.response_object = [{
                 "logo_url": req.app.locals.settings.assets_url+""+logo_url,

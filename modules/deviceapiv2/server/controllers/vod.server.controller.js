@@ -159,7 +159,7 @@ exports.totalhits = function(req, res) {
 
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
 
-     //if hits for a specific movie are requested
+    //if hits for a specific movie are requested
     if(req.body.id_vod != "all"){
         models.vod.findAll({
             attributes: [ ['id', 'id_vod'], ['clicks', 'hits'] ],
@@ -408,9 +408,29 @@ function delete_resume_movie(user_id, vod_id){
     ).then(function (result) {
         return null;
     }).catch(function(error) {
-       return null;
+        return null;
     });
 
 };
 
+function add_click(movie_title){
+    models.vod.findOne({
+        attributes: ['id', 'clicks'],
+        where: {title: movie_title}
+    }).then(function (result) {
+        models.vod.update(
+            {clicks: result.clicks + 1},
+            {where: {id: result.id}}
+        ).then(function (result) {
+            return null;
+        }).catch(function(error) {
+            return null;
+        });
+        return null;
+    }).catch(function(error) {
+        return null;
+    });
+};
+
 exports.delete_resume_movie = delete_resume_movie;
+exports.add_click = add_click;
