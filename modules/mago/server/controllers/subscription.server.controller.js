@@ -4,14 +4,14 @@
  * Module dependencies.
  */
 var path = require('path'),
-  errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
+    errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     logHandler = require(path.resolve('./modules/mago/server/controllers/logs.server.controller')),
-  moment = require('moment'),
-  db = require(path.resolve('./config/lib/sequelize')).models,
-  DBModel = db.subscription,
-  Combo = db.combo,
-  LoginData = db.login_data,
-  SalesData = db.salesreport;
+    moment = require('moment'),
+    db = require(path.resolve('./config/lib/sequelize')).models,
+    DBModel = db.subscription,
+    Combo = db.combo,
+    LoginData = db.login_data,
+    SalesData = db.salesreport;
 
 
 /**
@@ -66,9 +66,9 @@ exports.create = function(req, res) {
 
           if(typeof runningSub == 'undefined'){
             sub.start_date = startDate;
-			sub.end_date =  addDays(sub.start_date, combo.duration);
+            sub.end_date =  addDays(sub.start_date, combo.duration);
 
-              logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
+            logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
             // Saving Subscription
             DBModel.create(sub).then(function(savedSub) {
               if (!savedSub) return res.status(400).send({message: 'fail create data'});
@@ -90,7 +90,7 @@ exports.create = function(req, res) {
                 id: runningSub.id
               }
             }).then(function(rSubResult){
-                  if (!rSubResult) return res.status(404).send({message: 'Error Updating Subscription'});
+              if (!rSubResult) return res.status(404).send({message: 'Error Updating Subscription'});
             });
           }
         });
@@ -121,11 +121,11 @@ exports.create = function(req, res) {
         return subscription[i];
   }
 
-	function addDays(startdate, duration) {
-		var start_date_ts = moment(startdate, "YYYY-MM-DD hh:mm:ss").valueOf()/1000; //convert start date to timestamp in seconds
-		var end_date_ts = start_date_ts + duration * 86400; //add duration in number of seconds
-		var end_date =  moment.unix(end_date_ts).format("YYYY-MM-DD hh:mm:ss"); // convert enddate from timestamp to datetime
-		return end_date;
+  function addDays(startdate, duration) {
+    var start_date_ts = moment(startdate, "YYYY-MM-DD hh:mm:ss").valueOf()/1000; //convert start date to timestamp in seconds
+    var end_date_ts = start_date_ts + duration * 86400; //add duration in number of seconds
+    var end_date =  moment.unix(end_date_ts).format("YYYY-MM-DD hh:mm:ss"); // convert enddate from timestamp to datetime
+    return end_date;
   }
 };
 
@@ -191,6 +191,10 @@ exports.list = function(req, res) {
   var qwhere = {};
   var user_qwhere = {};
   if(query.login_id) qwhere.login_id = query.login_id;
+  if(offset_start && records_limit){
+    qwhere.offset = offset_start;
+    qwhere.limit = records_limit;
+  }
 
   if(query.q) {
     user_qwhere.$or = {};
@@ -200,8 +204,6 @@ exports.list = function(req, res) {
 
   DBModel.findAndCountAll({
     where: qwhere,
-    offset: offset_start,
-    limit: records_limit,
     order: 'login_id DESC',
     include: [{model:db.login_data, where: user_qwhere, required: true}, {model:db.package, required: true}]
   }).then(function(results) {

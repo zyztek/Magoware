@@ -71,7 +71,7 @@ function send_notification(event_time, login_data_id, channel_number, program_id
                         }
                     }
                     if(result[j].appid == 3) {
-                        send_ios_notifications(result[j].googleappid,data, channel_number)
+                        send_ios_notifications(result[j].googleappid,data, channel_number, epg_program)
                     }
                     //mbaron dergimi
                 }
@@ -108,7 +108,7 @@ function send_android_notifications(google_app_id, data){
 
 }
 
-function send_ios_notifications(google_app_id, data, channel_number){
+function send_ios_notifications(google_app_id, data, channel_number, epg_program){
     console.log("@ios function")
     // Set up apn with the APNs Auth Key
     var apnProvider = new apn.Provider({
@@ -127,7 +127,13 @@ function send_ios_notifications(google_app_id, data, channel_number){
     notification.badge = 1; // Set app badge indicator
     notification.sound = 'ping.aiff'; // Play ping.aiff sound when the notification is received
     notification.alert = data; // Display the following message (the actual notification text, supports emoji)
-    notification.payload = {details: {'action': 'scheduled', 'channel_number': channel_number}}; // Send any extra payload data with the notification which will be accessible to your app in didReceiveRemoteNotification
+    notification.payload = {details: {
+        'action': 'scheduled',
+        'channel_number': channel_number,
+        "CLIENT_MESSAGE": 'Scheduled program',
+        "program_name": epg_program.title,
+        "program_description": epg_program.long_description
+    }}; // Send any extra payload data with the notification which will be accessible to your app in didReceiveRemoteNotification
 
     console.log(notification)
     // Actually send the notification

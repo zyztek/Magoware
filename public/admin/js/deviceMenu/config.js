@@ -29,6 +29,7 @@ export default function (nga, admin) {
 			nga.field('menu_code', 'choice')
 					.attributes({ placeholder: 'Menu Code' })
 					.choices([
+						{ value: 0, label: 'Url' },
 						{ value: 1, label: 'Live TV' },
 						{ value: 2, label: 'EPG' },
 						{ value: 3, label: 'Logout' },
@@ -105,6 +106,7 @@ export default function (nga, admin) {
 			nga.field('menu_code', 'choice')
 				.attributes({ placeholder: 'Menu Code' })
 				.choices([
+					{ value: 0, label: 'Url' },
 					{ value: 1, label: 'Live TV' },
 					{ value: 2, label: 'EPG' },
 					{ value: 3, label: 'Logout' },

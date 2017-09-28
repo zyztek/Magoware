@@ -28,7 +28,7 @@ function trackobject(object_data,req, cb) {
     object_data.ua  = req.headers["user-agent"];    //user agent
     object_data.cid = req.auth_obj.username;        //user ID
     object_data.uip = req.ip.replace('::ffff:', '');    // user ip
-    object_data.sr  = req.screensize || null; //screen resolution
+    object_data.sr  = req.body.screensize || null; //screen resolution
 
     therequest.post(
         'https://www.google-analytics.com/collect', {
@@ -60,7 +60,8 @@ exports.event = function(req, res) {
         an: req.body.app_name,      //application name
         av: req.body.appversion,    //application version
         aid:req.body.appid,         //application id
-        cd: req.body.screen_name || null //screen name
+        cd: req.body.screen_name || null, //screen name
+        sr: req.body.screensize
     };
 
     trackobject(object_data, req, function (err) {
@@ -76,7 +77,8 @@ exports.screen = function(req, res) {
         an:  req.body.app_name, //application name
         av:  req.body.appversion, //application version
         aid: req.body.appid, //application id
-        cd:  req.body.screen_name || null //screen name
+        cd:  req.body.screen_name || null, //screen name
+        sr: req.body.screensize
     };
 
     trackobject(object_data, req, function (err) {
@@ -93,7 +95,8 @@ exports.timing = function(req, res) {
         utc: req.body.event_category,  //timing cateogry
         utv: req.body.event_action,    //timing variable
         utl: req.body.event_label,    //timing label
-        utt: req.body.event_value    //timing time
+        utt: req.body.event_value,    //timing time
+        sr: req.body.screensize
 
     };
     trackobject(object_data, req, function (err) {
