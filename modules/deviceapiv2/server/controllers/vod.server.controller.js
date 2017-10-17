@@ -1,6 +1,7 @@
 'use strict';
 var path = require('path'),
     db = require(path.resolve('./config/lib/sequelize')),
+    sequelize = require('sequelize'),
     response = require(path.resolve("./config/responses.js")),
     models = db.models;
 
@@ -261,6 +262,7 @@ exports.mostrated = function(req, res) {
 exports.related = function(req, res) {
 
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+    var now = Date.now();
 
     models.vod.findAll({
         attributes: ['id'],
@@ -268,6 +270,9 @@ exports.related = function(req, res) {
         include: [
             {model: models.vod_stream, required: true, attributes: []},
             {model: models.vod_category, required: true, attributes: [], where:{password:{in: allowed_content}, isavailable: true}}
+        ],
+        order: [
+            [sequelize.fn('RAND', sequelize.literal(now))]
         ],
         limit: 5
     }).then(function (result) {

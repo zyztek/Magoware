@@ -1,8 +1,8 @@
 export default function (nga, admin) {
 	var salesreport = admin.getEntity('Salesreports');
 	salesreport.listView()
-			.title('<h4>Salesreports <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
-			//.batchActions(['filter'])
+			.listActions(['delete', 'show'])
+			.title('<h4>Sale report <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
 			.fields([
 				nga.field('user_id', 'reference')
 						.targetEntity(admin.getEntity('Users'))
@@ -18,32 +18,39 @@ export default function (nga, admin) {
 						.targetEntity(admin.getEntity('Combos'))
 						.targetField(nga.field('name'))
 						.label('Products'),
-			])
-			.filters([
+			]).filters([
+		nga.field('user_username')
+				.attributes({ placeholder: 'Client' })
+				.label('Client'),
+		nga.field('distributorname')
+				.attributes({ placeholder: 'Distributor' })
+				.label('Distributor'),
+		nga.field('startsaledate', 'date')
+				.attributes({ placeholder: 'Sale date from' })
+				.label('Start sale date'),
+		nga.field('endsaledate', 'date')
+				.attributes({placeholder: 'Sale date to' })
+				.label('End sale date'),
+		nga.field('name', 'reference')
+				.targetEntity(admin.getEntity('Combos'))
+				.attributes({ placeholder: 'Product' })
+				.perPage(-1)
+				.targetField(nga.field('name'))
+				.label('Product'),
+	]).exportFields([
+		salesreport.listView().fields(),
+	]);
 
+	salesreport.showView()
+			.fields([
 				nga.field('user_username')
-						.attributes({ placeholder: 'Client' })
-						.label('Client'),
-				nga.field('distributorname')
-						.attributes({ placeholder: 'Distributor' })
-						.label('Distributor'),
-				nga.field('startsaledate', 'date')
-						.attributes({ placeholder: 'Sale date from' })
-						.label('Start sale date'),
-				nga.field('endsaledate', 'date')
-						.attributes({placeholder: 'Sale date to' })
-						.label('End sale date'),
-				nga.field('name', 'reference')
-						.targetEntity(admin.getEntity('Combos'))
-						.attributes({ placeholder: 'Product' })
-						.perPage(-1)
-						.targetField(nga.field('name'))
-						.label('Product'),
+						.label('Account Username'),
+				nga.field('user_username')
+						.label('Account Username'),
+				nga.field('user_username')
+						.label('Account Username')
 			])
-
-			.exportFields([
-				salesreport.listView().fields(),
-			]);
+			.actions(['list', 'delete', '<custom-directive></custom-directive>'])
 
 	return salesreport;
 

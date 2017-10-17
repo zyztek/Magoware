@@ -82,8 +82,6 @@ exports.catchup_events =  function(req, res) {
 };
 
 exports.catchup_stream =  function(req, res) {
-    //console.log('incoming reques castchup stream')
-
     var channel_number;
     if(req.body.channelNumber)
         channel_number = req.body.channelNumber
@@ -107,5 +105,7 @@ exports.catchup_stream =  function(req, res) {
         var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
         res.send(database_error);
     });
+
+
 
 };

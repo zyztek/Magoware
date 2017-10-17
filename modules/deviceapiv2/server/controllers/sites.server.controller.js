@@ -139,7 +139,7 @@ exports.createaccount = function(req,res) {
 			smtpTransport.sendMail(mailOptions, function(err) {
 				var myEmail;
 				if (!err) {
-					myEmail = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'EMAIL_SENT_DESCRIPTION', 'EMAIL_SENT_DATA');
+					myEmail = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'EMAIL_SENT_DESCRIPTION', 'CONFIRM_ACCOUNT');
 					res.send(myEmail);
 
 				} else {

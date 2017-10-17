@@ -18,6 +18,7 @@
     "DATABASE_ERROR_DATA": "Gabim gjatë lidhjes me bazën e të dhënave",
     "EMAIL_SENT_DESCRIPTION": "U_DËRGUA_EMAILI",
     "EMAIL_SENT_DATA": "Email u dërgua me sukses",
+    "CONFIRM_ACCOUNT": "Llogaria juaj u krijua. Në adresën tuaj të email-it është dërguar email konfirmimi.",
     "EMAIL_NOT_SENT_DESCRIPTION": "GABIM_NË_DËRGIM_EMAILI",
     "EMAIL_NOT_SENT_DATA": "Gabim në dërgimin e emailit",
     "REGISTRATION_ERROR_DESCRIPTION": "REGJISTRIMI_DËSHTOI",

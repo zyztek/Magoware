@@ -9,7 +9,8 @@ var path = require('path'),
     logHandler = require(path.resolve('./modules/mago/server/controllers/logs.server.controller')),
     db = require(path.resolve('./config/lib/sequelize')).models,
     merge = require('merge'),
-    DBModel = db.settings;
+    DBModel = db.settings,
+    config = require(path.resolve('./config/config'));
 
 
 /**
@@ -19,6 +20,10 @@ var path = require('path'),
 
 exports.read = function(req, res) {
     res.json(req.settings);
+};
+
+exports.env_settings = function(req, res) {
+    res.json(config.seanjs.version); //returns the version number for the middleware
 };
 
 /**

@@ -15,8 +15,8 @@ var path = require('path'),
     passwordController = require(path.resolve('./modules/deviceapiv2/server/controllers/password.server.controller')),
     mainController = require(path.resolve('./modules/deviceapiv2/server/controllers/main.server.controller')),
     customersAppController = require(path.resolve('./modules/deviceapiv2/server/controllers/customers_app.server.controller')),
-	sitesController = require(path.resolve('./modules/deviceapiv2/server/controllers/sites.server.controller')),
-	headerController = require(path.resolve('./modules/deviceapiv2/server/controllers/header.server.controller')),
+    sitesController = require(path.resolve('./modules/deviceapiv2/server/controllers/sites.server.controller')),
+    headerController = require(path.resolve('./modules/deviceapiv2/server/controllers/header.server.controller')),
     winston = require(path.resolve('./config/lib/winston'));
 
 
@@ -24,7 +24,7 @@ module.exports = function(app) {
 
     app.use('/apiv2',function (req, res, next) {
         winston.info(req.originalUrl +'  '+ JSON.stringify(req.body));
-		res.header("Access-Control-Allow-Origin", "*");
+        res.header("Access-Control-Allow-Origin", "*");
         next();
     });
 
@@ -59,6 +59,13 @@ module.exports = function(app) {
     app.route('/apiv2/channels/event')
         .all(authpolicy.isAllowed)
         .post(channelsController.event);
+
+    app.route('/apiv2/channels/daily_epg')
+        .all(authpolicy.isAllowed)
+        .post(channelsController.daily_epg);
+    app.route('/apiv2/channels/current_epgs')
+        .all(authpolicy.isAllowed)
+        .post(channelsController.current_epgs);
 
     app.route('/apiv2/channels/favorites')
         .all(authpolicy.isAllowed)
@@ -130,7 +137,7 @@ module.exports = function(app) {
         .post(mainController.device_menu);
 
     /*******************************************************************
-                         Network - related API
+     Network - related API
      *******************************************************************/
     app.route('/apiv2/network/dbtest')
         .all(authpolicy.isAllowed)
@@ -141,6 +148,10 @@ module.exports = function(app) {
         .all(authpolicy.emptyCredentials) //gcm request may be plaintext, when called before login
         .all(authpolicy.isAllowed)
         .post(networkController.gcm);
+
+    app.route('/apiv2/command/response')
+        .all(authpolicy.isAllowed)
+        .post(networkController.command_response);
 
     //event logs
     app.route('/apiv2/events/event')

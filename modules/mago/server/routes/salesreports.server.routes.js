@@ -24,11 +24,25 @@ module.exports = function(app) {
 
     app.param('salesReportId', salesReports.dataByID);
 
+    //todo: set rights
+    app.route('/api/sales_by_product')
+        .all(policy.isAllowed)
+        .get(salesReports.sales_by_product);
+
 
 
     /* ===== Dashboard ===== */
-    app.route('/api/dashboard/salesreports')
+    app.route('/api/salesreports/annul/:salesReportId')
         .all(policy.isAllowed)
-        .get(salesReports.latest);
+        .put(salesReports.annul);
+
+    app.route('/api/sales_by_product')
+        .get(salesReports.sales_by_product);
+    app.route('/api/sales_by_date')
+        .get(salesReports.sales_by_date);
+    app.route('/api/sales_by_month')
+        .get(salesReports.sales_by_month);
+    app.route('/api/sales_by_expiration')
+        .get(salesReports.sales_by_expiration);
 
 };

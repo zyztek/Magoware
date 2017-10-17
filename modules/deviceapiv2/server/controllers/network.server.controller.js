@@ -7,25 +7,25 @@
 
 'use strict';
 var path = require('path'),
-    db = require(path.resolve('./config/lib/sequelize')),
-    response = require(path.resolve("./config/responses.js")),
-    querystring = require("querystring"),
-    models = db.models;
+		db = require(path.resolve('./config/lib/sequelize')),
+		response = require(path.resolve("./config/responses.js")),
+		querystring = require("querystring"),
+		models = db.models;
 
 //makes a database call. returns database_error if connection failed, one genre_id otherwise
 
 exports.dbtest = function(req, res) {
-    models.genre.findAll({
-        attributes: ['id'],
-        limit: 1
-    }).then(function (result) {
+	models.genre.findAll({
+		attributes: ['id'],
+		limit: 1
+	}).then(function (result) {
 		var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        clear_response.response_object = result;
-        res.send(clear_response);
-    }).catch(function(error) {
+		clear_response.response_object = result;
+		res.send(clear_response);
+	}).catch(function(error) {
 		var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
-    });
+		res.send(database_error);
+	});
 };
 
 
@@ -124,4 +124,35 @@ exports.gcm = function(req, res) {
 			res.send(database_error);
 		});
 	}
+};
+
+
+/**
+ * @api {post} /apiv2/command/response /apiv2/command/response
+ * @apiVersion 0.2.0
+ * @apiName Device Command Response.
+ * @apiGroup DeviceAPI
+ *
+ * @apiParam {String} username Login username.
+ * @apiParam {String} googleappid Device Registration ID.
+ * @apiParam {String} message Command Response Message.
+ * @apiParam {String} title Message Title.
+ *
+ * @apiDescription Internal use - command execution response.
+ */
+exports.command_response = function(req,res) {
+
+	req.body.action = 'receive';
+
+	models.messages.create(
+			req.body
+	).then(function(result){
+		var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
+		res.send(clear_response);
+		return null;
+	}).catch(function(error) {
+		var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
+		res.send(database_error);
+	});
+
 };

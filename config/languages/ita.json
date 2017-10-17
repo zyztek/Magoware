@@ -18,6 +18,7 @@
     "DATABASE_ERROR_DATA": "Errore durante la connessione al database",
     "EMAIL_SENT_DESCRIPTION": "EMAIL_INVIATO",
     "EMAIL_SENT_DATA": "E-mail inviata con successo",
+    "CONFIRM_ACCOUNT": "Il vostro account è stato creato. Un collegamento di conferma è stato inviato al vostro indirizzo email.",
     "EMAIL_NOT_SENT_DESCRIPTION": "ERRORE EMAIL",
     "EMAIL_NOT_SENT_DATA": "Errore durante l'invio di email",
     "REGISTRATION_ERROR_DESCRIPTION": "REGISTRAZIONE_FALLITA",

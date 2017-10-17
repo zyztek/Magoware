@@ -18,6 +18,7 @@
         "DATABASE_ERROR_DATA": "Error connecting to database",
         "EMAIL_SENT_DESCRIPTION": "EMAIL_SENT",
         "EMAIL_SENT_DATA": "Email successfuly sent",
+        "CONFIRM_ACCOUNT": "Your account was created. A confirmation link has been sent to your email address.",
         "EMAIL_NOT_SENT_DESCRIPTION": "EMAIL ERROR",
         "EMAIL_NOT_SENT_DATA": "Error sending email",
         "REGISTRATION_ERROR_DESCRIPTION": "REGISTRATION_FAILED",

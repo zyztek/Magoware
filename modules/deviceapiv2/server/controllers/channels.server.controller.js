@@ -2,6 +2,7 @@
 var path = require('path'),
     db = require(path.resolve('./config/lib/sequelize')),
     Sequelize = require('sequelize'),
+    db_funct = require(path.resolve("./custom_functions/sequelize_functions.js")),
     response = require(path.resolve("./config/responses.js")),
     winston = require(path.resolve('./config/lib/winston')),
     dateFormat = require('dateformat'),
@@ -277,7 +278,6 @@ exports.event =  function(req, res) {
                     )
                 )
             }).then(function (result) {
-                //todo: what if channel number is invalid and it finds no title???
                 var raw_result = [];
                 var default_programs = [];
                 //flatten nested json array
@@ -344,6 +344,237 @@ exports.event =  function(req, res) {
 
 };
 
+// returns list of epg data for the given channel
+exports.daily_epg =  function(req, res) {
+    var client_timezone = req.body.device_timezone; //offset of the client will be added to time - related info
+    var interval_start = dateFormat(Date.now() - client_timezone*3600 + req.body.day*3600000*24, "yyyy-mm-dd 00:00:00"); //start of the day for the user, in server time
+    var interval_end = dateFormat((Date.now() - client_timezone*3600 + req.body.day*3600000*24), "yyyy-mm-dd 23:59:59"); //end of the day for the user, in server time
+
+    async.auto({
+        get_channel: function(callback) {
+            models.channels.findOne({
+                attributes: ['title'],
+                where: {channel_number: req.body.channel_number}
+            }).then(function (channel) {
+                console.log("tek get channel");
+                if(!channel){
+                    console.log("tek not channel");
+                    models.my_channels.findOne({
+                        attributes: ['title'],
+                        where: {channel_number: req.body.channel_number}
+                    }).then(function (user_channel) {
+                        if(!user_channel){
+                            var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
+                            res.send(database_error);
+                        }
+                        else callback(null, user_channel);
+                    }).catch(function(error) {
+                        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
+                        console.log(error)
+                        res.send(database_error);
+                    });
+                }
+                else callback(null, channel.title);
+            }).catch(function(error) {
+                var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
+                console.log(error)
+                res.send(database_error);
+            });
+        },
+        get_epg: ['get_channel', function(results, callback) {
+            console.log("tek get epg");
+            models.epg_data.findAll({
+                attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end' ],
+                order: [['program_start', 'ASC']],
+                include: [
+                    {
+                        model: models.channels, required: true, attributes: [],  where: {channel_number: req.body.channel_number},
+                        include: {model: models.packages_channels, required: true, attributes:[],
+                            include:[{model: models.package, required: true, attributes: [],
+                                where: {package_type_id: req.auth_obj.screensize},
+                                include:[{model: models.subscription, required: true, attributes: [], where: {login_id: req.thisuser.id, end_date: {$gte: Date.now()}}}
+                                ]}
+                            ]}
+                    },
+                    {model: models.program_schedule,
+                        required: false, //left join
+                        attributes: ['id'],
+                        where: {login_id: req.thisuser.id}
+                    }
+                ],
+                where: {program_start: {gte: interval_start}, program_end:{lte: interval_end}},
+                logging: console.log
+            }).then(function (result) {
+                if(!result){
+                    callback(null, results.get_channel, []); //no epg for this channel, passing empty array instead
+                }
+                else callback(null, results.get_channel, result);
+            }).catch(function(error) {
+                var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
+                console.log(error)
+                res.send(database_error);
+            });
+        }],
+        send_epg: ['get_epg', function(epg_data, callback) {
+            console.log("tek send epg");
+            var raw_result = [];
+            if(epg_data.get_epg[1].length<3){
+                console.log("me pak se 3");
+                for(var i=0; i<3-epg_data.get_epg[1].length; i++){
+                    var temp_obj = {};
+                    temp_obj.channelName = epg_data.get_epg[0].title;
+                    temp_obj.id = -1;
+                    temp_obj.number = req.body.channel_number;
+                    temp_obj.title = "Program of "+epg_data.get_epg[0].title;
+                    temp_obj.scheduled = false;
+                    temp_obj.description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit";
+                    temp_obj.shortname = "Program of "+epg_data.get_epg[0].title;
+                    temp_obj.programstart = '01/01/1970 00:00:00';
+                    temp_obj.programend = '01/01/1970 00:00:00';
+                    temp_obj.duration = 0; //duration 0 for non-real epg
+                    temp_obj.progress = 0; //progress 0 for non-real epg
+                    temp_obj.status = 0; //status 0 means this is non-real epg
+                    raw_result.push(temp_obj);
+                }
+            }
+            for(var i=0; i<epg_data.get_epg[1].length; i++){
+                var temp_obj = {};
+                var programstart = parseInt(epg_data.get_epg[1][i].program_start.getTime()) +  parseInt((client_timezone) * 3600000);
+                var programend = parseInt(epg_data.get_epg[1][i].program_end.getTime()) +  parseInt((client_timezone) * 3600000);
+
+                temp_obj.channelName = epg_data.get_epg[1][i].title;
+                temp_obj.id = epg_data.get_epg[1][i].id;
+                temp_obj.number = req.body.channel_number;
+                temp_obj.title = epg_data.get_epg[1][i].title;
+                temp_obj.scheduled = (!epg_data.get_epg[1][i].program_schedules[0]) ? false : schedule.is_scheduled(epg_data.get_epg[1][i].program_schedules[0].id);
+                temp_obj.status = program_status(epg_data.get_epg[1][i].program_start.getTime(), epg_data.get_epg[1][i].program_end.getTime());
+                temp_obj.description = epg_data.get_epg[1][i].short_description;
+                temp_obj.shortname = epg_data.get_epg[1][i].short_name;
+                temp_obj.programstart = dateFormat(programstart, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
+                temp_obj.programend = dateFormat(programend, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
+                temp_obj.duration = epg_data.get_epg[1][i].duration_seconds;
+                temp_obj.progress = Math.round((Date.now() - epg_data.get_epg[1][i].program_start.getTime() ) / (epg_data.get_epg[1][i].duration_seconds * 10));
+                raw_result.push(temp_obj);
+            }
+            var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
+            clear_response.response_object = raw_result;
+            res.send(clear_response);
+        }]
+    }, function(error, results) {
+        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
+        console.log(error)
+        res.send(database_error);
+    });
+
+};
+
+// returns list of epg data all of this user's channels that are being palyed right now
+exports.current_epgs =  function(req, res) {
+    var server_time = dateFormat(Date.now(), "yyyy-mm-dd HH:MM:ss"); //start of the day for the user, in server time
+    var raw_result = [];
+
+    var qwhere = {};
+    if(req.thisuser.show_adult == 0) qwhere.pin_protected = 0; //show adults filter
+    else qwhere.pin_protected != ''; //avoid adult filter
+
+    // requisites for streams provided by the user
+    var userstream_qwhere = {"isavailable": true, "login_id": req.thisuser.id};
+
+    // requisites for streams served by the company
+    var stream_qwhere = {};
+    if(req.thisuser.player.toUpperCase() === 'default'.toUpperCase()) stream_qwhere.stream_format = {$not: 0}; //don't send mpd streams for default player
+    if(req.auth_obj.appid === 3) stream_qwhere.stream_format = 2; // send only hls streams for ios application
+    stream_qwhere.stream_source_id = req.thisuser.channel_stream_source_id; // streams come from the user's stream source
+    stream_qwhere.stream_mode = 'live';
+
+    models.my_channels.findAll({
+        attributes: ['channel_number', 'title'], order: [[ 'channel_number', 'ASC' ]], where: userstream_qwhere,
+        include: [{ model: models.genre, required: true, attributes: ['icon_url'], where: {is_available: true} }]
+    }).then(function (user_channel) {
+        models.channels.findAll({
+            attributes: ['title', 'channel_number'], order: [[ 'channel_number', 'ASC' ]], where: qwhere,
+            include: [
+                {model: models.packages_channels,
+                    required: true,
+                    attributes:[],
+                    include:[
+                        {model: models.package,
+                            required: true,
+                            attributes: [],
+                            where: {package_type_id: req.auth_obj.screensize},
+                            include:[
+                                {model: models.subscription,
+                                    required: true,
+                                    attributes: [],
+                                    where: {login_id: req.thisuser.id, end_date: {$gte: Date.now()}}
+                                }
+                            ]}
+                    ]},
+                { model: models.channel_stream, required: true, attributes:[] },
+                {
+                    model: models.epg_data, required: false,
+                    attributes: [
+                        'id', 'short_description', 'short_name', 'duration_seconds',
+                        db_funct.final_time('program_start', 'program_start', 'HOUR', req.body.device_timezone, '%m/%d/%Y %H:%i:%s'),
+                        db_funct.final_time('program_end', 'program_end', 'HOUR', req.body.device_timezone, '%m/%d/%Y %H:%i:%s'),
+                        db_funct.add_constant(false, 'scheduled')
+                    ],
+                    where: {program_start: {lte: server_time}, program_end: {gte: server_time}}
+                }
+            ]
+        }).then(function (channels) {
+            for(var i=0; i< channels.length; i++){
+                var raw_obj = {};
+                raw_obj.channelName =  channels[i].title;
+                raw_obj.title =  channels[i].title;
+                raw_obj.number =  channels[i].channel_number;
+                raw_obj.id = (channels[i].epg_data[0]) ? channels[i].epg_data[0].id : -1;
+                raw_obj.scheduled = false;
+                raw_obj.shortname = (channels[i].epg_data[0]) ? channels[i].epg_data[0].short_name : "Program of "+ channels[i].title;
+                raw_obj.description = (channels[i].epg_data[0]) ?  channels[i].epg_data[0].short_description : 'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
+                raw_obj.programstart = (channels[i].epg_data[0]) ? channels[i].epg_data[0].program_start : "01/01/1970 00:00:00";
+                raw_obj.programend = (channels[i].epg_data[0]) ? channels[i].epg_data[0].program_end : "01/01/1970 00:00:00";
+                raw_obj.duration = (channels[i].epg_data[0]) ? channels[i].epg_data[0].duration_seconds : 0;
+                raw_obj.progress = (channels[i].epg_data[0]) ? Math.round(((Date.now() + 3600000*req.body.device_timezone) - moment(channels[i].epg_data[0].program_start, 'MM/DD/YYYY HH:mm:ss').format('x')) / (channels[i].epg_data[0].duration_seconds * 10)) : 0;
+                raw_obj.status = 2;
+
+                raw_result.push(raw_obj);
+            }
+            if(user_channel){
+                for(var i=0; i<user_channel.length; i++){
+                    var raw_obj = {};
+                    raw_obj.channelName =  user_channel[i].title;
+                    raw_obj.title =  user_channel[i].title;
+                    raw_obj.number =  user_channel[i].channel_number;
+                    raw_obj.id = -1;
+                    raw_obj.scheduled = false;
+                    raw_obj.shortname = "Program of "+ user_channel[i].title;
+                    raw_obj.description = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
+                    raw_obj.programstart = "01/01/1970 00:00:00";
+                    raw_obj.programend = "01/01/1970 00:00:00";
+                    raw_obj.duration = 0;
+                    raw_obj.progress = 0;
+                    raw_obj.status = 2;
+                    raw_result.push(raw_obj);
+                }
+            }
+
+            var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
+            clear_response.response_object = raw_result;
+            res.send(clear_response);
+        }).catch(function(error) {
+            var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
+            console.log(error);
+            res.send(database_error);
+        });
+        return null;
+    }).catch(function(error) {
+        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
+        res.send(database_error);
+    });
+
+};
+
 //API for favorites. Performs a delete or insert - depending on the action parameter.
 exports.favorites = function(req, res) {
 
@@ -364,7 +595,7 @@ exports.favorites = function(req, res) {
             models.channels.findOne({
                 attributes: ['id'], where: {channel_number: req.body.channelNumber}
             }).then(function (channel) {
-                callback(null, user_id, channel.id); //todo: custom ok response if channel number does not exist. also change logic
+                callback(null, user_id, channel.id);
                 return null;
             }).catch(function(error) {
                 var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
@@ -548,4 +779,14 @@ function has_catchup(catchup_streams, channel_id){
         return 'catchup';
     }
     else return 'live';
+}
+
+function program_status(programstart, programend){
+    if(programstart < Date.now() && programend < Date.now()){
+        return 1;
+    }
+    else if(programstart < Date.now() && programend > Date.now()){
+        return 2;
+    }
+    else return 3
 }

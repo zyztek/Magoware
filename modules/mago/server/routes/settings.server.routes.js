@@ -22,4 +22,6 @@ module.exports = function(app) {
 
     app.param('settingId', settings.dataByID);
 
+    app.route('/api/env_settings').get(settings.env_settings);
+
 };

@@ -49,10 +49,8 @@ module.exports = function(sequelize, DataTypes) {
     }, {
         tableName: 'epg_data',
         associate: function(models) {
-            if(models.packages_channels){
-                epgData.belongsTo(models.channels, {foreignKey: 'channels_id'})
-            }
-            epgData.hasMany(models.program_schedule, {foreignKey: 'program_id'})
+            epgData.belongsTo(models.channels, {foreignKey: 'channels_id'});
+            epgData.hasMany(models.program_schedule, {foreignKey: 'program_id'});
         }
     });
     return epgData;

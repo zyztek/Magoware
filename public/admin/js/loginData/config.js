@@ -9,7 +9,7 @@ export default function (nga, admin) {
             nga.field('customer_id','reference')
                 .targetEntity(admin.getEntity('CustomerData'))
                 .targetField(
-                        nga.field('firstname')
+                    nga.field('firstname')
                         .map(function (value, entry) {
                             return entry.firstname + ' ' + entry.lastname;
                         })
@@ -40,7 +40,7 @@ export default function (nga, admin) {
                 .label('Timezone'),
             nga.field('account_lock','boolean')
                 .cssClasses('hidden-xs')
-                .label('Account Lock'),
+                .label('Account Locked'),
             nga.field('get_messages', 'boolean')
                 .label('Get messages'),
             nga.field('auto_timezone', 'boolean')
@@ -143,7 +143,11 @@ export default function (nga, admin) {
             .label('Auto Timezone'),
         nga.field('account_lock','boolean')
             .attributes({ placeholder: 'Account Lock' })
-            .label('Account Lock')
+            .label('Account Locked')
+            .validation({ required: true}),
+        nga.field('beta_user','boolean')
+            .attributes({ placeholder: 'Is tester' })
+            .label('Is tester')
             .validation({ required: true}),
         nga.field('template')
             .label('')
@@ -154,7 +158,7 @@ export default function (nga, admin) {
         .title('<h4>Login Accounts <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.username }}</h4>')
         .actions(['list'])
         .fields([
-        	nga.field('customer_id', 'reference')
+            nga.field('customer_id', 'reference')
                 .targetEntity(admin.getEntity('CustomerData'))
                 .targetField(nga.field('firstnmae', 'template')
                         .map((v, e) => e.firstname + ' ' + e.lastname))
@@ -246,115 +250,119 @@ export default function (nga, admin) {
             .label('Auto Timezone'),
         nga.field('account_lock','boolean')
             .attributes({ placeholder: 'Account Lock' })
-            .label('Account Lock')
+            .label('Account Locked')
+            .validation({ required: true}),
+        nga.field('beta_user','boolean')
+            .attributes({ placeholder: 'Is tester' })
+            .label('Is tester')
             .validation({ required: true}),
         nga.field('template')
             .label('')
             .template(edit_button),
-            nga.field('Subscriptions', 'referenced_list')
-                .label('Subscription')
-                .targetEntity(admin.getEntity('Subscriptions'))
-                .targetReferenceField('login_id')
-                .targetFields([
-                    nga.field('package_id', 'reference')
-                        .targetEntity(admin.getEntity('Packages'))
-                        .targetField(nga.field('package_name'))
-                        .label('Package'),
-                    nga.field('package_id', 'reference')
-                        .targetEntity(admin.getEntity('Packages'))
-                        .targetField(nga.field('package_type_id')
-                            .map(function truncate(value) {
-                                if (value === 1) {
-                                    return 'Mobile Package';
-                                } else if (value === 2) {
-                                    return 'STB Package';
-                                }  else if (value === 3) {
-                                    return 'VOD Package';
-                                }
-                            }))
-                        .label('Package Type'),
-                    nga.field('start_date', 'date')
-                        .cssClasses('hidden-xs')
-                        .template(function (entry) {
-                            var moment = new Date().toISOString().slice(0,10);
-                            var ng_vlera_start = new Date(entry.values.start_date).toISOString().slice(0,10);
-                            var ng_vlera_end = new Date(entry.values.end_date).toISOString().slice(0,10);
-                            if ((moment >= ng_vlera_start) && (moment <= ng_vlera_end)) {
-                                return ng_vlera_start.fontcolor("green");
-                            } else {
-                                return ng_vlera_start.fontcolor("red").bold();
+        nga.field('Subscriptions', 'referenced_list')
+            .label('Subscription')
+            .targetEntity(admin.getEntity('Subscriptions'))
+            .targetReferenceField('login_id')
+            .targetFields([
+                nga.field('package_id', 'reference')
+                    .targetEntity(admin.getEntity('Packages'))
+                    .targetField(nga.field('package_name'))
+                    .label('Package'),
+                nga.field('package_id', 'reference')
+                    .targetEntity(admin.getEntity('Packages'))
+                    .targetField(nga.field('package_type_id')
+                        .map(function truncate(value) {
+                            if (value === 1) {
+                                return 'Mobile Package';
+                            } else if (value === 2) {
+                                return 'STB Package';
+                            }  else if (value === 3) {
+                                return 'VOD Package';
                             }
-                        })
-                        .label('Start Date'),
-                    nga.field('end_date', 'date')
-                        .cssClasses('hidden-xs')
-                        .template(function (entry) {
-                            var moment = new Date().toISOString().slice(0,10);
-                            var ng_vlera_start = new Date(entry.values.start_date).toISOString().slice(0,10);
-                            var ng_vlera_end = new Date(entry.values.end_date).toISOString().slice(0,10);
-                            if ((moment >= ng_vlera_start) && (moment <= ng_vlera_end)) {
-                                return ng_vlera_end.fontcolor("green");
-                            } else {
-                                return ng_vlera_end.fontcolor("red").bold();
-                            }
-                        })
-                        .label('End Date'),
-                ]),
-            nga.field('')
-                .label('')
-                .template('<ma-create-button entity-name="Subscriptions" class="pull-right" label="ADD SUBSCRIPTION" default-values="{ login_id: entry.values.id }"></ma-create-button>'),
+                        }))
+                    .label('Package Type'),
+                nga.field('start_date', 'date')
+                    .cssClasses('hidden-xs')
+                    .template(function (entry) {
+                        var moment = new Date().toISOString().slice(0,10);
+                        var ng_vlera_start = new Date(entry.values.start_date).toISOString().slice(0,10);
+                        var ng_vlera_end = new Date(entry.values.end_date).toISOString().slice(0,10);
+                        if ((moment >= ng_vlera_start) && (moment <= ng_vlera_end)) {
+                            return ng_vlera_start.fontcolor("green");
+                        } else {
+                            return ng_vlera_start.fontcolor("red").bold();
+                        }
+                    })
+                    .label('Start Date'),
+                nga.field('end_date', 'date')
+                    .cssClasses('hidden-xs')
+                    .template(function (entry) {
+                        var moment = new Date().toISOString().slice(0,10);
+                        var ng_vlera_start = new Date(entry.values.start_date).toISOString().slice(0,10);
+                        var ng_vlera_end = new Date(entry.values.end_date).toISOString().slice(0,10);
+                        if ((moment >= ng_vlera_start) && (moment <= ng_vlera_end)) {
+                            return ng_vlera_end.fontcolor("green");
+                        } else {
+                            return ng_vlera_end.fontcolor("red").bold();
+                        }
+                    })
+                    .label('End Date'),
+            ]),
+        nga.field('')
+            .label('')
+            .template('<ma-create-button entity-name="Subscriptions" class="pull-right" label="ADD SUBSCRIPTION" default-values="{ login_id: entry.values.id }"></ma-create-button>'),
 
-            nga.field('Devices', 'referenced_list')
-                .label('Devices')
-                .targetEntity(admin.getEntity('Devices'))
-                .targetReferenceField('login_data_id')
-                .targetFields([
-                    nga.field('login_data_id', 'reference')
-                        .targetEntity(admin.getEntity('LoginData'))
-                        .targetField(nga.field('username'))
-                        .label('Account'),
-                    nga.field('device_ip')
-                        .cssClasses('hidden-xs')
-                        .label('Device IP'),
-                    nga.field('appid')
-                        .cssClasses('hidden-xs')
-                        .label('App ID'),
-                    nga.field('app_version')
-                        .cssClasses('hidden-xs')
-                        .label('App Version'),
-                    nga.field('ntype')
-                        .cssClasses('hidden-xs')
-                        .label('Ntype'),
-                    nga.field('updatedAt','date')
-                        .cssClasses('hidden-xs')
-                        .label('Last Updated'),
-                    nga.field('device_brand')
-                        .cssClasses('hidden-xs')
-                        .label('Device Brand'),
-                    nga.field('device_active','boolean')
-                        .label('Device Active'),
-                ])
-                .listActions(['edit']),
+        nga.field('Devices', 'referenced_list')
+            .label('Devices')
+            .targetEntity(admin.getEntity('Devices'))
+            .targetReferenceField('login_data_id')
+            .targetFields([
+                nga.field('login_data_id', 'reference')
+                    .targetEntity(admin.getEntity('LoginData'))
+                    .targetField(nga.field('username'))
+                    .label('Account'),
+                nga.field('device_ip')
+                    .cssClasses('hidden-xs')
+                    .label('Device IP'),
+                nga.field('appid')
+                    .cssClasses('hidden-xs')
+                    .label('App ID'),
+                nga.field('app_version')
+                    .cssClasses('hidden-xs')
+                    .label('App Version'),
+                nga.field('ntype')
+                    .cssClasses('hidden-xs')
+                    .label('Ntype'),
+                nga.field('updatedAt','date')
+                    .cssClasses('hidden-xs')
+                    .label('Last Updated'),
+                nga.field('device_brand')
+                    .cssClasses('hidden-xs')
+                    .label('Device Brand'),
+                nga.field('device_active','boolean')
+                    .label('Device Active'),
+            ])
+            .listActions(['edit']),
 
-            nga.field('Salesreports', 'referenced_list')
-                .label('Sale Reports')
-                .targetEntity(nga.entity('Salesreports'))
-                .targetReferenceField('login_id')
-                .targetFields([
-                    nga.field('user_username', 'string')
-                        .label('User Username'),
-                    nga.field('distributorname', 'string')
-                        .cssClasses('hidden-xs')
-                        .label('Distributor Name'),
-                    nga.field('saledate', 'date')
-                        .cssClasses('hidden-xs')
-                        .label('Sale Date'),
-                    nga.field('combo_id', 'reference')
-                        .targetEntity(admin.getEntity('Combos'))
-                        .targetField(nga.field('name'))
-                        .label('Product'),
-                ])
-        ]);
+        nga.field('Salesreports', 'referenced_list')
+            .label('Sale Reports')
+            .targetEntity(nga.entity('Salesreports'))
+            .targetReferenceField('login_id')
+            .targetFields([
+                nga.field('user_username', 'string')
+                    .label('User Username'),
+                nga.field('distributorname', 'string')
+                    .cssClasses('hidden-xs')
+                    .label('Distributor Name'),
+                nga.field('saledate', 'date')
+                    .cssClasses('hidden-xs')
+                    .label('Sale Date'),
+                nga.field('combo_id', 'reference')
+                    .targetEntity(admin.getEntity('Combos'))
+                    .targetField(nga.field('name'))
+                    .label('Product'),
+            ])
+    ]);
 
     return logindata;
 }

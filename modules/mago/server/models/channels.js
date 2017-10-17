@@ -47,6 +47,7 @@ module.exports = function(sequelize, DataTypes) {
     }, {
         tableName: 'channels',
         associate: function(models) {
+            Channels.hasMany(models.epg_data, {foreignKey: 'channels_id'})
             if (models.channel_stream){
                 Channels.hasMany(models.channel_stream, {foreignKey: 'channel_id'})
             }
