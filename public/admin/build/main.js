@@ -15518,8 +15518,9 @@
 					size: "@"
 				},
 				link: function link(scope, element, attrs) {
-					//console.log(scope.$parent.datastore._entries.Groups_22["0"]._identifierValue);
-					//console.log(scope);
+
+					var obj = scope.$parent.datastore._entries; //saves group-related data into variable obj
+
 					scope.review = scope.review();
 					scope.type = attrs.type;
 					scope.approve = function (method, value) {
@@ -15527,18 +15528,14 @@
 						if (!value) value = true;else value = !value;
 
 						var theobj = {};
-						//todo: user better method
-						theobj.group_id = scope.$parent.datastore._entries.Groups_23["0"]._identifierValue;
+						theobj.group_id = obj[Object.keys(obj)[0]]["0"]._identifierValue; // reads the value from the first property, since name of the property can vary
 						theobj.api_group_id = scope.review.values.id;
 
 						if (method == 'read') theobj.read = value;
 						if (method == 'edit') theobj.edit = value;
 						if (method == 'create') theobj.create = value;
 
-						Restangular.one('grouprights').customPUT(theobj)
-								//.then(() => $state.reload())
-
-								.then(function successCallback(response) {
+						Restangular.one('grouprights').customPUT(theobj).then(function successCallback(response) {
 									console.log(scope);
 									notification.log('Updated successfully', { addnCls: 'humane-flatty-success' });
 								}, function errorCallback(response) {
