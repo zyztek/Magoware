@@ -254,7 +254,7 @@ exports.settings = function(req, res) {
                 "mainmenurefresh": mainmenurefresh,
                 "daysleft": daysleft,
                 "days_left_message": days_left_message,
-                "record_count": Math.ceil(record_count / 200),
+                "record_count": Math.ceil(record_count / 50),
                 "resume_movie": resume_vod,
                 "movie_url": movie_url.toString(),
                 "resume_position": resume_position,
