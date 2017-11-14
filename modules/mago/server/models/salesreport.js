@@ -32,6 +32,11 @@ module.exports = function(sequelize, DataTypes) {
         saledate: {
             type: DataTypes.DATE,
             allowNull: false
+        },
+        active: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: 1,
+            allowNull: false
         }
     }, {
         tableName: 'salesreport',

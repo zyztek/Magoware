@@ -1,7 +1,8 @@
 export default function (nga, admin) {
     var salesreport = admin.getEntity('sales_by_expiration');
     salesreport.listView()
-        .title('<h4>Sales by expiration <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
+        .title('<h4>Expirations list <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
+        .batchActions([])
         .fields([
 
             nga.field('login_id', 'reference')
@@ -11,15 +12,15 @@ export default function (nga, admin) {
                 .label('Client'),
             nga.field('end_date', 'date')
                 .cssClasses('hidden-xs')
-                .label('End Date')
+                .label('Expiration date')
         ])
         .filters([
             nga.field('startsaledate', 'date')
-                .attributes({ placeholder: 'Sale date from' })
-                .label('Start sale date'),
+                .attributes({ placeholder: 'From date' })
+                .label('From date'),
             nga.field('endsaledate', 'date')
-                .attributes({placeholder: 'Sale date to' })
-                .label('End sale date')
+                .attributes({placeholder: 'To date' })
+                .label('To date')
         ])
         .exportFields([
             salesreport.listView().fields(),

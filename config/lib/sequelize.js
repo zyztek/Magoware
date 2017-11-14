@@ -157,16 +157,12 @@ db.connect = function(database, username, password, options) {
                             var baseurl = process.env.NODE_HOST || 'localhost' + ":" + config.port;
                             var apiurl = (baseurl == 'localhost:'+config.port) ? protocol+baseurl+'/apiv2/schedule/reload' : baseurl+'/apiv2/schedule/reload'; //api path
 
-                            console.log(apiurl)
-
                             try {
                                 if(config.port === 443){
                                     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; //invalid ssl certificate ignored
                                     https.get(apiurl, function(resp){
                                         callback(null);
                                     }).on("error", function(e){
-                                        console.log("error1")
-                                        console.log(e)
                                         callback(null); //return offset 0 to avoid errors
                                     });
                                 }
@@ -174,14 +170,10 @@ db.connect = function(database, username, password, options) {
                                     http.get(apiurl, function(resp){
                                         callback(null);
                                     }).on("error", function(e){
-                                        console.log("error1")
-                                        console.log(e)
                                         callback(null); //return offset 0 to avoid errors
                                     });
                                 }
                             } catch(e) {
-                                console.log("error2")
-                                console.log(e)
                                 callback(null); //catch error 'Unable to determine domain name' when url is invalid / key+service are invalid
                             }
                         }
@@ -279,7 +271,6 @@ db.connect = function(database, username, password, options) {
         return null;
     }).catch(function(error) {
         winston.error("Error connecting to database");
-        console.log(error);
     });
 
     db.sequelize = sequelize;

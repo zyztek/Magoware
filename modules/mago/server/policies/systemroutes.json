@@ -54,6 +54,7 @@
   "/api/messages",
   "/api/messages/:messageId",
   "/api/send-message-action",
+  "/api/annul",
   "/api/mychannels",
   "/api/mychannels/:mychannelId",
   "/api/packagechannels",

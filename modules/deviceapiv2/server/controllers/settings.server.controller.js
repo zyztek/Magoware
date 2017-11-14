@@ -32,9 +32,7 @@ var activated = 0;
  */
 
 exports.settings = function(req, res) {
-
     var okresponse = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-
 
     var current_timestamp = Date.now(); //server timestamp in milliseconds
     var client_timestamp = req.auth_obj.timestamp; //request timestamp in milliseconds
@@ -53,37 +51,42 @@ exports.settings = function(req, res) {
         },
         //CHECKING IF THE USER NEEDS TO REFRESH SERVER SIDE DATA
         function(login_data, callback) {
-            if (req.body.activity === 'livetv') {
-                //db value of last livetv refresh is bigger than client last refresh -> return true. Else return false
-                if ((req.body.livetvtimestamp >= parseFloat(req.app.locals.settings.livetvlastchange)) && (req.body.livetvtimestamp >= parseFloat(req.thisuser.livetvlastchange))){
-                    callback(null, login_data, false);
-                }
-                else{
-                    okresponse.timestamp = req.app.locals.settings.livetvlastchange;
-                    callback(null, login_data, true);
-                }
-            }
-            else if (req.body.activity === 'vod') {
-                //db value of last vod refresh is bigger than client last refresh -> return true. Else return false
-                if ((req.body.vodtimestamp >= parseFloat(req.app.locals.settings.vodlastchange)) && (req.body.vodtimestamp >= parseFloat(req.thisuser.vodlastchange))){
-                    callback(null, login_data, false);
-                }
-                else {
-                    callback(null, login_data, true);
-                }
-            }
-            else if(req.body.activity === 'login'){
-                //db value of last main menu or livetv refresh is bigger than client last refresh -> return true. Else return false
-                if (req.body.mainmenutimestamp >= parseFloat(req.app.locals.settings.menulastchange)){
-                    callback(null, login_data, false);
-                }
-                else {
-                    callback(null, login_data, true);
-                }
-            }
-            else{
-                callback(null, login_data, false); //in case of unexpected activity value, return false
-            }
+			if(!req.body.livetvtimestamp && !req.body.vodtimestamp && !req.body.mainmenutimestamp){
+				callback(null, login_data, false);
+			}
+			else{
+				if (req.body.activity === 'livetv') {
+					//db value of last livetv refresh is bigger than client last refresh -> return true. Else return false
+					if ((req.body.livetvtimestamp >= parseFloat(req.app.locals.settings.livetvlastchange)) && (req.body.livetvtimestamp >= parseFloat(req.thisuser.livetvlastchange))){
+						callback(null, login_data, false);
+					}
+					else{
+						okresponse.timestamp = req.app.locals.settings.livetvlastchange;
+						callback(null, login_data, true);
+					}
+				}
+				else if (req.body.activity === 'vod') {
+					//db value of last vod refresh is bigger than client last refresh -> return true. Else return false
+					if ((req.body.vodtimestamp >= parseFloat(req.app.locals.settings.vodlastchange)) && (req.body.vodtimestamp >= parseFloat(req.thisuser.vodlastchange))){
+						callback(null, login_data, false);
+					}
+					else {
+						callback(null, login_data, true);
+					}
+				}
+				else if(req.body.activity === 'login'){
+					//db value of last main menu or livetv refresh is bigger than client last refresh -> return true. Else return false
+					if (req.body.mainmenutimestamp >= parseFloat(req.app.locals.settings.menulastchange)){
+						callback(null, login_data, false);
+					}
+					else {
+						callback(null, login_data, true);
+					}
+				}
+				else{
+					callback(null, login_data, false); //in case of unexpected activity value, return false
+				}
+			}            
         },
         //GETTING DAYS LEFT, DEPENDING ON THE ACTIVITY OF THE USER
         function(login_data, refresh, callback){
@@ -163,7 +166,7 @@ exports.settings = function(req, res) {
                             if(JSON.parse(ip_info).gmtOffset !== undefined && isvalidoffset(JSON.parse(ip_info).gmtOffset) !== false) {
                                 callback(null, login_data, daysleft, refresh, available_upgrade, isvalidoffset(JSON.parse(ip_info).gmtOffset)); //iptimezone calculated only for large screen devices, after login, for autotimezone true
                             }
-                            else callback(null, login_data, daysleft, refresh, available_upgrade, login_data.timezone); //return client timezone on error
+                                else callback(null, login_data, daysleft, refresh, available_upgrade, login_data.timezone); //return client timezone on error
                         });
                     }).on("error", function(e){
                         callback(null, login_data, daysleft, refresh, available_upgrade, login_data.timezone); //return client timezone on error
@@ -245,7 +248,7 @@ exports.settings = function(req, res) {
             var lang = (languages[req.body.language]) ? req.body.language : 'eng'; //handle missing language variables, serving english as default
             var days_left_message = (daysleft > 0) ? "" : languages[lang].language_variables['NO_SUBSCRIPTION'];
 
-            okresponse.response_object = [{
+            var response_data = [{
                 "logo_url": req.app.locals.settings.assets_url+""+logo_url,
                 "background_url": req.app.locals.settings.assets_url+""+background_url,
                 "vod_background_url": req.app.locals.settings.assets_url+""+vod_background_url,
@@ -254,7 +257,7 @@ exports.settings = function(req, res) {
                 "mainmenurefresh": mainmenurefresh,
                 "daysleft": daysleft,
                 "days_left_message": days_left_message,
-                "record_count": Math.ceil(record_count / 200),
+                "record_count": Math.ceil(record_count / 50),
                 "resume_movie": resume_vod,
                 "movie_url": movie_url.toString(),
                 "resume_position": resume_position,
@@ -270,21 +273,19 @@ exports.settings = function(req, res) {
                 "iptimezone": offset,
                 "available_upgrade": available_upgrade
             }];
-
-            res.send(okresponse);
+            response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=43200');
         }
     ], function (err) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
 
 //API GETS APPID, APP VERSION AND API VERSION OF THE DEVICE AND DECIDES IF THERE ARE ANY UPGRADES WHOSE REQUIREMENTS ARE FULLFILL BY THIS DEVICE
 exports.upgrade = function(req, res) {
+    res.setHeader('cache-control', '');
     if(id >= 0){
-        var upgrade_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        upgrade_response.response_object = upgrade_response.response_object = [{
+        var response_data = [{
             "id": id,
             "upgradetype": upgradetype,
             "name": name,
@@ -293,11 +294,11 @@ exports.upgrade = function(req, res) {
             "location": location,
             "activated": activated
         }];
+        response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }
     else{
-        var upgrade_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'NO_UPGRADES');
+        response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'NO_UPGRADES', 'private,max-age=86400');
     }
-    res.send(upgrade_response);
 };
 
 

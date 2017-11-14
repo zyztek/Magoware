@@ -1,105 +1,15 @@
 'use strict';
 
-/**
- * Module dependencies.
- */
 var path = require('path'),
-    apn = require('apn'),
-    gcm = require('node-gcm'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
+    push_msg = require(path.resolve('./custom_functions/push_messages')),
     db = require(path.resolve('./config/lib/sequelize')).models,
     DBModel = db.messages,
     DBDevices = db.devices;
 
-function sendiosnotification(obj,messagein,ttl) {
-
-  // Set up apn with the APNs Auth Key
-
-  var apnProvider = new apn.Provider({
-    token: {
-      key: path.resolve('config/sslcertificate/IOS_APNs_82X366YY8N.p8'), // Path to the key p8 file
-      keyId: '82X366YY8N', // The Key ID of the p8 file (available at https://developer.apple.com/account/ios/certificate/key)
-      teamId: 'RY4R7JL9MP', // The Team ID of your Apple Developer Account (available at https://developer.apple.com/account/#/membership/)
-    },
-    production: true // Set to true if sending a notification to a production iOS app
-  });
-
-  // Enter the device token from the Xcode console
-  var deviceToken = obj.googleappid;
-
-// Prepare a new notification
-  var notification = new apn.Notification();
-
-// Specify your iOS app's Bundle ID (accessible within the project editor)
-  notification.topic = 'com.magoware.webtv';
-
-// Set expiration to 1 hour from now (in case device is offline)
-  notification.expiry = Math.floor(Date.now() / 1000) + ttl;
-
-// Set app badge indicator
-  notification.badge = 2;
-
-// Play ping.aiff sound when the notification is received
-  notification.sound = 'ping.aiff';
-
-// Display the following message (the actual notification text, supports emoji)
-  notification.alert = messagein;
-
-// Send any extra payload data with the notification which will be accessible to your app in didReceiveRemoteNotification
-  notification.payload = {id: 123};
-
-// Actually send the notification
-  apnProvider.send(notification, deviceToken).then(function(result) {
-    // Check the result for any failed devices
-  });
-}
-
-function sendandoirdnotification(obj, messagein, ttl, action, callback) {
-  if(action == 'softwareupdate') {
-    var message = new gcm.Message({
-      data: {
-        "SOFTWARE_INSTALL": messagein
-      }
-    });
-  }
-  else if(action == 'deletedata') {
-    var message = new gcm.Message({
-      data: {
-        "DELETE_DATA": messagein
-      }
-    });
-  }
-  else if(action == 'deletesharedpreferences') {
-    var message = new gcm.Message({
-      data: {
-        "DELETE_SHP": messagein
-      }
-    });
-  }
-  else {
-    var message = new gcm.Message({
-      timeToLive: ttl,
-      data: {
-        "CLIENT_MESSAGE": action
-      }
-    });
-  }
-
-  var sender = new gcm.Sender('AIzaSyDegTDot6Ked4cbTLF_TpQH6ZP2zNqgQ0o');
-  var regTokens = [obj.googleappid];
-
-  sender.send(message, { registrationTokens: regTokens }, function (err, response) {
-    if(err) {
-      callback(false);
-    }
-    else 	{
-      save_messages(obj, messagein, ttl, action)
-      callback(true);
-    }
-  });
-}
 
 function save_messages(obj, messagein, ttl, action, callback){
+  console.log("at save message")
 
   DBModel.create({
     username: obj.username,
@@ -123,70 +33,64 @@ function save_messages(obj, messagein, ttl, action, callback){
  * Create
  */
 exports.create = function(req, res) {
-  var andcondition = {};
-  var orcondition = [];
+  console.log("at create message")
+  var no_users = (req.body.type === "one" && req.body.username === null) ? true : false; //no users selected for single user messages, don't send push
+  var no_device_type = (req.body.toandroidsmartphone === false && req.body.toandroidbox === false  && req.body.toios === false) ? true : false; //no device types selected, don't send push
 
-  andcondition.login_data_id = req.body.username;
-  if(req.body.sendtoactivedevices) {
-    andcondition.device_active = 1;
+  if(no_users || no_device_type){
+    return res.status(400).send({
+      message: 'You did not select any devices'
+    });
   }
+  else{
+    var message = {
+      "event": "", "program_id": "", "channel_number": "", "event_time": "", "program_name": "", "description": req.body.message
+    };
+    var where = {}; //the device filters will be passed here
+    var appids = []; //appids that should receive the push will be held here
+    if(req.body.type === "one") where.login_data_id = req.body.username; //if only one user is selected, filter devices of that user
 
-  if(req.body.toios) {
-    orcondition[0] = {};
-    orcondition[0].appid  = 3;
-  }
-  if(req.body.toandroidsmartphone) {
-    orcondition[1] = {};
-    orcondition[1].appid  = 2;
-  }
-  if(req.body.toandroidbox) {
-    orcondition[2] = {};
-    orcondition[2].appid  = 1;
-  }
-  DBDevices.findAll(
-      {
-        where: {
-          $and: andcondition,
-          $or: orcondition
-        },
-        include: [{model: db.login_data, required: true, where: {get_messages: true}}]
+    //for each selected device type, add appid in the list of appids
+    if(req.body.toandroidbox) appids.push(1);
+    if(req.body.toandroidsmartphone) appids.push(2);
+    if(req.body.toios) appids.push(3);
+    where.appid = {in: appids};
+
+    if(req.body.sendtoactivedevices) where.device_active = true; //if we only want to send push msgs to active devices, add condition
+
+    DBDevices.findAll(
+        {
+          attributes: ['googleappid'],
+          where: where,
+          include: [{model: db.login_data, attributes: ['username'], required: true, where: {get_messages: true}}],
+          logging: console.log
+        }
+    ).then(function(result) {
+      if (!result) {
+        return res.status(401).send({
+          message: 'No devices found with these filters'
+        });
+      } else {
+        var fcm_tokens = [];
+        for(var i=0; i<result.length; i++){
+          fcm_tokens.push(result[i].googleappid);
+        }
+        push_msg.send_notification(fcm_tokens, req.app.locals.settings.firebase_key, result, message, req.body.timetolive, true, true, function(result){});
+        return res.status(200).send({
+          message: 'Message sent'
+        });
       }
-  ).then(function(result) {
-    if (!result) {
-      return res.status(401).send({
-        message: 'no records found'
-      });
-    } else {
-      for(var key in result) {
-        var obj = result[key];
-
-        if(obj.appid == 1 ) {
-          sendandoirdnotification(obj,req.body.message,req.body.timetolive,req.body.message,function(result){});
-        }
-        if(obj.appid == 2 ) {
-          sendandoirdnotification(obj,req.body.message,req.body.timetolive,req.body.message,function(result){});
-        }
-        if(obj.appid == 3 ) {
-          sendiosnotification(obj,req.body.message,req.body.timetolive)
-        }
-      }
-      return res.status(200).send({
-        message: 'Message sent'
-      });
-    }
-
-
-  });
-
+    });
+  }
 
 };
 
 /**
  * Send Message Actions, update, refresh, delete
- *
  */
 
 exports.send_message_action = function(req, res) {
+  console.log("at send message action")
 
   DBDevices.find(
       {
@@ -201,7 +105,7 @@ exports.send_message_action = function(req, res) {
         message: 'UserName or Password does not match'
       });
     } else {
-      sendandoirdnotification(result,'some doemo message',5,req.body.messageaction,function(result){
+      push_msg.sendnotification(result,'some doemo message',5,req.body.messageaction, true, function(result){
         if(result){
           return res.status(200).send({
             message: 'messge send successful but not saved in database'
@@ -274,8 +178,6 @@ exports.delete = function(req, res) {
  * List
  */
 exports.list = function(req, res) {
-
-  console.log("--------------- List ------------------")
   var qwhere = {},
       final_where = {},
       query = req.query;

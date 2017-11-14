@@ -3,6 +3,7 @@ var path = require('path'),
     db = require(path.resolve('./config/lib/sequelize')),
     sequelize = require('sequelize'),
     response = require(path.resolve("./config/responses.js")),
+    crypto = require('crypto'),
     models = db.models;
 
 
@@ -17,7 +18,6 @@ var path = require('path'),
  * @apiDescription Returns video on demand assets/movies
  */
 exports.list = function(req, res) {
-
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
     var offset = (!req.body.subset_number || req.body.subset_number === '-1') ? 0 : ((parseInt(req.body.subset_number)-1)*50); //for older versions of vod, start query at first record
     var limit = (!req.body.subset_number || req.body.subset_number === '-1') ? 99999999999 : 50; //for older versions of vod, set limit to 99999999999
@@ -60,12 +60,9 @@ exports.list = function(req, res) {
             });
             raw_result.push(raw_obj);
         });
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        clear_response.response_object = raw_result;
-        res.send(clear_response);
+        response.send_res(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
@@ -81,7 +78,6 @@ exports.list = function(req, res) {
  * @apiDescription Returns full list of categories
  */
 exports.categories = function(req, res) {
-
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
 
     models.vod_category.findAll({
@@ -95,12 +91,9 @@ exports.categories = function(req, res) {
             result[i].toJSON().password = "False";
             result[i].toJSON().pay = "False";
         }
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        clear_response.response_object = result;
-        res.send(clear_response);
+        response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 
@@ -115,7 +108,6 @@ exports.categories = function(req, res) {
  * @apiDescription Returns all subtitles list
  */
 exports.subtitles = function(req, res) {
-
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
 
     models.vod_subtitles.findAll({
@@ -133,12 +125,9 @@ exports.subtitles = function(req, res) {
         for(var i=0; i< result.length; i++){
             result[i].toJSON().vodid = String(result[i].toJSON().vodid);
         }
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        clear_response.response_object = result;
-        res.send(clear_response);
+        response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 
@@ -157,10 +146,9 @@ exports.subtitles = function(req, res) {
  * @apiDescription Returns clicks/hits for selected vod item.
  */
 exports.totalhits = function(req, res) {
-
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
 
-    //if hits for a specific movie are requested
+     //if hits for a specific movie are requested
     if(req.body.id_vod != "all"){
         models.vod.findAll({
             attributes: [ ['id', 'id_vod'], ['clicks', 'hits'] ],
@@ -170,12 +158,9 @@ exports.totalhits = function(req, res) {
                 {model: models.vod_category, required: true, attributes: [], where:{password:{in: allowed_content}, isavailable: true}}
             ]
         }).then(function (result) {
-            var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-            clear_response.response_object = result;
-            res.send(clear_response);
+            response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
         }).catch(function(error) {
-            var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-            res.send(database_error);
+            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
     }
     //return hits for each vod movie
@@ -188,19 +173,15 @@ exports.totalhits = function(req, res) {
                 {model: models.vod_category, required: true, attributes: [], where:{password:{in: allowed_content}, isavailable: true}}
             ]
         }).then(function (result) {
-            var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-            clear_response.response_object = result;
-            res.send(clear_response);
+            response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
         }).catch(function(error) {
-            var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-            res.send(database_error);
+            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
     }
 
 };
 
 exports.mostwatched = function(req, res) {
-
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
 
     //if hits for a specific movie are requested
@@ -217,18 +198,14 @@ exports.mostwatched = function(req, res) {
         for(var i=0; i< result.length; i++){
             result[i].toJSON().id = String(result[i].toJSON().id);
         }
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        clear_response.response_object = result;
-        res.send(clear_response);
+        response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
 
 exports.mostrated = function(req, res) {
-
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
 
     //if most rated movies are requested
@@ -249,18 +226,14 @@ exports.mostrated = function(req, res) {
             mostrated_object.rate = parseInt(result[i].rate);
             mostrated.push(mostrated_object);
         }
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        clear_response.response_object = mostrated;
-        res.send(clear_response);
+        response.send_res(req, res, mostrated, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
 
 exports.related = function(req, res) {
-
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
     var now = Date.now();
 
@@ -279,18 +252,14 @@ exports.related = function(req, res) {
         for(var i=0; i< result.length; i++){
             result[i].toJSON().id = String(result[i].toJSON().id);
         }
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        clear_response.response_object = result;
-        res.send(clear_response);
+        response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
 
 exports.suggestions = function(req, res) {
-
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
 
     models.vod.findAll({
@@ -302,18 +271,14 @@ exports.suggestions = function(req, res) {
         ],
         limit: 10
     }).then(function (result) {
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        clear_response.response_object = result;
-        res.send(clear_response);
+        response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
 
 exports.categoryfilms = function(req, res) {
-
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
 
     models.vod.findAll({
@@ -331,18 +296,14 @@ exports.categoryfilms = function(req, res) {
             raw_obj.id = String(obj.id);
             raw_result.push(raw_obj);
         });
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        clear_response.response_object = raw_result;
-        res.send(clear_response);
+        response.send_res(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
 
 exports.searchvod = function(req, res) {
-
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
 
     models.vod.findAll({
@@ -367,18 +328,14 @@ exports.searchvod = function(req, res) {
             });
             raw_result.push(raw_obj);
         });
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        clear_response.response_object = raw_result;
-        res.send(clear_response);
+        response.send_res(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
 
 exports.resume_movie = function(req, res) {
-
     //perdor upsert qe nje user te kete vetem 1 film. nese nuk ka asnje te shtohet, ne te kundert te ndryshohet
     models.vod_resume.upsert(
         {
@@ -388,14 +345,12 @@ exports.resume_movie = function(req, res) {
             device_id: req.auth_obj.boxid
         }
     ).then(function (result) {
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        res.send(clear_response);
+        response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
     }).catch(function(error) {
         if (error.message.split(': ')[0] === 'ER_NO_REFERENCED_ROW_2'){
-            var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'INVALID_INPUT');
+           response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'INVALID_INPUT', 'no-store');
         }
-        else var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        else response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
@@ -413,7 +368,7 @@ function delete_resume_movie(user_id, vod_id){
     ).then(function (result) {
         return null;
     }).catch(function(error) {
-        return null;
+       return null;
     });
 
 };

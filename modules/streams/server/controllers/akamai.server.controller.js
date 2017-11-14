@@ -5,7 +5,6 @@ var path = require('path'),
 var token_generator = require(path.resolve('./modules/streams/server/controllers/akamai_token_v2'));
 
 exports.generate_akamai_token_v2 = function(req,res) {
-    console.log('enter get akamail token');
     var config = {
         algorithm : 'SHA256',
         acl : '/*',

@@ -12,10 +12,10 @@ var path = require('path'),
 
 exports.chartSalesReport = function(req, res) {
     db.sequelize.query(
-        "SELECT COUNT(1) as 'count',DATE(DATE_FORMAT(saledate,'%Y-%m-%d')) as 'date' "+
-        "FROM salesreport "+
-        "WHERE saledate >= DATE_SUB(NOW(), INTERVAL 30 DAY) "+
-        "GROUP BY DATE_FORMAT(saledate,'%Y-%m-%d')",
+            "SELECT COUNT(1) as 'count',DATE(DATE_FORMAT(saledate,'%Y-%m-%d')) as 'date' "+
+            "FROM salesreport "+
+            "WHERE saledate >= DATE_SUB(NOW(), INTERVAL 30 DAY) "+
+            "GROUP BY DATE_FORMAT(saledate,'%Y-%m-%d')",
         { type: db.sequelize.QueryTypes.SELECT})
         .then(function(result){
             if (!result) {
@@ -33,9 +33,9 @@ exports.chartSalesReport = function(req, res) {
 
 exports.chartsSubsExpires = function(req, res) {
     db.sequelize.query(
-        "SELECT count(DISTINCT login_id) as 'count', MAX(end_date) as 'date' "+
-        "FROM subscription "+
-        "WHERE end_date<=DATE_ADD(NOW(), INTERVAL 30 DAY) AND end_date>=now()",
+            "SELECT count(DISTINCT login_id) as 'count', MAX(end_date) as 'date' "+
+            "FROM subscription "+
+            "WHERE end_date<=DATE_ADD(NOW(), INTERVAL 30 DAY) AND end_date>=now()",
         { type: db.sequelize.QueryTypes.SELECT})
         .then(function(result){
             if (!result) {
@@ -90,9 +90,9 @@ exports.chartsgraph1 = function(req, res) {
                 return res.status(400).send({message: 'fail get data'});
             } else {
                 var alldata = [];
-                    alldata[0] = {};
-                    alldata[0].key = 'sales';
-                    alldata[0].values = result;
+                alldata[0] = {};
+                alldata[0].key = 'sales';
+                alldata[0].values = result;
                 return res.send({mydata: alldata});
             }
         });
@@ -116,7 +116,6 @@ exports.chart_vis_sales = function(req, res) {
                 alldata[0] = {};
                 alldata[0].key = 'sales';
                 alldata[0].values = result;
-                console.log(result);
                 return res.send({results: result});
             }
         });
@@ -125,7 +124,7 @@ exports.chart_vis_sales = function(req, res) {
 exports.chartsgraph2 = function(req, res) {
     db.sequelize.query(
             "SELECT  Count(salesreport.id), salesreport.combo_id, salesreport.saledate FROM salesreport GROUP BY " +
-                "salesreport.combo_id, salesreport.saledate",
+            "salesreport.combo_id, salesreport.saledate",
         { type: db.sequelize.QueryTypes.SELECT})
         .then(function(results){
             res.json(results);

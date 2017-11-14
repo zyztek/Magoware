@@ -45,7 +45,7 @@ function trackobject(object_data,req, cb) {
 }
 
 exports.event = function(req, res) {
-
+    res.setHeader('cache-control', 'no-store');
     if(req.body.event_category === 'vod' && req.body.event_action === 'movie start') vod.add_click(req.body.event_label); //increment clicks for a movie everythime it plays
 
     winston.info("Analytics request;"+req.method+";"+req.baseUrl+";"+querystring.stringify(req.body));
@@ -72,6 +72,7 @@ exports.event = function(req, res) {
 };
 
 exports.screen = function(req, res) {
+    res.setHeader('cache-control', 'no-store');
     var object_data = {
         t:'screenview',
         an:  req.body.app_name, //application name
@@ -89,7 +90,7 @@ exports.screen = function(req, res) {
 };
 
 exports.timing = function(req, res) {
-
+    res.setHeader('cache-control', 'no-store');
     var object_data = {
         t:'timing',
         utc: req.body.event_category,  //timing cateogry

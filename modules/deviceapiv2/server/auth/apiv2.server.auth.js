@@ -58,7 +58,6 @@ exports.plainAuth = function(req, res, next) {
 }
 
 exports.emptyCredentials = function(req, res, next) {
-    console.log("mund te logohet me cred bosh")
     req.empty_cred = true;
     next();
 }
@@ -66,23 +65,19 @@ exports.emptyCredentials = function(req, res, next) {
 exports.isAllowed = function(req, res, next) {
     //lexo auth
     if(req.body.auth){
-        console.log("e marrim auth nga body")
         var auth = decodeURIComponent(req.body.auth);
     }
     else{
-        console.log("e marrim auth nga url")
         var auth = decodeURIComponent(req.params.auth);
     }
     //krijo objektin e auth
 
-    if(isplaintext(auth)){
+    if(isplaintext(auth, req.plaintext_allowed)){
         if(req.plaintext_allowed){
-            console.log("lejohet dhe eshte plaintext")
-            var auth_obj = querystring.parse(auth,";","="); //nese lejohet plaintext, ndaje dhe parsoje
+            var auth_obj = parse_plain_auth(auth); //nese lejohet plaintext, ndaje dhe parsoje
         }
         else{
-            var invalid_token = new response.APPLICATION_RESPONSE(req.body.language, 888, -1, 'BAD_TOKEN_DESCRIPTION', 'PLAINTEXT_TOKEN');
-            return res.send(invalid_token);
+            response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'PLAINTEXT_TOKEN', 'no-store');
         }
     }
     else{
@@ -90,49 +85,26 @@ exports.isAllowed = function(req, res, next) {
             var auth_obj = querystring.parse(auth_decrypt(auth,req.app.locals.settings.new_encryption_key),";","=");
         }
         else if(missing_params(querystring.parse(auth_decrypt(auth,req.app.locals.settings.old_encryption_key),";","=")) === false && req.app.locals.settings.key_transition === true){
-            console.log("------------- te old key");
             var auth_obj = querystring.parse(auth_decrypt(auth,req.app.locals.settings.old_encryption_key),";","=");
         }
         else {
-            console.log("------------- tentativat per dekriptim deshtuan");
-            console.log(querystring.parse(auth_decrypt(auth,req.app.locals.settings.new_encryption_key),";","="));
-            console.log(querystring.parse(auth_decrypt(auth,req.app.locals.settings.old_encryption_key),";","="));
-            console.log(auth_obj);
-            var invalid_token = new response.APPLICATION_RESPONSE(req.body.language, 888, -1, 'BAD_TOKEN_DESCRIPTION', 'INVALID_TOKEN');
-            return res.send(invalid_token);
+            response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'INVALID_TOKEN', 'no-store');
         }
     }
 
     if(auth_obj){
         if((req.body.hdmi === 'true') && (['2', '3'].indexOf(auth_obj.appid) !== -1)){
-            console.log("hdmi appid mismatch");
-            console.log(req.body.hdmi === 'true');
-            console.log(['2', '3'].indexOf(auth_obj.appid) !== -1);
-            var invalid_token = new response.APPLICATION_RESPONSE(req.body.language, 888, -1, 'BAD_TOKEN_DESCRIPTION', 'INVALID_INSTALLATION');
-            return res.send(invalid_token);
-        }
-        else {
-            console.log("hdmi appid match")
-            console.log(req.body.hdmi === 'true')
-            console.log(['2', '3'].indexOf(auth_obj.appid) !== -1)
+            response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'INVALID_INSTALLATION', 'no-store');
         }
         if(valid_timestamp(auth_obj) === false){
-            console.log("timestamp ok")
-            var invalid_token = new response.APPLICATION_RESPONSE(req.body.language, 888, -1, 'BAD_TOKEN_DESCRIPTION', 'INVALID_TIMESTAMP');
-            return res.send(invalid_token);
-        }
-        else {
-            console.log("timestamp eshte ne rregull")
+            response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'INVALID_TIMESTAMP', 'no-store');
         }
 
         if(valid_appid(auth_obj) === true){
-            console.log("appid e vlefshme")
             set_screensize(auth_obj);
         }
         else {
-            console.log("appid jo e vlefshme")
-            var invalid_token = new response.APPLICATION_RESPONSE(req.body.language, 888, -1, 'BAD_TOKEN_DESCRIPTION', 'INVALID_APPID');
-            return res.send(invalid_token);
+            response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'INVALID_APPID', 'no-store');
         }
 
         if(req.empty_cred){
@@ -144,33 +116,25 @@ exports.isAllowed = function(req, res, next) {
             models.login_data.findOne({
                 where: {username: auth_obj.username}
             }).then(function (result) {
-                console.log("te leximi i login")
-                console.log(auth_obj)
                 if(result) {
-                    console.log("ka result")
                     if(result.account_lock) {
-                        var invalid_token = new response.APPLICATION_RESPONSE(req.body.language, 888, -1, 'BAD_TOKEN_DESCRIPTION', 'LOCKED_ACCOUNT');
-                        return res.send(invalid_token);
+                        response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'LOCKED_ACCOUNT', 'no-store');
                     }
                     else if(authenticationHandler.authenticate(auth_obj.password, result.salt, result.password) === false) {
-                        var invalid_token = new response.APPLICATION_RESPONSE(req.body.language, 888, -1, 'BAD_TOKEN_DESCRIPTION', 'PASSWORD_MISMATCH');
-                        return res.send(invalid_token);
+                        response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'PASSWORD_MISMATCH', 'no-store');
                     }
                     else {
-                        console.log("all ok")
                         req.thisuser = result;
                         req.auth_obj = auth_obj;
                         next();
+                        return null; //returns promise
                     }
                 }
                 else{
-                    console.log("nuk ka result")
-                    var invalid_token = new response.APPLICATION_RESPONSE(req.body.language, 888, -1, 'BAD_TOKEN_DESCRIPTION', 'USER_NOT_FOUND_DATA');
-                    return res.send(invalid_token);
+                    response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'USER_NOT_FOUND_DATA', 'no-store');
                 }
             }).catch(function(error) {
-                var invalid_token = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-                return res.send(invalid_token);
+                response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
         }
     }
@@ -191,18 +155,27 @@ function valid_appid(auth_obj){
 function set_screensize(auth_obj){
     if(['1', '4', '5'].indexOf(auth_obj.appid) === -1) auth_obj.screensize = 2;
     else auth_obj.screensize = 1;
-    console.log("screensize "+auth_obj.screensize)
 }
-function isplaintext(auth){
-    var auth_obj = querystring.parse(auth,";","=");
+function isplaintext(auth, plaintext_allowed){
+    var auth_obj = parse_plain_auth(auth);
     if(auth_obj.username && auth_obj.password && auth_obj.appid && auth_obj.boxid && auth_obj.timestamp){
-        console.log("auth is plain")
-        console.log(auth_obj);
+        return true;
+    }
+    else if(auth_obj.hasOwnProperty('username') && auth_obj.hasOwnProperty('password') && auth_obj.appid && auth_obj.boxid && auth_obj.timestamp && plaintext_allowed){
         return true;
     }
     else{
-        console.log("auth !!!!!!! plain")
-        console.log(auth_obj);
         return false;
     }
+}
+
+function parse_plain_auth(auth){
+    var final_auth = {};
+    var auth_array = auth.split(";");
+    for(var i=0; i<auth_array.length; i++){
+        var key = auth_array[i].split("=")[0];
+        var value = auth_array[i].split("=")[1];
+        final_auth[key] = value;
+    }
+    return final_auth;
 }

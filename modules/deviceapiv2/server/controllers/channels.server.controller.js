@@ -12,8 +12,8 @@ var path = require('path'),
     models = db.models;
 
 exports.list = function(req, res) {
-
     var qwhere = {};
+    qwhere.isavailable = true;
     if(req.thisuser.show_adult == 0) qwhere.pin_protected = 0; //show adults filter
     else qwhere.pin_protected != ''; //avoid adult filter
 
@@ -118,26 +118,18 @@ exports.list = function(req, res) {
                     result[i].favorite_channel = result[i]["favorite_channels.id"] ? "1":"0"; delete result[i]["favorite_channels.id"];
                 }
 
-                var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-                clear_response.response_object = result.concat(user_channel_list);
-                res.send(clear_response);
-
+                var response_data = result.concat(user_channel_list);
+                response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
             }).catch(function(error) {
-                console.log(error)
-                var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-                res.send(database_error);
+                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
             return null;
         }).catch(function(error) {
-            console.log(error)
-            var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-            res.send(database_error);
+            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
         return null;
     }).catch(function(error) {
-        console.log(error)
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
@@ -152,12 +144,10 @@ exports.genre = function(req, res) {
             "id": 666,
             "name": "Favorites"
         };
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        clear_response.response_object = result.concat(favorite_genre);
-        res.send(clear_response);
+        var response_data = result.concat(favorite_genre);
+        response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 
@@ -222,12 +212,9 @@ exports.epg = function(req, res) {
             });
             raw_result.push(raw_obj);
         });
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        clear_response.response_object = raw_result;
-        res.send(clear_response);
+        response.send_res(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=43200');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
@@ -324,22 +311,17 @@ exports.event =  function(req, res) {
                         raw_result.push(temp_obj);
                     }
                 }
-                var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-                clear_response.response_object = raw_result;
-                res.send(clear_response);
+                response.send_res(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=43200');
             }).catch(function(error) {
-                var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-                res.send(database_error);
+                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
             return null;
         }).catch(function(error) {
-            var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-            res.send(database_error);
+            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
         return null;
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
@@ -356,33 +338,25 @@ exports.daily_epg =  function(req, res) {
                 attributes: ['title'],
                 where: {channel_number: req.body.channel_number}
             }).then(function (channel) {
-                console.log("tek get channel");
                 if(!channel){
-                    console.log("tek not channel");
                     models.my_channels.findOne({
                         attributes: ['title'],
                         where: {channel_number: req.body.channel_number}
                     }).then(function (user_channel) {
                         if(!user_channel){
-                            var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-                            res.send(database_error);
+                            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
                         }
                         else callback(null, user_channel);
                     }).catch(function(error) {
-                        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-                        console.log(error)
-                        res.send(database_error);
+                        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
                     });
                 }
                 else callback(null, channel.title);
             }).catch(function(error) {
-                var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-                console.log(error)
-                res.send(database_error);
+                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
         },
         get_epg: ['get_channel', function(results, callback) {
-            console.log("tek get epg");
             models.epg_data.findAll({
                 attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end' ],
                 order: [['program_start', 'ASC']],
@@ -402,24 +376,19 @@ exports.daily_epg =  function(req, res) {
                         where: {login_id: req.thisuser.id}
                     }
                 ],
-                where: {program_start: {gte: interval_start}, program_end:{lte: interval_end}},
-                logging: console.log
+                where: {program_start: {gte: interval_start}, program_end:{lte: interval_end}}
             }).then(function (result) {
                 if(!result){
                     callback(null, results.get_channel, []); //no epg for this channel, passing empty array instead
                 }
                 else callback(null, results.get_channel, result);
             }).catch(function(error) {
-                var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-                console.log(error)
-                res.send(database_error);
+                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
         }],
         send_epg: ['get_epg', function(epg_data, callback) {
-            console.log("tek send epg");
             var raw_result = [];
             if(epg_data.get_epg[1].length<3){
-                console.log("me pak se 3");
                 for(var i=0; i<3-epg_data.get_epg[1].length; i++){
                     var temp_obj = {};
                     temp_obj.channelName = epg_data.get_epg[0].title;
@@ -456,14 +425,10 @@ exports.daily_epg =  function(req, res) {
                 temp_obj.progress = Math.round((Date.now() - epg_data.get_epg[1][i].program_start.getTime() ) / (epg_data.get_epg[1][i].duration_seconds * 10));
                 raw_result.push(temp_obj);
             }
-            var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-            clear_response.response_object = raw_result;
-            res.send(clear_response);
+            response.send_res(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
         }]
     }, function(error, results) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        console.log(error)
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
@@ -558,26 +523,19 @@ exports.current_epgs =  function(req, res) {
                     raw_result.push(raw_obj);
                 }
             }
-
-            var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-            clear_response.response_object = raw_result;
-            res.send(clear_response);
+            response.send_res(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=43200');
         }).catch(function(error) {
-            var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-            console.log(error);
-            res.send(database_error);
+            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
         return null;
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
 
 //API for favorites. Performs a delete or insert - depending on the action parameter.
 exports.favorites = function(req, res) {
-
     async.waterfall([
         //GETTING USER DATA
         function(callback) {
@@ -587,8 +545,7 @@ exports.favorites = function(req, res) {
                 callback(null, user.id);
                 return null;
             }).catch(function(error) {
-                var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-                res.send(database_error);
+                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
         },
         function(user_id, callback) {
@@ -598,8 +555,7 @@ exports.favorites = function(req, res) {
                 callback(null, user_id, channel.id);
                 return null;
             }).catch(function(error) {
-                var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-                res.send(database_error);
+                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
         },
         function(user_id, channel_id) {
@@ -608,13 +564,10 @@ exports.favorites = function(req, res) {
                     channel_id: channel_id,
                     user_id: user_id
                 }).then(function (result) {
-                    var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-                    clear_response.extra_data = "user "+req.auth_obj.username+" action "+req.body.action+" channel "+req.body.channelNumber; //todo: dynamic response
-                    res.send(clear_response);
+                    var extra_data = "user "+req.auth_obj.username+" action "+req.body.action+" channel "+req.body.channelNumber; //todo: dynamic response
+                    response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
                 }).catch(function(error) {
-                    //TODO: separate unique_key_violation from generic or connection errors
-                    var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-                    res.send(database_error);
+                    response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
                 });
             }
             else if(req.body.action == "0"){
@@ -624,25 +577,20 @@ exports.favorites = function(req, res) {
                         user_id: user_id
                     }
                 }).then(function (result) {
-                    var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-                    clear_response.extra_data = "user "+req.auth_obj.username+" action "+req.body.action+" channel "+req.body.channelNumber; //todo: dynamic response
-                    res.send(clear_response);
+                    var extra_data = "user "+req.auth_obj.username+" action "+req.body.action+" channel "+req.body.channelNumber; //todo: dynamic response
+                    response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
                 }).catch(function(error) {
-                    var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-                    res.send(database_error);
+                    response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
                 });
             }
         }
     ], function (err) {
-        //todo: if action value is not valid?
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 
 //API for scheduling.
 exports.program_info = function(req, res) {
-
     models.epg_data.findOne({
         attributes: ['title', 'long_description', 'program_start', 'program_end'],
         where: {id: req.body.program_id},
@@ -682,8 +630,7 @@ exports.program_info = function(req, res) {
             else {
                 status = 'live';
             }
-            var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-            clear_response.response_object = [{
+            var response_data = [{
                 "genre": (epg_program.channel.genre.description) ? epg_program.channel.genre.description : '',
                 "program_title": (epg_program.title) ? epg_program.title : '',
                 "program_description": (epg_program.long_description) ? epg_program.long_description : '',
@@ -693,10 +640,9 @@ exports.program_info = function(req, res) {
                 "scheduled": (!epg_program.program_schedules[0]) ? false : schedule.is_scheduled(epg_program.program_schedules[0].id)
             }];
         }
-        res.send(clear_response)
+        response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
@@ -717,17 +663,14 @@ exports.schedule = function(req, res) {
                         login_id: req.thisuser.id,
                         program_id: req.body.program_id
                     }).then(function (scheduled){
-                        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-                        clear_response.response_object = [{
+                        var response_data = [{
                             "action": 'created'
                         }];
                         //programstart is converted to unix time, decreased by 5 min, decreased by current time. This gives the difference between the current time and 5 min before the start of the program
                         schedule.schedule_program(moment(epg_program.program_start).format('x') - Date.now() - 300000, scheduled.id, req.thisuser.id, epg_program.channel_number, req.body.program_id);
-                        res.send(clear_response);
+                        response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
                     }).catch(function(error) {
-                        console.log(error)
-                        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-                        res.send(database_error);
+                        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
                     });
                 }
                 else{
@@ -735,38 +678,29 @@ exports.schedule = function(req, res) {
                     models.program_schedule.destroy({
                         where: {login_id: req.thisuser.id, program_id: req.body.program_id}
                     }).then(function (result){
-                        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-                        clear_response.response_object = [{
+                        var response_data = [{
                             "action": 'destroyed'
                         }];
-                        console.log("----------------------- unschedule")
-                        console.log(eventid);
                         schedule.unschedule_program(eventid);
-                        res.send(clear_response);
+                        response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
                     }).catch(function(error) {
-                        console.log(error)
-                        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-                        res.send(database_error);
+                        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
                     });
                 }
+                return null;
             }).catch(function(error) {
-                console.log(error)
-                var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-                res.send(database_error);
+                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
         }
         else{
-            var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-            clear_response.response_object = [{
+            var response_data = [{
                 "action": 'no action'
             }];
-            res.send(clear_response);
+            response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
         }
         return null;
     }).catch(function(error) {
-        console.log(error)
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };

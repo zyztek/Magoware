@@ -3,6 +3,7 @@ var path = require('path'),
     db = require(path.resolve('./config/lib/sequelize')),
     response = require(path.resolve("./config/responses.js")),
     password_encryption = require(path.resolve('./modules/deviceapiv2/server/controllers/authentication.server.controller.js')),
+    crypto = require('crypto'),
     models = db.models;
 
 /**
@@ -28,8 +29,6 @@ var path = require('path'),
  * @apiDescription If token is not present, plain text values are used to login
  */
 exports.login = function(req, res) {
-    var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-    var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
     var appids = [];
 
     models.app_group.findOne({
@@ -50,17 +49,14 @@ exports.login = function(req, res) {
             }).then(function(users) {
                 if (!users) {
                     //todo: this should be handled @token validation. for now it generates an empty response
-                    var user_not_found = new response.APPLICATION_RESPONSE(req.body.language, 702, -1, 'USER_NOT_FOUND_DESCRIPTION', 'USER_NOT_FOUND_DATA');
-                    res.send(user_not_found);
+                    response.send_res(req, res, [], 702, -1, 'USER_NOT_FOUND_DESCRIPTION', 'USER_NOT_FOUND_DATA', 'no-store');
                 }
                 else if (users.account_lock) {
                     //todo: this should be handled @token validation, though it does return a response
-                    var account_locked = new response.APPLICATION_RESPONSE(req.body.language, 703, -1, 'ACCOUNT_LOCK_DESCRIPTION', 'ACCOUNT_LOCK_DATA');
-                    res.send(account_locked);
+                    response.send_res(req, res, [], 703, -1, 'ACCOUNT_LOCK_DESCRIPTION', 'ACCOUNT_LOCK_DATA', 'no-store');
                 }
                 else if(password_encryption.authenticate(req.auth_obj.password, req.thisuser.salt, req.thisuser.password) === false) {
-                    var wrong_pass = new response.APPLICATION_RESPONSE(req.body.language, 704, -1, 'WRONG_PASSWORD_DESCRIPTION', 'WRONG_PASSWORD_DATA');
-                    res.send(wrong_pass);
+                    response.send_res(req, res, [], 704, -1, 'WRONG_PASSWORD_DESCRIPTION', 'WRONG_PASSWORD_DATA', 'no-store');
                 }
                 else  {
                     models.devices.findOne({
@@ -88,19 +84,17 @@ exports.login = function(req, res) {
                                     device_ip:          req.ip.replace('::ffff:', ''),
                                     os:                 decodeURIComponent(req.body.os)
                                 }).then(function(result){
-                                    clear_response.response_object = [{
+                                    var response_data = [{
                                         "encryption_key": req.app.locals.settings.new_encryption_key
                                     }];
-                                    res.send(clear_response);
+                                    response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
                                     return null;
                                 }).catch(function(error) {
-                                    res.send(database_error);
+                                    response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
                                 });
                             }
                             else {
-                                //same user try to login on another device
-                                var dual_login_attempt = new response.APPLICATION_RESPONSE(req.body.language, 705, -1, 'DUAL_LOGIN_ATTEMPT_DESCRIPTION', 'DUAL_LOGIN_ATTEMPT_DATA');
-                                res.send(dual_login_attempt);
+                                response.send_res(req, res, [], 705, -1, 'DUAL_LOGIN_ATTEMPT_DESCRIPTION', 'DUAL_LOGIN_ATTEMPT_DATA', 'no-store'); //same user try to login on another device
                                 return null;
                             }
                         }
@@ -124,33 +118,33 @@ exports.login = function(req, res) {
                                 device_ip:          req.ip.replace('::ffff:', ''),
                                 os:                 decodeURIComponent(req.body.os)
                             }).then(function(result){
-                                clear_response.response_object = [{
+                                var response_data = [{
                                     "encryption_key": req.app.locals.settings.new_encryption_key
                                 }];
-                                res.send(clear_response);
+                                response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
                                 return null;
                             }).catch(function(error) {
-                                res.send(database_error);
+                                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
                             });
 
                         }
                         return null;
                     }).catch(function(error) {
-                        res.send(database_error);
+                        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
                     });
                 }
                 return null;
             }).catch(function(error) {
-                res.send(database_error);
+                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
             //login end
             return null;
         }).catch(function(error) {
-            res.send(database_error);
+            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
         return null;
     }).catch(function(error) {
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 
@@ -174,11 +168,9 @@ exports.logout = function(req, res) {
         {
             where: { username : req.auth_obj.username, appid : req.auth_obj.appid}
         }).then(function (result) {
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        res.send(clear_response);
+        response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 
@@ -206,21 +198,17 @@ exports.logout_user = function(req, res) {
                 {
                     where: { username : req.auth_obj.username, appid : {in: appids}}
                 }).then(function (result) {
-                var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'LOGOUT_OTHER_DEVICES');
-                res.send(clear_response);
+                response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'LOGOUT_OTHER_DEVICES', 'no-store');
             }).catch(function(error) {
-                var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-                res.send(database_error);
+                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
             return null;
         }).catch(function(error) {
-            var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-            res.send(database_error);
+            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
         return null;
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };

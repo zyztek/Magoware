@@ -159,7 +159,7 @@ export default function (nga, admin) {
                         nga.field('is_octoshape', 'boolean')
                             .label('Is Octoshape'),
                     ])
-                    .listActions(['edit', '<ma-delete-button label="Remove" entry="entry" entity="entity"></ma-delete-button>']),
+                    .listActions(['edit', 'delete']),
                         nga.field('template')
 			                .label('')
 			                .template('<ma-create-button entity-name="ChannelStreams" class="pull-right" label="ADD STREAM" default-values="{ channel_id: entry.values.id }"></ma-create-button>'),

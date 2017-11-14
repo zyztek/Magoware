@@ -69,43 +69,28 @@ exports.catchup_events =  function(req, res) {
             });
             raw_result.push(raw_obj);
         });
-
-        var okresponse = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        okresponse.response_object = raw_result;
-        res.send(okresponse);
+        response.send_res(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=43200');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
-
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
 
 exports.catchup_stream =  function(req, res) {
-    var channel_number;
-    if(req.body.channelNumber)
-        channel_number = req.body.channelNumber
-    else
-        channel_number = req.body.channel_number;
-
+    var channel_number = req.body.channelNumber
 
     models.channels.findOne({
         attributes: ['id'],
         include: [{model: models.channel_stream, required: true, attributes: ['stream_url', 'stream_format'], where: {stream_source_id: req.thisuser.channel_stream_source_id, stream_mode: 'catchup'}}],
         where: {channel_number: channel_number}
     }).then(function (catchup_streams) {
-        var okresponse = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
         //catchup stream format for hls streams
-        okresponse.response_object = [{
+        var response_data = [{
             "streamurl": catchup_streams.channel_streams[0].stream_url.replace('[epochtime]', req.body.timestart)
         }];
-        res.send(okresponse);
+        response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
     }).catch(function(error) {
-        console.log(error);
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
-
-
 
 };

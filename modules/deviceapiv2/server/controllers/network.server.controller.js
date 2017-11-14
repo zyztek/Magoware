@@ -7,25 +7,22 @@
 
 'use strict';
 var path = require('path'),
-		db = require(path.resolve('./config/lib/sequelize')),
-		response = require(path.resolve("./config/responses.js")),
-		querystring = require("querystring"),
-		models = db.models;
+    db = require(path.resolve('./config/lib/sequelize')),
+    response = require(path.resolve("./config/responses.js")),
+    querystring = require("querystring"),
+    models = db.models;
 
 //makes a database call. returns database_error if connection failed, one genre_id otherwise
 
 exports.dbtest = function(req, res) {
-	models.genre.findAll({
-		attributes: ['id'],
-		limit: 1
-	}).then(function (result) {
-		var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-		clear_response.response_object = result;
-		res.send(clear_response);
-	}).catch(function(error) {
-		var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-		res.send(database_error);
-	});
+    models.genre.findAll({
+        attributes: ['id'],
+        limit: 1
+    }).then(function (result) {
+		response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
+    }).catch(function(error) {
+		response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+    });
 };
 
 
@@ -66,7 +63,6 @@ exports.dbtest = function(req, res) {
  *
  */
 exports.gcm = function(req, res) {
-
 	if(req.auth_obj.boxid == undefined){
 		var auth_obj = querystring.parse(req.body.auth,";","=");
 
@@ -88,12 +84,10 @@ exports.gcm = function(req, res) {
 			firmware              : decodeURIComponent(req.body.firmwareversion),
 			language              : req.body.language
 		}).then(function(result){
-			var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-			res.send(clear_response);
+			response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
 			return null;
 		}).catch(function(error) {
-			var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-			res.send(database_error);
+			response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
 		});
 
 	}
@@ -116,12 +110,10 @@ exports.gcm = function(req, res) {
 			firmware              : decodeURIComponent(req.body.firmwareversion),
 			language              : req.body.language
 		}).then(function(result){
-			var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-			res.send(clear_response);
+			response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
 			return null;
 		}).catch(function(error) {
-			var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-			res.send(database_error);
+			response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
 		});
 	}
 };
@@ -145,14 +137,12 @@ exports.command_response = function(req,res) {
 	req.body.action = 'receive';
 
 	models.messages.create(
-			req.body
+		req.body
 	).then(function(result){
-		var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-		res.send(clear_response);
+		response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
 		return null;
 	}).catch(function(error) {
-		var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-		res.send(database_error);
+		response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
 	});
 
 };

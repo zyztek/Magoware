@@ -15,6 +15,7 @@ var path = require('path'),
     passwordController = require(path.resolve('./modules/deviceapiv2/server/controllers/password.server.controller')),
     mainController = require(path.resolve('./modules/deviceapiv2/server/controllers/main.server.controller')),
     customersAppController = require(path.resolve('./modules/deviceapiv2/server/controllers/customers_app.server.controller')),
+    productsAppController = require(path.resolve('./modules/deviceapiv2/server/controllers/products.server.controller')),
     sitesController = require(path.resolve('./modules/deviceapiv2/server/controllers/sites.server.controller')),
     headerController = require(path.resolve('./modules/deviceapiv2/server/controllers/header.server.controller')),
     winston = require(path.resolve('./config/lib/winston'));
@@ -77,7 +78,7 @@ module.exports = function(app) {
         .all(authpolicy.isAllowed)
         .post(channelsController.schedule);
 
-    //Catchup
+
     app.route('/apiv2/channels/catchup_events')
         .all(authpolicy.isAllowed)
         .post(catchupController.catchup_events);
@@ -214,6 +215,14 @@ module.exports = function(app) {
     app.route('/apiv2/customer_app/edit_channel')
         .all(authpolicy.isAllowed)
         .post(customersAppController.edit_channel);
+
+
+    /*******************************************************************
+     Sale and product management for the application
+     *******************************************************************/
+    app.route('/apiv2/products/product_list')
+        .all(authpolicy.isAllowed)
+        .post(productsAppController.product_list);
 
 
     /* ===== websites ===== */

@@ -22,11 +22,10 @@ exports.device_menu = function(req, res) {
         for(var i=0; i<result.length; i++){
             result[i].icon_url = req.app.locals.settings.assets_url+result[i].icon_url;
         }
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        clear_response.response_object = result;
-        res.send(clear_response);
+        response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
+
+

@@ -227,8 +227,14 @@ exports.list = function(req, res) {
 
 exports.list_chart_epg = function(req, res) {
 
+    //get EPG data from last 7 days
+    var d = new Date();
+    d.setDate(d.getDate()-7);
+
     DBChannels.findAll({
-        attributes: [['channel_number', 'id'],['title','content']]
+        attributes: ['id', ['channel_number', 'group'],['program_start','start'],['program_end','end'],['title','content']],
+        //limit: 100,
+        where: {program_start: {gte: d}}
     }).then(function(channels){
         //res.json(channels);
         DBModel.findAll({
@@ -427,7 +433,6 @@ function import_xml_dga(req, res){
                         });
                         return null;
                     }).catch(function(error) {
-                        console.log("error te catch i search per kanale")//todo: error
                         console.log(error)
                     });
                 });
@@ -436,7 +441,6 @@ function import_xml_dga(req, res){
         });
     }
     catch(error){
-        console.log('error catch')
         console.log(error)
     }
 }

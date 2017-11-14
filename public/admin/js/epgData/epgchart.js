@@ -32,7 +32,6 @@ export default function ($stateProvider) {
 
     Restangular.one('epgdata_chart').get()
     		.then(function successCallback(response) {
-    			console.log(response);
     			$scope.data_timeline = {"items":response.data.items,"groups":response.data.groups};
     		},function errorCallback(response) {
     		});

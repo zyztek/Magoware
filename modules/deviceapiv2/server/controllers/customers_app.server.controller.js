@@ -19,13 +19,11 @@ exports.user_settings = function(req, res) {
         attributes:['id', 'customer_id', 'pin', 'show_adult', 'auto_timezone', 'timezone', 'player', 'get_messages'],
         where: {username: req.auth_obj.username}
     }).then(function (result) {
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
         result.timezone = (result.timezone<1) ? result.timezone : "+"+result.timezone;
-        clear_response.response_object[0] = result;
-        res.send(clear_response);
+        var response_data = [result];
+        response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error); //request not executed
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 
@@ -38,17 +36,14 @@ exports.user_data = function(req, res) {
             attributes: ['firstname', 'lastname', 'email', 'address', 'city', 'country', 'telephone' ],
             where: {id: result.customer_id}
         }).then(function (result) {
-            var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-            clear_response.response_object[0] = result;
-            res.send(clear_response);
+            var response_data = [result];
+            response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
         }).catch(function(error) {
-            var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-            res.send(database_error); //request not executed
+            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
         return null;
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error); //request not executed
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 
@@ -95,22 +90,18 @@ exports.update_user_data = function(req, res) {
                     if(error) console.log(error);
                 });
             }
-            var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-            res.send(clear_response);
+            response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
         }).catch(function(error) {
             if(error.name === "SequelizeUniqueConstraintError" && error.errors[0].path === "email"){
-                var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'EMAIL_ALREADY_EXISTS');
-                res.send(database_error);
+                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'EMAIL_ALREADY_EXISTS', 'no-store');
             }
             else{
-                var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-                res.send(database_error); //request not executed
+                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             }
         });
         return null;
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error); //request not executed
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
@@ -134,11 +125,9 @@ exports.update_user_settings = function(req, res) {
         },
         {where: {username: req.auth_obj.username}}
     ).then(function (result) {
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        res.send(clear_response);
+        response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error); //request not executed
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
@@ -156,11 +145,9 @@ exports.change_password = function(req, res) {
         },
         {where: {username: req.auth_obj.username}}
     ).then(function (result) {
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        res.send(clear_response); //ok response, channel edited
+        response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error); //request not executed
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
@@ -191,17 +178,14 @@ exports.reset_pin = function(req, res) {
         smtpTransport.sendMail(mailOptions, function(error, info){
             if(error) console.log(error);
         });
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'RESET_PIN_DATA');
-        res.send(clear_response);
+        response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'RESET_PIN_DATA', 'no-store');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error); //error in reading the user info
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 
 //API GETS SUBSCRIPTION DATA
 exports.subscription = function(req, res) {
-
     models.subscription.findAll({
         attributes: ['id', [db.sequelize.fn('date_format', db.sequelize.col('start_date'), '%Y-%m-%d %H:%m:%s'), 'start_date'],
             [db.sequelize.fn('date_format', db.sequelize.col('end_date'), '%Y-%m-%d %H:%m:%s'), 'end_date']],
@@ -209,8 +193,7 @@ exports.subscription = function(req, res) {
         include: [{model: models.package, required: true, attributes:['package_name']}]
     }).then(function (result) {
         if(!result[0]){
-            var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'NO_SUBSCRIPTION');
-            res.send(clear_response);
+            response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
         }
         else{
             //the following loop avoids nested response
@@ -224,14 +207,11 @@ exports.subscription = function(req, res) {
                 };
                 subscription.push(temp_subscription_record); //the object is pushed to the temp array
             }
-            var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-            clear_response.response_object = subscription;
-            res.send(clear_response);
+            response.send_res(req, res, subscription, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
         }
 
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error); //request not executed
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
@@ -257,12 +237,9 @@ exports.salereport = function(req, res) {
             };
             salereport.push(temp_salereport_record); //the object is pushed to the temp array
         }
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        clear_response.response_object = salereport;
-        res.send(clear_response);
+        response.send_res(req, res, salereport, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error); //request not executed
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
@@ -274,12 +251,9 @@ exports.genre = function(req, res) {
         attributes: ['id',['description', 'name']],
         where: {is_available: true}
     }).then(function (result) {
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        clear_response.response_object = result;
-        res.send(clear_response);
+        response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 
@@ -312,21 +286,17 @@ exports.add_channel = function(req, res) {
                     where: {id: result.id} //for the recently added channel
                 }
             ).then(function (result) {
-                var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-                res.send(clear_response);
+                response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
             }).catch(function(error) {
-                var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-                res.send(database_error); //request not executed
+                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
             return null;
         }).catch(function(error) {
-            var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-            res.send(database_error); //request not executed
+            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
         return null;
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error); //request not executed
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 
@@ -346,17 +316,13 @@ exports.channel_list = function(req, res) {
                 result[i].icon_url = req.app.locals.settings.assets_url + result[i]["genre.icon_url"];
                 delete result[i]["genre.icon_url"];
             }
-            var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-            clear_response.response_object = result;
-            res.send(clear_response);
+            response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
         }).catch(function(error) {
-            var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-            res.send(database_error); //request not executed
+            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
         return null;
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error); //request not executed
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 
@@ -365,11 +331,9 @@ exports.delete_channel = function(req, res) {
     models.my_channels.destroy({
         where: {channel_number: req.body.channel_number}
     }).then(function (result) {
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        res.send(clear_response); //ok response, channel deleted
+        response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
     }).catch(function(error) {
-        var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
-        res.send(database_error); //request not executed
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 
@@ -383,11 +347,9 @@ exports.edit_channel = function(req, res) {
         },
         {where: {channel_number: req.body.channel_number}}
     ).then(function (result) {
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        res.send(clear_response); //ok response, channel edited
+        response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
     }).catch(function(error) {
-        var clear_response = new response.APPLICATION_RESPONSE(req.body.language, 200, 1, 'OK_DESCRIPTION', 'OK_DATA');
-        res.send(database_error); //request not executed
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 

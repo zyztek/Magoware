@@ -22,6 +22,10 @@ module.exports = function(app) {
         .put(salesReports.update)
         .delete(salesReports.delete);
 
+    app.route('/api/annul')
+        .all(policy.isAllowed)
+        .post(salesReports.annul);
+
     app.param('salesReportId', salesReports.dataByID);
 
     //todo: set rights

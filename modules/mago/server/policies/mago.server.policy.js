@@ -64,13 +64,10 @@ exports.isAllowed = function(req, res, next) {
         }
 
         else if(roles === 'admin'){
-            console.log(req.url)
             return next();
         }
 
         else{
-            console.log(req.url)
-
             var where_condition = {};
 
             if(req.method === 'GET') {
@@ -93,30 +90,21 @@ exports.isAllowed = function(req, res, next) {
                     include: [{model: db.api_url, required: true, attributes: ['api_url'], where: {api_url: {like: api_url}}}]
                 }
             ];
-            console.log("@grouprights allow");
             db.grouprights.findAll(where_condition).then(function(result) {
                 if (!result || result.length === 0) {
-                    console.log("no rights");
-                    console.log(req.url);
-                    console.log(req.method);
                     if(roles === 'admin'){
-                        console.log("qenka admin, edhe pse pa result");
                         return next();
                     }
                     else {
-                        console.log("pa result");
                         return res.status(404).json({
                             message: 'User not authorized'
                         });
                     }
 
                 } else {
-                    console.log("has rights");
                     return next();
                 }
             }).catch(function(err) {
-                console.log("error")
-                console.log(err)
                 return res.status(404).json({
                     message: 'User is not authorized'
                 });

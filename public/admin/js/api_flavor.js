@@ -27,16 +27,9 @@ function requestInterceptor(RestangularProvider) {
                 delete params._filters;
             }
 
-            //console.log('localtion . hash =',location.hash);
-            //console.log('url =',url);
-            //console.log('element =',element);
-            //console.log('what =',what);
-
-
             //defautl values parameters
             const hash = location.hash;
             if (hash.includes('defaultValues=')) {
-                console.log('---------------------------------------');
                 const search = 'defaultValues=';
                 const defaultValuesStr = decodeURIComponent(hash.substring(hash.indexOf(search) + search.length));
                 const defaultValues = JSON.parse(defaultValuesStr);
@@ -48,11 +41,7 @@ function requestInterceptor(RestangularProvider) {
 
         }
         else {
-            //console.log('entering login data call: ',url,params,headers);
-            //console.log('localtion . hash =',location.hash);
-            //console.log(' url =',url);
-            //console.log('element =',element);
-            //console.log('operation NOT getlist',url,params,what,element);
+
         }
 
         return { params: params };

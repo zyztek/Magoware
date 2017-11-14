@@ -174,7 +174,7 @@ export default function (nga, admin) {
 	                    })
                         .label('Vod URL'),
                     ])
-                    .listActions(['edit']),
+                    .listActions(['edit', 'delete']),
                 nga.field('ADD STREAM', 'template')
                    .label('')
                    .template('<ma-create-button entity-name="vodstreams" class="pull-right" label="ADD STREAM" default-values="{ vod_id: entry.values.id }"></ma-create-button>'),

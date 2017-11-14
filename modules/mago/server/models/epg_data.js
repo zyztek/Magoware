@@ -41,7 +41,6 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.TEXT,
             allowNull: true
         },
-
         duration_seconds: {
             type: DataTypes.INTEGER(11),
             allowNull: false

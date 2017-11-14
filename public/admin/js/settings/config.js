@@ -121,6 +121,9 @@ export default function (nga, admin) {
 						'<ma-input-field field="field" value="entry.values.new_encryption_key"></ma-input-field>'+
 						'<small id="emailHelp" class="form-text text-muted">Key used to encrypt/decrypt token</small>'+
 						'</div>'),
+			nga.field('firebase_key', 'text')
+					.validation({ required: true })
+					.label('Firebase key'),
 			nga.field('key_transition', 'boolean')
 				.validation({ required: true })
 				.label('Key Transition'),

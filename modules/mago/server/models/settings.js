@@ -50,6 +50,11 @@ module.exports = function(sequelize, DataTypes) {
         ip_service_key: {
             type: DataTypes.STRING
         },
+        firebase_key: {
+            type: DataTypes.STRING(255),
+            defaultValue: '',
+            allowNull: false
+        },
         activity_timeout:{
             type: DataTypes.INTEGER(11),
             defaultValue: 10800,

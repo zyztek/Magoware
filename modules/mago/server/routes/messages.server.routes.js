@@ -26,6 +26,19 @@ module.exports = function(app) {
         .all(policy.isAllowed)
         .post(msg.send_message_action);
 
+    app.route('/api/commands')
+        .get(msg.list)
+        .post(msg.create);
+
+    app.route('/api/commands/:messageId')
+        .get(msg.read)
+        .put(msg.update)
+        .delete(msg.delete);
+
+    app.route('/api/send-command-action')
+        .all(policy.isAllowed)
+        .post(msg.send_message_action);
+
 
     app.param('messageId', msg.dataByID);
 
