@@ -14,10 +14,15 @@ function send_notification(fcm_tokens, firebase_key, users, message, ttl, push_m
         "program_name": (push_message) ? message.program_name : "",
         "program_description": (push_message) ? message.description : "",
 
-        "COMMAND": (!push_message) ? message.command : "",
-        "SOFTWARE_INSTALL": (!push_message) ? message.software_install : "",
-        "DELETE_SHP": (!push_message) ? message.delete_shp : "",
-        "DELETE_DATA": (!push_message) ? message.delete_data : ""
+        "COMMAND": (!push_message && message.command) ? message.command : "",
+        "SOFTWARE_INSTALL": (!push_message && message.software_install) ? message.software_install : "",
+        "DELETE_SHP": (!push_message && message.delete_shp) ? message.delete_shp : "",
+        "DELETE_DATA": (!push_message && message.delete_data) ? message.delete_data : "",
+
+        "ACTION" : (!push_message && message.action) ? message.action : "",
+        "PARAMETER1" : (!push_message && message.parameter1) ? message.parameter1 : "", //param 1
+        "PARAMETER2" : (!push_message && message.parameter2) ? message.parameter2 : "", //param 2
+        "PARAMETER3" : (!push_message && message.parameter3) ? message.parameter3 : "" //options
     };
 
     //push messages are sent one by one for each device token
@@ -36,7 +41,7 @@ function send_notification(fcm_tokens, firebase_key, users, message, ttl, push_m
             })
         };
         request(options, function (error, response, body) {
-            if(!error && JSON.parse(response.body).success === 1 && save_message === true){
+            if(!error && JSON.parse(response.body).success === 1 && save_message === true && payload.push_message === "true"){
                 exports.save_message(users[0], fcm_tokens, message.description, push_message, message.description); //save record for sent message
             }
         });

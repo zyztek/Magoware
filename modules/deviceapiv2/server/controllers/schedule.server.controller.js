@@ -8,10 +8,10 @@ var path = require('path'),
     push_msg = require(path.resolve('./custom_functions/push_messages')),
     scheduled_tasks = [];
 
-function schedule_program(event_time, event_id, login_data_id, channel_number, program_id){
+function schedule_program(event_time, firebase_key, event_id, login_data_id, channel_number, program_id){
     try{
         scheduled_tasks[event_id] = setTimeout(function(){
-            send_notification(event_time, login_data_id, channel_number, program_id)
+            send_notification(event_time, firebase_key, login_data_id, channel_number, program_id)
         }, event_time);
     }
     catch(e){
@@ -24,7 +24,7 @@ function unschedule_program(event_id){
     delete scheduled_tasks[event_id];
 }
 
-function send_notification(event_time, login_data_id, channel_number, program_id){
+function send_notification(event_time, firebase_key, login_data_id, channel_number, program_id){
     models.devices.findAll({
         attributes: ['googleappid'],
         where: {login_data_id: login_data_id, device_active: true},
@@ -56,7 +56,7 @@ function send_notification(event_time, login_data_id, channel_number, program_id
                         "program_name": epg_program.title,
                         "description": epg_program.long_description
                     };
-                    push_msg.send_notification(fcm_tokens, devices[0].login_datum.username, message, 0, true, false, 0); //todo: 0 e fundit ishte callback ...
+                    push_msg.send_notification(fcm_tokens, firebase_key, devices[0].login_datum.username, message, 0, true, false, 0); //todo: 0 e fundit ishte callback ...
                 }
             }).catch(function(error) {
                 console.log(error)

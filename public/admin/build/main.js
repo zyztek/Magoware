@@ -45,7 +45,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	__webpack_require__(1);
-	module.exports = __webpack_require__(173);
+	module.exports = __webpack_require__(174);
 
 
 /***/ },
@@ -247,6 +247,7 @@
 	    admin.addEntity(nga.entity('Vods'));
 	    admin.addEntity(nga.entity('appmanagement'));
 	    admin.addEntity(nga.entity('messages'));
+	    admin.addEntity(nga.entity('commands'));
 	    admin.addEntity(nga.entity('logs'));
 	    admin.addEntity(nga.entity('activity'));
 	    admin.addEntity(nga.entity('appgroup'));
@@ -296,12 +297,13 @@
 	    __webpack_require__(166)(nga, admin);
 	    __webpack_require__(167)(nga, admin);
 	    __webpack_require__(168)(nga, admin);
+	    __webpack_require__(169)(nga, admin);
 
 	    // Menu / Header / Dashboard / Layout
 
-	    admin.dashboard(__webpack_require__(169)(nga, admin));
-	    admin.header(__webpack_require__(171));
-	    admin.menu(__webpack_require__(172)(nga, admin));
+	    admin.dashboard(__webpack_require__(170)(nga, admin));
+	    admin.header(__webpack_require__(172));
+	    admin.menu(__webpack_require__(173)(nga, admin));
 
 	    // App
 
@@ -16120,7 +16122,6 @@
 
 		devicemenu.creationView().onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
 			progression.done();
-			//notification.log(`Element ${entry._identifierValue} successfully created.`, { addnCls: 'humane-flatty-success' });
 			$state.go($state.get('list'), { entity: entity.name() });
 			return false;
 		}]).title('<h4>Main Menu <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Menu</h4>').fields([nga.field('title', 'string').attributes({ placeholder: 'Title' }).validation({ required: true }).label('Title'), nga.field('url', 'string').attributes({ placeholder: 'Url' }).label('Url'), nga.field('icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/device_menu/icon_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>' + '</div>').validation({
@@ -16954,7 +16955,11 @@
 			return value.length > 14 ? value.substr(0, 14) + '...' : value;
 		}).label('Messages'), nga.field('action').label('Action'), nga.field('createdAt', 'datetime').label('Created')]).listActions(['edit']).exportFields([message.listView().fields()]);
 
-		message.creationView().title('<h4>Messages <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Messages</h4>').fields([nga.field('type', 'choice').choices(function (entry) {
+		message.creationView().onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
+			progression.done();
+			$state.go($state.get('list'), { entity: entity.name() });
+			return false;
+		}]).title('<h4>Messages <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Messages</h4>').fields([nga.field('type', 'choice').choices(function (entry) {
 			var types = [{ value: 'one', label: 'One User' }, { value: 'all', label: 'All User' }];
 			return types;
 		}).label('User Type'), nga.field('username', 'reference').targetEntity(admin.getEntity('LoginData')).targetField(nga.field('username').map(function (value) {
@@ -16988,6 +16993,45 @@
 
 	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
 
+	var _filter_genre_btnHtml = __webpack_require__(140);
+
+	var _filter_genre_btnHtml2 = _interopRequireDefault(_filter_genre_btnHtml);
+
+	exports['default'] = function (nga, admin) {
+	    var commands = admin.getEntity('commands');
+	    commands.listView().title('<h4>Commands <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').fields([nga.field('login_datum.username').label('Username'), nga.field('googleappid').label('Device'), nga.field('command').label('Action'), nga.field('status').label('Status'), nga.field('createdAt', 'datetime').label('Time sent')]).filters([nga.field('username').label('User'), nga.field('command').label('Action'), nga.field('status', 'choice').choices([{ value: 'sent', label: 'Outbox commands' }, { value: 'success', label: 'Executed commands' }, { value: 'failure', label: 'Failed commands' }])]).listActions([]);
+
+	    commands.creationView().title('<h4>Commands <i class="fa fa-angle-right" aria-hidden="true"></i> Send: command</h4>').fields([nga.field('type', 'choice').choices(function (entry) {
+	        var types = [{ value: 'one', label: 'One User' }, { value: 'all', label: 'All User' }];
+	        return types;
+	    }).label('User Type'), nga.field('username', 'reference').targetEntity(admin.getEntity('LoginData')).targetField(nga.field('username').map(function (value) {
+	        var user = [];
+	        for (var i = 0; i < value.length; i++) {
+	            user[i] = value[i].username;
+	            return value;
+	        }
+	    })).perPage(-1), nga.field('toandroidsmartphone', 'boolean').validation({ required: true }).label('Android Smartphone'), nga.field('toios', 'boolean').validation({ required: true }).label('IOS'), nga.field('toandroidbox', 'boolean').validation({ required: true }).label('Android Box'), nga.field('command', 'choice').choices([{ value: 'file_replace', label: 'Replace file' }, { value: 'SOFTWARE_INSTALL', label: 'Software Installation' }, { value: 'DELETE_SHP', label: 'Delete shared preferences' }, { value: 'DELETE_DATA', label: 'Clear data' }, { value: 'debuggerd', label: 'Available free space' }, { value: 'pwd', label: 'Current directory name' }, { value: 'date', label: 'Current date and time' }]).label('Command'), nga.field('parameter1', 'string').attributes({ placeholder: 'parammeter1' }).label('Target'), nga.field('parameter2', 'string').attributes({ placeholder: 'parammeter2' }).label('Destination'), nga.field('parameter3', 'string').attributes({ placeholder: 'parammeter3' }).label('Options'), nga.field('sendtoactivedevices', 'boolean').validation({ required: true }).defaultValue(true).label('Send only to active devices'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
+	    return commands;
+	};
+
+	module.exports = exports['default'];
+
+/***/ },
+/* 162 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	    value: true
+	});
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+	var _edit_buttonHtml = __webpack_require__(128);
+
+	var _edit_buttonHtml2 = _interopRequireDefault(_edit_buttonHtml);
+
 	exports['default'] = function (nga, admin) {
 	    var logs = admin.getEntity('logs');
 	    logs.listView().title('<h4>User logs <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').batchActions([]).fields([nga.field('id', 'number').label('id'), nga.field('username', 'string').label('user'), nga.field('user_ip', 'string').label('from ip'), nga.field('action', 'string').label('action'), nga.field('createdAt', 'datetime').label('date')]).listActions(['show']);
@@ -17002,7 +17046,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 162 */
+/* 163 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -17031,7 +17075,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 163 */
+/* 164 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -17060,7 +17104,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 164 */
+/* 165 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -17114,7 +17158,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 165 */
+/* 166 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -17157,7 +17201,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 166 */
+/* 167 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -17197,7 +17241,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 167 */
+/* 168 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -17226,7 +17270,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 168 */
+/* 169 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -17267,7 +17311,7 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 169 */
+/* 170 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -17278,7 +17322,7 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-	var _dashboardHtml = __webpack_require__(170);
+	var _dashboardHtml = __webpack_require__(171);
 
 	var _dashboardHtml2 = _interopRequireDefault(_dashboardHtml);
 
@@ -17297,19 +17341,19 @@
 	module.exports = exports['default'];
 
 /***/ },
-/* 170 */
+/* 171 */
 /***/ function(module, exports) {
 
 	module.exports = "<div class=\"row dashboard-starter\"></div>\r\n<dashboard-summary></dashboard-summary>\r\n\r\n<graph>\r\n    <vis-timeline data=\"data\" options=\"options\"></vis-timeline>\r\n</graph>\r\n\r\n<div class=\"row dashboard-content\">\r\n\r\n    <div class=\"container-fluid\">\r\n        <div class=\"panel panel-green\">\r\n            <ma-dashboard-panel collection=\"dashboardController.collections.login_accounts\" entries=\"dashboardController.entries.login_accounts\" datastore=\"dashboardController.datastore\"></ma-dashboard-panel>\r\n        </div>\r\n    </div>\r\n\r\n    <div class=\"col-lg-6\">\r\n        <div class=\"panel panel-yellow\">\r\n            <ma-dashboard-panel collection=\"dashboardController.collections.sales_report\" entries=\"dashboardController.entries.sales_report\" datastore=\"dashboardController.datastore\"></ma-dashboard-panel>\r\n        </div>\r\n    </div>\r\n\r\n\r\n    <div class=\"container-fluid\">\r\n        <!--div class=\"col-xs-2 idiqagentstatus-buttonHolders pull-right\">\r\n        <button type=\"button\" class=\"btn btn-xs\" ng-click=\"agentClicked()\">Show hidden Node and change color</button>\r\n      </div-->\r\n        <vis-timeline data=\"data\" options=\"options\">???</vis-timeline>\r\n    </div>\r\n\r\n</div>";
 
 /***/ },
-/* 171 */
+/* 172 */
 /***/ function(module, exports) {
 
 	module.exports = "<div class=\"navbar-header\">\r\n    <button type=\"button\" class=\"navbar-toggle\" ng-click=\"isCollapsed = !isCollapsed\">\r\n        <span class=\"icon-bar\"></span>\r\n        <span class=\"icon-bar\"></span>\r\n        <span class=\"icon-bar\"></span>\r\n    </button>\r\n    <a class=\"navbar-brand\" href=\"#\" ng-click=\"appController.displayHome()\">MAGOWARE - Administration System</a>\r\n</div>\r\n\r\n<ul class=\"nav navbar-top-links navbar-right hidden-xs\">\r\n    <li uib-dropdown>\r\n        <a uib-dropdown-toggle href=\"#\" aria-expanded=\"true\" ng-controller=\"username\">\r\n            <i class=\"fa fa-user fa-lg\"></i>&nbsp; {{ username }}&nbsp;<i class=\"fa fa-caret-down\"></i>\r\n        </a>\r\n        <ul class=\"dropdown-menu dropdown-user\" role=\"menu\">\r\n            <li><a href=\"#/personal\" onClick=\"window.location.reload()\"><i class=\"fa fa-user fa-fw\"></i> Personal Details</a></li>\r\n            <li><a href=\"#/change-password\"><i class=\"fa fa-cog fa-fw\"></i> Change Password</a></li>\r\n            <li><a href=\"#\" onclick=\"logout()\"><i class=\"fa fa-sign-out fa-fw\"></i> Logout</a></li>\r\n        </ul>\r\n    </li>\r\n</ul>\r\n\r\n<ul class=\"nav navbar-top-links navbar-right hidden-xs\">\r\n    <li uib-dropdown ng-controller=\"languageCtrl\">\r\n        <a uib-dropdown-toggle href=\"#\" aria-expanded=\"true\">\r\n            <i class=\"fa fa-user fa-lg\"></i>&nbsp; Language&nbsp;<i class=\"fa fa-caret-down\"></i>\r\n        </a>\r\n        <ul class=\"dropdown-menu dropdown-user\" role=\"menu\">\r\n            <li><a ng-click=\"serve_language('en')\"><i class=\"fa fa-sign-out fa-fw\"></i> English</a></li>\r\n            <li><a ng-click=\"serve_language('fr')\"><i class=\"fa fa-sign-out fa-fw\"></i> French</a></li>\r\n        </ul>\r\n    </li>\r\n</ul>";
 
 /***/ },
-/* 172 */
+/* 173 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -17320,13 +17364,13 @@
 
 	exports['default'] = function (nga, admin) {
 
-	    return nga.menu().addChild(nga.menu().title('Dashboard').icon('<span class="fa fa-tachometer fa-fw"></span>')).addChild(nga.menu().title('Customers').icon('<span class="fa fa-user fa-fw"></span>').addChild(nga.menu(admin.getEntity('CustomerGroups')).title('Customer Group').icon('<span class="fa fa-users fa-fw"></span>')).addChild(nga.menu(admin.getEntity('CustomerData')).title('Customer').icon('<span class="fa fa-user fa-fw"></span>')).addChild(nga.menu(admin.getEntity('LoginData')).title('Login Accounts').icon('<span class="fa fa-user-plus fa-fw"></span>')).addChild(nga.menu(admin.getEntity('Devices')).title('Devices').icon('<span class="fa fa-outdent fa-fw"></span>'))).addChild(nga.menu(admin.getEntity('Subscriptions')).title('Subscriptions').icon('<span class="fa fa-calendar-check-o fa-fw"></span>')).addChild(nga.menu().title('Reports').icon('<span class="fa fa-list fa-fw"></span>').addChild(nga.menu(admin.getEntity('Salesreports')).title('Sales export').icon('<span class="fa fa-list fa-fw"></span>')).addChild(nga.menu(admin.getEntity('sales_by_product')).title('Product sales').icon('<span class="fa fa-list fa-fw"></span>')).addChild(nga.menu(admin.getEntity('sales_by_date')).title('Sales by day').icon('<span class="fa fa-list fa-fw"></span>')).addChild(nga.menu(admin.getEntity('sales_by_month')).title('Sales by month').icon('<span class="fa fa-list fa-fw"></span>')).addChild(nga.menu(admin.getEntity('sales_by_expiration')).title('Expirations list').icon('<span class="fa fa-list fa-fw"></span>'))).addChild(nga.menu(admin.getEntity('Combos')).title('Products / Plans').icon('<span class="fa fa-tags fa-fw"></span>')).addChild(nga.menu().template('<div class="menu_space">Settings</div>')).addChild(nga.menu(admin.getEntity('Settings')).title('Company Settings').link('/Settings/edit/1').icon('<span class="fa fa-cog fa-fw"></span>')).addChild(nga.menu(admin.getEntity('DeviceMenus')).title('Main Menu').icon('<span class="fa fa-align-justify fa-fw"></span>')).addChild(nga.menu().title('TV Channels').icon('<span class="fa fa-television fa-fw"></span>').addChild(nga.menu(admin.getEntity('Genres')).title('Categories / Genre').icon('<span class="fa fa-folder-open fa-fw"></span>')).addChild(nga.menu(admin.getEntity('Channels')).title('Channels / Streams').icon('<span class="fa fa-television fa-fw"></span>')).addChild(nga.menu(admin.getEntity('ChannelStreamSources')).title('Live TV Stream Source').icon('<span class="fa fa-signal fa-fw"></span>')).addChild(nga.menu(admin.getEntity('livepackages')).title('Channel Packages').icon('<span class="fa fa-th fa-fw"></span>'))).addChild(nga.menu().title('VOD').icon('<span class="fa fa-film fa-fw"></span>').addChild(nga.menu(admin.getEntity('VodCategories')).title('VOD Categories').icon('<span class="fa fa-folder-open fa-fw"></span>')).addChild(nga.menu(admin.getEntity('Vods')).title('VOD Movies').icon('<span class="fa fa-film fa-fw"></span>')).addChild(nga.menu(admin.getEntity('VodStreamSources')).title('VOD Stream Source').icon('<span class="fa fa-signal fa-fw"></span>')).addChild(nga.menu(admin.getEntity('vodPackages')).title('VOD Packages').icon('<span class="fa fa-th fa-fw"></span>'))).addChild(nga.menu().title('EPG').icon('<span class="fa fa-film fa-fw"></span>').addChild(nga.menu(admin.getEntity('epgimport')).title('EPG Import').icon('<span class="fa fa-film fa-fw"></span>')).addChild(nga.menu(admin.getEntity('EpgData')).title('EPG Data').icon('<span class="fa fa-folder-open fa-fw"></span>')).addChild(nga.menu().title('EPG Graph').icon('<span class="fa fa-tachometer fa-fw"></span>').link('/epggraph'))).addChild(nga.menu(admin.getEntity('appgroup')).title('APP Group').icon('<span class="fa fa-file fa-fw"></span>')).addChild(nga.menu().title('System Users').icon('<span class="fa fa-users fa-fw"></span>').addChild(nga.menu(admin.getEntity('Groups')).title('User Groups').icon('<span class="fa fa-users fa-fw"></span>')).addChild(nga.menu(admin.getEntity('Users')).title('Users').icon('<span class="fa fa-user fa-fw"></span>'))).addChild(nga.menu().template('<div class="menu_space">Other</div>')).addChild(nga.menu(admin.getEntity('appmanagement')).title('APP Management').icon('<span class="fa fa-sign-in fa-fw"></span>')).addChild(nga.menu(admin.getEntity('mychannels')).title('My Channels').icon('<span class="fa fa-sign-in fa-fw"></span>')).addChild(nga.menu(admin.getEntity('logs')).title('Logs').icon('<span class="fa fa-sign-in fa-fw"></span>')).addChild(nga.menu(admin.getEntity('messages')).title('Push notifications').icon('<span class="fa fa-sign-in fa-fw"></span>')).addChild(nga.menu().title('HELP').icon('<span class="fa fa-question-circle fa-fw"></span>'));
+	    return nga.menu().addChild(nga.menu().title('Dashboard').icon('<span class="fa fa-tachometer fa-fw"></span>')).addChild(nga.menu().title('Customers').icon('<span class="fa fa-user fa-fw"></span>').addChild(nga.menu(admin.getEntity('CustomerGroups')).title('Customer Group').icon('<span class="fa fa-users fa-fw"></span>')).addChild(nga.menu(admin.getEntity('CustomerData')).title('Customer').icon('<span class="fa fa-user fa-fw"></span>')).addChild(nga.menu(admin.getEntity('LoginData')).title('Login Accounts').icon('<span class="fa fa-user-circle fa-fw"></span>')).addChild(nga.menu(admin.getEntity('Devices')).title('Devices').icon('<span class="fa fa-mobile fa-fw"></span>'))).addChild(nga.menu(admin.getEntity('Subscriptions')).title('Subscriptions').icon('<span class="fa fa-calendar-check-o fa-fw"></span>')).addChild(nga.menu().title('Reports').icon('<span class="fa fa-list fa-fw"></span>').addChild(nga.menu(admin.getEntity('Salesreports')).title('Sales export').icon('<span class="fa fa-list fa-fw"></span>')).addChild(nga.menu(admin.getEntity('sales_by_product')).title('Product sales').icon('<span class="fa fa-list fa-fw"></span>')).addChild(nga.menu(admin.getEntity('sales_by_date')).title('Sales by day').icon('<span class="fa fa-list fa-fw"></span>')).addChild(nga.menu(admin.getEntity('sales_by_month')).title('Sales by month').icon('<span class="fa fa-list fa-fw"></span>')).addChild(nga.menu(admin.getEntity('sales_by_expiration')).title('Expirations list').icon('<span class="fa fa-list fa-fw"></span>'))).addChild(nga.menu(admin.getEntity('Combos')).title('Products / Plans').icon('<span class="fa fa-tags fa-fw"></span>')).addChild(nga.menu().template('<div class="menu_space">Settings</div>')).addChild(nga.menu(admin.getEntity('Settings')).title('Company Settings').link('/Settings/edit/1').icon('<span class="fa fa-cog fa-fw"></span>')).addChild(nga.menu(admin.getEntity('DeviceMenus')).title('Main Menu').icon('<span class="fa fa-align-justify fa-fw"></span>')).addChild(nga.menu().title('TV Channels').icon('<span class="fa fa-television fa-fw"></span>').addChild(nga.menu(admin.getEntity('Genres')).title('Categories / Genre').icon('<span class="fa fa-folder-open fa-fw"></span>')).addChild(nga.menu(admin.getEntity('Channels')).title('Channels / Streams').icon('<span class="fa fa-television fa-fw"></span>')).addChild(nga.menu(admin.getEntity('ChannelStreamSources')).title('Live TV Stream Source').icon('<span class="fa fa-signal fa-fw"></span>')).addChild(nga.menu(admin.getEntity('livepackages')).title('Channel Packages').icon('<span class="fa fa-th fa-fw"></span>'))).addChild(nga.menu().title('VOD').icon('<span class="fa fa-film fa-fw"></span>').addChild(nga.menu(admin.getEntity('VodCategories')).title('VOD Categories').icon('<span class="fa fa-folder-open fa-fw"></span>')).addChild(nga.menu(admin.getEntity('Vods')).title('VOD Movies').icon('<span class="fa fa-film fa-fw"></span>')).addChild(nga.menu(admin.getEntity('VodStreamSources')).title('VOD Stream Source').icon('<span class="fa fa-signal fa-fw"></span>')).addChild(nga.menu(admin.getEntity('vodPackages')).title('VOD Packages').icon('<span class="fa fa-th fa-fw"></span>'))).addChild(nga.menu().title('EPG').icon('<span class="fa fa-map-o fa-fw"></span>').addChild(nga.menu(admin.getEntity('epgimport')).title('EPG Import').icon('<span class="fa fa-map-o fa-fw"></span>')).addChild(nga.menu(admin.getEntity('EpgData')).title('EPG Data').icon('<span class="fa fa-list fa-fw"></span>')).addChild(nga.menu().title('EPG Graph').icon('<span class="fa fa-bar-chart fa-fw"></span>').link('/epggraph'))).addChild(nga.menu(admin.getEntity('appgroup')).title('APP Group').icon('<span class="fa fa-file fa-fw"></span>')).addChild(nga.menu().title('System Users').icon('<span class="fa fa-users fa-fw"></span>').addChild(nga.menu(admin.getEntity('Groups')).title('User Groups').icon('<span class="fa fa-users fa-fw"></span>')).addChild(nga.menu(admin.getEntity('Users')).title('Users').icon('<span class="fa fa-user fa-fw"></span>'))).addChild(nga.menu().template('<div class="menu_space">Other</div>')).addChild(nga.menu(admin.getEntity('appmanagement')).title('APP Management').icon('<span class="fa fa-upload fa-fw"></span>')).addChild(nga.menu(admin.getEntity('mychannels')).title('My Channels').icon('<span class="fa fa-tv fa-fw"></span>')).addChild(nga.menu(admin.getEntity('logs')).title('Logs').icon('<span class="fa fa-book fa-fw"></span>')).addChild(nga.menu().title('Push messages').icon('<span class="fa fa-envelope fa-fw"></span>').addChild(nga.menu(admin.getEntity('messages')).title('Push notifications').icon('<span class="fa fa-bell fa-fw"></span>')).addChild(nga.menu(admin.getEntity('commands')).title('Commands').icon('<span class="fa fa-terminal fa-fw"></span>'))).addChild(nga.menu().title('HELP').icon('<span class="fa fa-question-circle fa-fw"></span>'));
 	};
 
 	module.exports = exports['default'];
 
 /***/ },
-/* 173 */
+/* 174 */
 /***/ function(module, exports) {
 
 	// removed by extract-text-webpack-plugin

@@ -66,7 +66,7 @@ exports.create = function(req, res) {
           logging: console.log
         }
     ).then(function(result) {
-      if (!result) {
+      if (!result || result.length === 0) {
         return res.status(401).send({
           message: 'No devices found with these filters'
         });

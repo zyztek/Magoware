@@ -666,8 +666,9 @@ exports.schedule = function(req, res) {
                         var response_data = [{
                             "action": 'created'
                         }];
+                        var firebase_key = req.app.locals.settings.firebase_key;
                         //programstart is converted to unix time, decreased by 5 min, decreased by current time. This gives the difference between the current time and 5 min before the start of the program
-                        schedule.schedule_program(moment(epg_program.program_start).format('x') - Date.now() - 300000, scheduled.id, req.thisuser.id, epg_program.channel_number, req.body.program_id);
+                        schedule.schedule_program(moment(epg_program.program_start).format('x') - Date.now() - 300000, firebase_key, scheduled.id, req.thisuser.id, epg_program.channel_number, req.body.program_id);
                         response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
                     }).catch(function(error) {
                         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
