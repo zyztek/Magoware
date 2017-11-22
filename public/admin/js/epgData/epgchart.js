@@ -12,14 +12,66 @@ export default function ($stateProvider) {
 
 
 
-                $scope.options = {
-        stack: false,
-        start: new Date(),
-        end: new Date(1000*60*60*24 + (new Date()).valueOf()),
-        //editable: true,
+            $scope.events = {
+                //rangechange: $scope.onRangeChange,
+                //rangechanged: $scope.onRangeChanged,
+                //onload: $scope.onLoaded,
+                select: $scope.onSelect,
+                click: $scope.onClick,
+                //doubleClick: $scope.onDoubleClick,
+                //contextmenu: $scope.rightClick
+            };
 
-        orientation: 'top'
-    };
+
+
+            $scope.onSelect = function(items) {
+                // debugger;
+                console.log('onselect: ',items);
+            };
+
+            $scope.onClick = function(items) {
+                //debugger;
+                console.log('click: ', items);
+            };
+
+            $scope.dragEnd = function(items) {
+                //debugger;
+                console.log('drag end: ',items);
+            };
+
+            $scope.onRangeChange = function(items) {
+                //debugger;
+                console.log('enter onrangechange: ',items);
+            };
+
+            //console.log(VisDataSet);
+
+        $scope.options = {
+            stack: false,
+            start: new Date(),
+            end: new Date(1000*60*60*24 + (new Date()).valueOf()),
+            editable: true,
+            orientation: 'top',
+
+           // editable: {
+           //     add: true,         // add new items by double tapping
+           //     updateTime: true,  // drag items horizontally
+           //     updateGroup: true, // drag items from one group to another
+           //     remove: true,       // delete an item by tapping the delete button top right
+                //overrideItems: false  // allow these options to override item.editable
+           // }
+        };
+
+            $scope.events = {
+                //rangechange: $scope.onRangeChange,
+                //rangechanged: $scope.onRangeChanged,
+                //onload: $scope.onLoaded,
+                select: $scope.onSelect,
+                click: $scope.onClick,
+                dragEnd: $scope.dragEnd,
+                //doubleClick: $scope.onDoubleClick,
+                //contextmenu: $scope.rightClick
+            };
 
     var items = [
         {x: '2014-06-11', y: 10},
@@ -32,6 +84,7 @@ export default function ($stateProvider) {
 
     Restangular.one('epgdata_chart').get()
     		.then(function successCallback(response) {
+    			//console.log(response);
     			$scope.data_timeline = {"items":response.data.items,"groups":response.data.groups};
     		},function errorCallback(response) {
     		});

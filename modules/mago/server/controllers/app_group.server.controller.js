@@ -98,7 +98,6 @@ exports.list = function(req, res) {
 
      final_where
 
-
   ).then(function(results) {
     if (!results) {
       return res.status(404).send({

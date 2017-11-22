@@ -38,7 +38,8 @@ function graph(Restangular) {
 
 				start: '2017-05-05',
 				end: Date.now(),
-				//editable: true,
+
+				editable: true,
 
 				//orientation: 'top'
 			};

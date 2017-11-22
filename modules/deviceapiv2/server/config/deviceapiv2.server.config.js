@@ -12,9 +12,7 @@ module.exports = function(app,   db) {
     DBModel.findOne({
 
     }).then(function (result) {
-
         app.locals.settings = result;
-
     }).catch(function(error) {
         //todo: handdle error
     });

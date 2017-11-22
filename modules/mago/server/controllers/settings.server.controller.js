@@ -23,7 +23,7 @@ exports.read = function(req, res) {
 };
 
 exports.env_settings = function(req, res) {
-    res.json(config.seanjs.version); //returns the version number for the middleware
+    res.json(config.seanjs.version+' '+config.seanjs.db_migration_nr); //returns the version number for the middleware
 };
 
 /**

@@ -55,6 +55,11 @@ module.exports = function(sequelize, DataTypes) {
             defaultValue: '',
             allowNull: false
         },
+        vod_subset_nr: {
+            type: DataTypes.INTEGER(11),
+            defaultValue: 200,
+            allowNull: false
+        },
         activity_timeout:{
             type: DataTypes.INTEGER(11),
             defaultValue: 10800,

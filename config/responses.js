@@ -4,7 +4,6 @@ var crypto = require('crypto');
  * Configuration file where you can store error codes for responses
  *
  * It's just a storage where you can define your custom API errors and their description.
- * You can call then in your action res.ok(data, sails.config.errors.USER_NOT_FOUND);
  */
 
 module.exports = {
@@ -14,7 +13,7 @@ module.exports = {
         this.error_code = error_code;
         this.timestamp = Date.now();
         this.error_description = (languages[language]) ? languages[language].language_variables[error_description] : languages['eng'].language_variables[error_description];
-        this.extra_data = (languages[language]) ? languages[language].language_variables[extra_data] : languages['eng'].language_variables[extra_data];
+        this.extra_data = (languages[language]) ? languages[language].language_variables[extra_data] : extra_data;
         this.response_object = data;
     },
     CREATED: function(language, error_description, extra_data){

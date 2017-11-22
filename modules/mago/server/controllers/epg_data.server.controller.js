@@ -236,9 +236,10 @@ exports.list_chart_epg = function(req, res) {
         //limit: 100,
         where: {program_start: {gte: d}}
     }).then(function(channels){
-        //res.json(channels);
         DBModel.findAll({
-                attributes: ['id', ['channel_number', 'group'],['program_start','start'],['program_end','end'],['title','content']]
+                attributes: ['id', ['channel_number', 'group'],['program_start','start'],['program_end','end'],['title','content']],
+                //limit: 100,
+                where: {program_start: {gte: d}}
             }
         ).then(function(results) {
             if (!results) {

@@ -38,12 +38,12 @@ export default function (nga, admin) {
 				  '</div>')
 				.label('Activity Time Out'),
 			nga.field('log_event_interval' ,'number')
-				.attributes({ placeholder: 'Log event internel' })
+				.attributes({ placeholder: 'Log event interval' })
 				.template('<div class="form-group">'+
 				    '<ma-input-field field="field" value="entry.values.log_event_interval"></ma-input-field>'+
 				    '<small id="emailHelp" class="form-text text-muted">Frequency to send audience logs.</small>'+
 				  '</div>')
-				.label('Log event internel'),
+				.label('Log event interval'),
 
 			nga.field('channel_log_time' ,'number')
 				.attributes({ placeholder: 'Channel log time' })
@@ -52,6 +52,14 @@ export default function (nga, admin) {
 				    '<small id="emailHelp" class="form-text text-muted">Timeout to define a channel as not able to play.</small>'+
 				  '</div>')
 				.label('Channel log time'),
+
+			nga.field('vod_subset_nr' ,'number')
+				.template('<div class="form-group">'+
+					'<ma-input-field field="field" value="entry.values.vod_subset_nr"></ma-input-field>'+
+					'<small id="emailHelp" class="form-text text-muted">Number of movies sent in each vod request</small>'+
+					'</div>')
+				.label('Vod movies / request'),
+
 			nga.field('analytics_id' ,'string')
 				.attributes({ placeholder: 'Analytics ID' })
 				.template('<div class="form-group">'+
@@ -63,9 +71,10 @@ export default function (nga, admin) {
 				.validation({ required: true })
 				.label('Box Logo')
                 .template('<div class="row">'+
-                          '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.box_logo_url }}" height="40" width="40" /></div>'+
-                          '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.box_logo_url"></ma-file-field></div>'+
-                        '</div>')
+						'<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.box_logo_url }}" height="40" width="40" /></div>'+
+                        '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.box_logo_url"></ma-file-field></div>'+
+                        '</div>'+
+						'<div class="row"><small id="emailHelp" class="form-text text-muted">1988x318 px</small></div>')
 				.uploadInformation({ 'url': '/file-upload/single-file/settings/box_logo_url','apifilename': 'result'}),
 			nga.field('box_background_url', 'file')
 				.validation({ required: true })
@@ -73,7 +82,8 @@ export default function (nga, admin) {
                 .template('<div class="row">'+
                           '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.box_background_url }}" height="40" width="40" /></div>'+
                           '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.box_background_url"></ma-file-field></div>'+
-                        '</div>')
+                        '</div>'+
+						'<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1080 px</small></div>')
 				.uploadInformation({ 'url': '/file-upload/single-file/settings/box_background_url','apifilename': 'result'}),
 			nga.field('mobile_background_url', 'file')
 				.validation({ required: true })
@@ -81,7 +91,8 @@ export default function (nga, admin) {
                 .template('<div class="row">'+
                           '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.mobile_background_url }}" height="40" width="40" /></div>'+
                           '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.mobile_background_url"></ma-file-field></div>'+
-                        '</div>')
+                        '</div>'+
+						'<div class="row"><small id="emailHelp" class="form-text text-muted">566x318 px</small></div>')
 				.uploadInformation({ 'url': '/file-upload/single-file/settings/mobile_background_url','apifilename': 'result'}),
 			nga.field('mobile_logo_url', 'file')
 				.validation({ required: true })
@@ -89,7 +100,8 @@ export default function (nga, admin) {
                 .template('<div class="row">'+
                           '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.mobile_logo_url }}" height="40" width="40" /></div>'+
                           '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.mobile_logo_url"></ma-file-field></div>'+
-                        '</div>')
+                        '</div>'+
+						'<div class="row"><small id="emailHelp" class="form-text text-muted">240x38 px</small></div>')
 				.uploadInformation({ 'url': '/file-upload/single-file/settings/mobile_logo_url','apifilename': 'result'}),
 			nga.field('vod_background_url', 'file')
 				.validation({ required: true })
@@ -97,7 +109,8 @@ export default function (nga, admin) {
                 .template('<div class="row">'+
                           '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.vod_background_url }}" height="40" width="40" /></div>'+
                           '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.vod_background_url"></ma-file-field></div>'+
-                        '</div>')
+                        '</div>'+
+						'<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1080 px</small></div>')
 				.uploadInformation({ 'url': '/file-upload/single-file/settings/vod_background_url','apifilename': 'result'}),
 			nga.field('locale', 'string')
 				.validation({ required: true })

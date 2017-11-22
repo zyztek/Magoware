@@ -120,7 +120,7 @@ exports.gcm = function(req, res) {
 
 
 /**
- * @api {post} /apiv2/command/response /apiv2/command/response
+ * @api {post} /apiv2/commands/response /apiv2/commands/response
  * @apiVersion 0.2.0
  * @apiName Device Command Response.
  * @apiGroup DeviceAPI
@@ -130,7 +130,7 @@ exports.gcm = function(req, res) {
  * @apiParam {String} message Command Response Message.
  * @apiParam {String} title Message Title.
  *
- * @apiDescription Internal use - command execution response.
+ * @apiDescription Internal use - commands execution response.
  */
 exports.command_response = function(req,res) {
 

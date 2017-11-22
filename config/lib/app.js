@@ -4,10 +4,10 @@
  * Module dependencies.
  */
 var config = require('../config'),
-  express = require('./express'),
-  chalk = require('chalk'),
-  sequelize = require('./sequelize-connect'),
-  winston = require('./winston');
+    express = require('./express'),
+    chalk = require('chalk'),
+    sequelize = require('./sequelize-connect'),
+    winston = require('./winston');
 
 
 module.exports.init = function init(callback) {
@@ -34,7 +34,7 @@ module.exports.start = function start(callback) {
       if (config.secure && config.secure.ssl === true) {
         console.log(chalk.green('SSL:\t\t\tON'));
       }
-      console.info(chalk.green('App version:\t\t') + config.seanjs.version);
+      console.info(chalk.green('App version:\t\t') + config.seanjs.version+" "+config.seanjs.db_migration_nr);
 
       if (config.seanjs['seanjs-version']) {
         console.log(chalk.green('SEAN.JS version:\t') + config.seanjs['seanjs-version']);

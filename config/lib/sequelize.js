@@ -53,9 +53,7 @@ db.connect = function(database, username, password, options) {
         });
 
         if (config.db.sync) {
-            //sequelize.sync({force: true}) //deletes database and recreates all tabels with default values
 
-            //sequelize.sync()
             sequelize.sync({force: (process.env.DB_SYNC_FORCE === 'true')})
                 .then(function() {
                     async.waterfall([
@@ -101,6 +99,7 @@ db.connect = function(database, username, password, options) {
                         },
                         //create settings record
                         function(callback){
+                            var protocol = (config.port === 443) ? 'https://' : 'http://';
                             db.models['settings'].findOrCreate({
                                 where: {id:1},
                                 defaults: {
@@ -108,9 +107,11 @@ db.connect = function(database, username, password, options) {
                                     email_address: 'noreply@demo.com',
                                     email_username: 'username',
                                     email_password: 'password',
-                                    assets_url: (networking.external_serverip()) ? networking.external_serverip() : 'your_server_url',
+                                    assets_url: (networking.external_serverip()) ? protocol+networking.external_serverip() : 'your_server_url',
                                     old_encryption_key: '0123456789abcdef',
                                     new_encryption_key: '0123456789abcdef',
+                                    firebase_key: '',
+                                    vod_subset_nr: 200,
                                     activity_timeout: 10800,
                                     channel_log_time:6,
                                     log_event_interval:300,

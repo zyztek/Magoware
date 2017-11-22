@@ -19,13 +19,13 @@ var path = require('path'),
  */
 exports.list = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
-    var offset = (!req.body.subset_number || req.body.subset_number === '-1') ? 0 : ((parseInt(req.body.subset_number)-1)*50); //for older versions of vod, start query at first record
-    var limit = (!req.body.subset_number || req.body.subset_number === '-1') ? 99999999999 : 50; //for older versions of vod, set limit to 99999999999
+    var offset = (!req.body.subset_number || req.body.subset_number === '-1') ? 0 : ((parseInt(req.body.subset_number)-1)*req.app.locals.settings.vod_subset_nr); //for older versions of vod, start query at first record
+    var limit = (!req.body.subset_number || req.body.subset_number === '-1') ? 99999999999 : req.app.locals.settings.vod_subset_nr; //for older versions of vod, set limit to 99999999999
 
     models.vod.findAll({
         attributes: ['id', 'title', 'pin_protected', 'duration', 'description', 'director', 'starring', 'category_id', 'createdAt', 'rate', 'year', 'icon_url', 'image_url'],
         include: [
-            {model: models.vod_stream, required: true, attributes: ['url', 'encryption']},
+            {model: models.vod_stream, required: true, attributes: ['url', 'encryption', 'token', 'token_url']},
             {model: models.vod_category, required: true, attributes: [], where:{password:{in: allowed_content}, isavailable: true}}
         ],
         where: {pin_protected:{in: allowed_content}, isavailable: true},
@@ -52,9 +52,9 @@ exports.list = function(req, res) {
                         raw_obj.dataaded = obj.createdAt.getTime();
                         raw_obj.rate = String(obj.rate);
                         raw_obj.year = String(obj.year);
-                        raw_obj.token = null;
-                        raw_obj.TokenUrl = null;
-                        raw_obj.encryption = obj[k][j].encryption;
+                        raw_obj.token = (obj[k][j].token) ? "1" : "0";
+                        raw_obj.TokenUrl = (obj[k][j].token_url) ? obj[k][j].token_url : "";
+                        raw_obj.encryption = (obj[k][j].encryption) ? "1" : "0";
                     });
                 }
             });

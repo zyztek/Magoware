@@ -16,7 +16,7 @@ exports.list = function(req, res) {
     qwhere.isavailable = true;
     if(req.thisuser.show_adult == 0) qwhere.pin_protected = 0; //show adults filter
     else qwhere.pin_protected != ''; //avoid adult filter
-
+    
     // requisites for streams provided by the user
     var userstream_qwhere = {"isavailable": true, "login_id": req.thisuser.id};
 
@@ -703,7 +703,6 @@ exports.schedule = function(req, res) {
     }).catch(function(error) {
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
-
 };
 
 function has_catchup(catchup_streams, channel_id){
