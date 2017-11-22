@@ -19,8 +19,6 @@ config.files.server.models.forEach(function(file) {
 
 orm.discover = models;
 
-console.log(config.db);
-
 orm.connect(config.db.database, config.db.username, config.db.password, {
   host: config.db.host,
   port: config.db.port,

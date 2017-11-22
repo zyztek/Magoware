@@ -38,7 +38,9 @@ export default function (nga, admin) {
                     	.targetEntity(admin.getEntity('ChannelStreams'))
                     	.targetReferenceField('stream_source_id')
                 .targetFields([
-                    nga.field('channel_number', 'string')
+                    nga.field('channel_id', 'reference')
+						.targetEntity(admin.getEntity('Channels'))
+						.targetField(nga.field('channel_number'))
                 		.label('Nr'),
                 	nga.field('channel_id', 'reference')
                 		.targetEntity(admin.getEntity('Channels'))

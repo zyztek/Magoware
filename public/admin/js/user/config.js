@@ -37,12 +37,12 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'Select Group' })
 				.label('Group'),
 			nga.field('username', 'string')
-				.attributes({ placeholder: 'Username' })
-				.validation({ required: true })
+				.attributes({ placeholder: 'Username must be at least 3 character long' })
+				.validation({ required: true, minlength: 3 })
 				.label('Username'),
 			nga.field('password', 'password')
-				.attributes({ placeholder: 'Password' })
-				.validation({ required: true })
+				.attributes({ placeholder: 'Password must be at least 4 character long' })
+				.validation({ required: true, minlength: 4})
 				.label('Password'),
 			nga.field('email', 'email')
 				.attributes({ placeholder: 'Email' })

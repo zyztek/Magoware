@@ -61,7 +61,8 @@ export default function (nga, admin) {
                 .template('<div class="row">'+
                     '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.epg_file }}" height="40" width="40" /></div>'+
                     '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.epg_file"></ma-file-field></div>'+
-                    '</div>')
+                    '</div>'+
+                    '<div class="row"><small id="emailHelp" class="form-text text-muted">Expected file types: csv and xml</small></div>')
                 .validation({
                     validator: function(value) {
                         if (value == null) {

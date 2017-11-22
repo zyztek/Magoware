@@ -7,22 +7,22 @@
 
 'use strict';
 var path = require('path'),
-    db = require(path.resolve('./config/lib/sequelize')),
-    response = require(path.resolve("./config/responses.js")),
-    querystring = require("querystring"),
-    models = db.models;
+		db = require(path.resolve('./config/lib/sequelize')),
+		response = require(path.resolve("./config/responses.js")),
+		querystring = require("querystring"),
+		models = db.models;
 
 //makes a database call. returns database_error if connection failed, one genre_id otherwise
 
 exports.dbtest = function(req, res) {
-    models.genre.findAll({
-        attributes: ['id'],
-        limit: 1
-    }).then(function (result) {
+	models.genre.findAll({
+		attributes: ['id'],
+		limit: 1
+	}).then(function (result) {
 		response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
-    }).catch(function(error) {
+	}).catch(function(error) {
 		response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
-    });
+	});
 };
 
 
@@ -137,7 +137,7 @@ exports.command_response = function(req,res) {
 	req.body.action = 'receive';
 
 	models.messages.create(
-		req.body
+			req.body
 	).then(function(result){
 		response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
 		return null;

@@ -64,9 +64,11 @@ export default function (nga, admin) {
 	        nga.field('url', 'file')
                 .uploadInformation({ 'url': '/file-upload/single-file/apk/url','apifilename': 'result'})
                 .template('<div class="row">'+
-                          '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.url }}" height="40" width="40" /></div>'+
-                          '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.url"></ma-file-field></div>'+
-                          '</div>')
+						'<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.url }}" height="40" width="40" /></div>'+
+                        '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.url"></ma-file-field></div>'+
+                        '</div>'+
+						'<div class="row"><small id="emailHelp" class="form-text text-muted">Expected file extension: apk.</small></div>'+
+						'<div class="row"><small id="emailHelp" class="form-text text-muted">Expected filename format: x_yz.apk</small></div>')
                 .validation({
 				    validator: function(value) {
 				        if (value == null) {
