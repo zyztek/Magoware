@@ -18,7 +18,8 @@ function send_notification(fcm_tokens, firebase_key, users, message, ttl, push_m
         "SOFTWARE_INSTALL": (!push_message && message.software_install) ? message.software_install : "",
         "DELETE_SHP": (!push_message && message.delete_shp) ? message.delete_shp : "",
         "DELETE_DATA": (!push_message && message.delete_data) ? message.delete_data : "",
-
+        "URL_DOWNLOAD":"",
+		"NAME":"",
         "ACTION" : (!push_message && message.action) ? message.action : "",
         "PARAMETER1" : (!push_message && message.parameter1) ? message.parameter1 : "", //param 1
         "PARAMETER2" : (!push_message && message.parameter2) ? message.parameter2 : "", //param 2
