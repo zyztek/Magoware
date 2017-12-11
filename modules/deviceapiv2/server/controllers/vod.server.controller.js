@@ -60,7 +60,7 @@ exports.list = function(req, res) {
             });
             raw_result.push(raw_obj);
         });
-        response.send_res(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
+        response.send_partial_res(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
@@ -148,7 +148,7 @@ exports.subtitles = function(req, res) {
 exports.totalhits = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
 
-     //if hits for a specific movie are requested
+    //if hits for a specific movie are requested
     if(req.body.id_vod != "all"){
         models.vod.findAll({
             attributes: [ ['id', 'id_vod'], ['clicks', 'hits'] ],
@@ -348,7 +348,7 @@ exports.resume_movie = function(req, res) {
         response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
     }).catch(function(error) {
         if (error.message.split(': ')[0] === 'ER_NO_REFERENCED_ROW_2'){
-           response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'INVALID_INPUT', 'no-store');
+            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'INVALID_INPUT', 'no-store');
         }
         else response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
@@ -368,7 +368,7 @@ function delete_resume_movie(user_id, vod_id){
     ).then(function (result) {
         return null;
     }).catch(function(error) {
-       return null;
+        return null;
     });
 
 };

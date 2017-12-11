@@ -8,7 +8,6 @@ var path = require('path'),
     credentialsController = require(path.resolve('./modules/deviceapiv2/server/controllers/credentials.server.controller')),
     channelsController = require(path.resolve('./modules/deviceapiv2/server/controllers/channels.server.controller')),
     catchupController = require(path.resolve('./modules/deviceapiv2/server/controllers/catchup.server.controller')),
-    token_drmController = require(path.resolve('./modules/deviceapiv2/server/controllers/token_drm.server.controller')),
     vodController = require(path.resolve('./modules/deviceapiv2/server/controllers/vod.server.controller')),
     settingsController = require(path.resolve('./modules/deviceapiv2/server/controllers/settings.server.controller')),
     networkController = require(path.resolve('./modules/deviceapiv2/server/controllers/network.server.controller')),
@@ -17,16 +16,15 @@ var path = require('path'),
     mainController = require(path.resolve('./modules/deviceapiv2/server/controllers/main.server.controller')),
     customersAppController = require(path.resolve('./modules/deviceapiv2/server/controllers/customers_app.server.controller')),
     productsAppController = require(path.resolve('./modules/deviceapiv2/server/controllers/products.server.controller')),
-	sitesController = require(path.resolve('./modules/deviceapiv2/server/controllers/sites.server.controller')),
-	headerController = require(path.resolve('./modules/deviceapiv2/server/controllers/header.server.controller')),
+    sitesController = require(path.resolve('./modules/deviceapiv2/server/controllers/sites.server.controller')),
+    headerController = require(path.resolve('./modules/deviceapiv2/server/controllers/header.server.controller')),
     winston = require(path.resolve('./config/lib/winston'));
-
 
 module.exports = function(app) {
 
     app.use('/apiv2',function (req, res, next) {
         winston.info(req.originalUrl +'  '+ JSON.stringify(req.body));
-		res.header("Access-Control-Allow-Origin", "*");
+        res.header("Access-Control-Allow-Origin", "*");
         next();
     });
 
@@ -83,14 +81,25 @@ module.exports = function(app) {
     app.route('/apiv2/channels/catchup_events')
         .all(authpolicy.isAllowed)
         .post(catchupController.catchup_events);
-	
+
     app.route('/apiv2/channels/catchup_stream')
         .all(authpolicy.isAllowed)
         .post(catchupController.catchup_stream);
 
-    app.route('/apiv2/token/flussonic/:stream_name')
-        .all(authpolicy.isAllowed)
-        .post(token_drmController.flussonic_token);
+
+
+    //!!!!!!!!!!!!!! below moved to folder controller streams.
+    //token, drm, stream security functions
+    //flussonic token generator
+    //app.route('/apiv2/token/flussonic_remote/:stream_name')
+    //.all(authpolicy.isAllowed)
+    //    .get(token_drmController.flussonic_token__remote);
+
+    //app.route('/apiv2/token/flussonic/:stream_name')
+    //    //.all(authpolicy.isAllowed)
+    //    .post(token_drmController.flussonic_token);
+
+
 
     //vod set top box
     app.route('/apiv2/vod/list')
@@ -143,7 +152,7 @@ module.exports = function(app) {
         .post(mainController.device_menu);
 
     /*******************************************************************
-                         Network - related API
+     Network - related API
      *******************************************************************/
     app.route('/apiv2/network/dbtest')
         .all(authpolicy.isAllowed)

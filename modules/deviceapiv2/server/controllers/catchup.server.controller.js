@@ -12,8 +12,8 @@ var path = require('path'),
 // returns list of epg data for the given channel
 exports.catchup_events =  function(req, res) {
     var client_timezone = req.body.device_timezone; //offset of the client will be added to time - related info
-    var current_human_time = dateFormat(Date.now(), "yyyy-mm-dd HH:MM:ss"); //get current time to compare with enddate
-    var interval_end_human = dateFormat((Date.now() + 86400000), "yyyy-mm-dd HH:MM:ss"); //get current time to compare with enddate, in the interval of 12 hours
+    var current_human_time = dateFormat(Date.now() - client_timezone*3600 + req.body.day*3600000*24, "yyyy-mm-dd 00:00:00"); //start of the day for the user, in server time
+    var interval_end_human = dateFormat((Date.now() - client_timezone*3600 + req.body.day*3600000*24), "yyyy-mm-dd 23:59:59"); //end of the day for the user, in server time
 
     models.epg_data.findAll({
         attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end' ],

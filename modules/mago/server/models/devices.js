@@ -29,12 +29,12 @@ module.exports = function(sequelize, DataTypes) {
         device_id: {
             type: DataTypes.STRING(40),
             allowNull: false,
-			unique: true
+            unique: true
         },
         device_ip: {
             type: DataTypes.STRING(15),
             allowNull: true
-		},
+        },
         device_mac_address: {
             type: DataTypes.STRING(15),
             allowNull: true
@@ -43,7 +43,7 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING(15),
             allowNull: true
         },
-		ntype: {
+        ntype: {
             type: DataTypes.STRING(2),
             allowNull: false,
             defaultValue: '1'
@@ -61,31 +61,31 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false
         },
         device_brand: {
-            type: DataTypes.STRING(45),
+            type: DataTypes.STRING(100),
             allowNull: true
         },
         os: {
             type: DataTypes.STRING,
             allowNull: true
         },
-		screen_resolution: {
+        screen_resolution: {
             type: DataTypes.STRING(10),
             allowNull: true
         },
-		hdmi: {
+        hdmi: {
             type: DataTypes.STRING,
             allowNull: false,
             defaultValue: false
         },
-		api_version: {
+        api_version: {
             type: DataTypes.STRING(16),
             allowNull: true
         },
-		firmware: {
+        firmware: {
             type: DataTypes.STRING(128),
             allowNull: true
         },
-		language: {
+        language: {
             type: DataTypes.STRING(10),
             allowNull: true
         },

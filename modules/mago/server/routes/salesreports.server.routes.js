@@ -46,6 +46,8 @@ module.exports = function(app) {
         .get(salesReports.sales_by_date);
     app.route('/api/sales_by_month')
         .get(salesReports.sales_by_month);
+    app.route('/api/sales_monthly_expiration')
+        .get(salesReports.sales_monthly_expiration);
     app.route('/api/sales_by_expiration')
         .get(salesReports.sales_by_expiration);
 

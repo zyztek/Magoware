@@ -154,6 +154,26 @@ module.exports = {
         res.setHeader('cache-control', cache_header);
         var clear_response = new this.APPLICATION_RESPONSE(req.body.language, status_code, error, description, extra_data, response_data);
         res.send(clear_response);
+    },
+
+    send_partial_res: function(req, res, result, status, error, description, extra_data, header){
+        var evaluation_tag = crypto.createHash('sha256').update(JSON.stringify(result)).digest('hex'); //calculate etag for this response
+        var client_etag = (!req.header('clientsETag')) ? "" : req.header('clientsETag'); //set value of incoming etag
+
+        if(!vod_list[""+req.auth_obj.username+""]) vod_list[""+req.auth_obj.username+""] = []; //if no etags are stored for this user, create object with username as object name
+        var cached_etag = (vod_list[""+req.auth_obj.username+""][req.body.subset_number]) ? vod_list[""+req.auth_obj.username+""][req.body.subset_number] : ""; //todo: lexoje nga memoria
+
+        var status_code = (client_etag === "" || evaluation_tag !== cached_etag) ? status : 304; //if the response data is different from the one in the server cache or app cache is empty, send status different that 304
+        var response_data = (client_etag === "" || evaluation_tag !== cached_etag) ? result : []; // only new responses will be sent
+        var cache_header = (status_code===200) ? header : 'no-store'; //todo: recheck login here //only responses that contain new data will be stored
+
+
+        vod_list[""+req.auth_obj.username+""][req.body.subset_number] = evaluation_tag;
+
+        res.setHeader('etag', evaluation_tag);
+        res.setHeader('cache-control', cache_header);
+        var clear_response = new this.APPLICATION_RESPONSE(req.body.language, status_code, error, description, extra_data, response_data);
+        res.send(clear_response);
     }
 
 };

@@ -20,7 +20,9 @@ export default function (nga, admin) {
                 .label('From date'),
             nga.field('endsaledate', 'date')
                 .attributes({placeholder: 'To date' })
-                .label('To date')
+                .label('To date'),
+            nga.field('next', 'number')
+                .label('Expires in (days)')
         ])
         .exportFields([
             salesreport.listView().fields(),

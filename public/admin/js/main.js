@@ -220,6 +220,7 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     admin.addEntity(nga.entity('sales_by_product'));
     admin.addEntity(nga.entity('sales_by_date'));
     admin.addEntity(nga.entity('sales_by_month'));
+    admin.addEntity(nga.entity('sales_monthly_expiration'));
     admin.addEntity(nga.entity('sales_by_expiration'));
     admin.addEntity(nga.entity('Settings'));
     admin.addEntity(nga.entity('Subscriptions'));
@@ -263,6 +264,7 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     require('./sales_by_product/config')(nga, admin);
     require('./sales_by_date/config')(nga, admin);
     require('./sales_by_month/config')(nga, admin);
+    require('./sales_monthly_expiration/config')(nga, admin);
     require('./sales_by_expiration/config')(nga, admin);
     require('./settings/config')(nga, admin);
     require('./subscription/config')(nga, admin);

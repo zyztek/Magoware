@@ -4,26 +4,27 @@
  * Module dependencies.
  */
 var config = require('../config'),
-  express = require('express'),
-  bodyParser = require('body-parser'),
-  session = require('express-session'),
-  RedisStore = require('connect-redis')(session),
-  favicon = require('serve-favicon'),
-  cookieParser = require('cookie-parser'),
-  helmet = require('helmet'),
-  consolidate = require('consolidate'),
-  path = require('path'),
-  http = require('http'),
-  https = require('https'),
-  fs = require('fs'),
-  winston = require('./winston'),
+    express = require('express'),
+    bodyParser = require('body-parser'),
+    session = require('express-session'),
+    RedisStore = require('connect-redis')(session),
+    favicon = require('serve-favicon'),
+    cookieParser = require('cookie-parser'),
+    helmet = require('helmet'),
+    consolidate = require('consolidate'),
+    path = require('path'),
+    http = require('http'),
+    https = require('https'),
+    fs = require('fs'),
+    winston = require('./winston'),
 
-  //documentation
-  docs = require("express-mongoose-docs");
+//documentation
+    docs = require("express-mongoose-docs");
 
- //language configuration parameters
-  global.languages = {};
-  const language_folder_path = './config/languages/';
+//language configuration parameters
+global.languages = {};
+const language_folder_path = './config/languages/';
+global.vod_list = {};
 
 /**
  * Initialize local variables
@@ -212,7 +213,7 @@ module.exports.initErrorRoutes = function(app) {
 
 /**
  * Configure Socket.io
-*/
+ */
 
 module.exports.configureSocketIO = function(app, db) {
   winston.info('Initializing Socket.io...');
@@ -287,7 +288,7 @@ module.exports.init = function(db) {
   // Configure Socket.io
   this.configureSocketIO(app, db);
 
-  
+
   if (config.secure && config.secure.ssl === true) {
     var options = {
       key:    fs.readFileSync(path.resolve(config.secure.privateKey)), //read certificate key file

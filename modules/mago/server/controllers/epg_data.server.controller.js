@@ -34,47 +34,6 @@ exports.create = function(req, res) {
     });
 };
 
-exports.save_epg_records = function(req, res){
-
-    var current_time = dateFormat(Date.now(), "yyyy-mm-dd 00:00:00");
-
-    if(req.body.delete_existing === true){
-        DBModel.destroy({
-            where: {id: {gt: -1}}
-        }).then(function (result) {
-            read_and_write_epg();
-            return null;
-        }).catch(function(error) {
-            if(error.message.split(': ')[0] === 'ER_ROW_IS_REFERENCED_2') return res.status(400).send({message: 'Delete failed: At least one of these programs is scheduled'}); //referenced record cannot be deleted
-            else return res.status(400).send({message: 'Unable to proceed with the action'}); //other error occurred
-        });
-    }
-    else{
-        DBModel.destroy({
-            where: {program_start: {gte: current_time}}
-        }).then(function (result) {
-            read_and_write_epg();
-            return null;
-        }).catch(function(error) {
-            if(error.message.split(': ')[0] === 'ER_ROW_IS_REFERENCED_2') return res.status(400).send({message: 'Delete failed: At least one of these programs is scheduled'}); //referenced record cannot be deleted
-            else return res.status(400).send({message: 'Unable to proceed with the action'}); //other error occurred
-        });
-    }
-
-    function read_and_write_epg(){
-        if(fileHandler.get_extension(req.body.epg_file)=== '.csv'){
-            import_csv(req, res);
-        }
-        else if(fileHandler.get_extension(req.body.epg_file)=== '.xml'){
-            import_xml_standard(req, res); // xmlparser
-        }
-        else {
-            return res.status(400).send({message: 'Incorrect file type'}); //serverside filetype validation
-        }
-    }
-
-}
-
 /**
  * Create
  */
@@ -287,117 +246,169 @@ exports.dataByID = function(req, res, next, id) {
 
 };
 
-function import_xml_standard(req, res){
-    var message = '';
-    try{
-        var parser = new xml2js.Parser();
-        fs.readFile(path.resolve('./public')+req.body.epg_file, function(err, data) {
-            parser.parseString(data, function (err, result) {
-                var channel_list = new Array(); //associative array to contain title, with id as identifier for the channels
-                try{
-                    var channels = result.tv.channel; //all channel records
-                    var programs = result.tv.programme; //all programs of all channels
-                    if(result.tv.channel != undefined && result.tv.programme != undefined){
-                        async.waterfall([
-                            //save channel title in an associative array, so that we refer the title by channel id
-                            function(callback) {
-                                channels.forEach(function(array){
-                                    channel_list[''+array.$.id+''] = ({title: (array["display-name"][0]._) ? array["display-name"][0]._ : array["display-name"][0]  });
-                                });
-                                callback(null, channel_list);
-                            },
-                            //find channel id and number for each program, then save it
-                            function(channel_list, callback) {
-                                programs.forEach(function(program){
-                                    if(program.$ != undefined){
-                                        try{
-                                            db.channels.findOne({
-                                                attributes: ['id', 'channel_number', 'title'],
-                                                where: {title: channel_list[''+program.$.channel+''].title}
-                                            }).then(function (result) {
-                                                //if channel info found, let's save the epg record
-                                                if(result && ((req.body.channel_number === null) || (req.body.channel_number == result.channel_number))){
-                                                    db.epg_data.create({
-                                                        channels_id: result.id,
-                                                        channel_number: result.channel_number,
-                                                        title: (program.title[0]._) ? program.title[0]._ : program.title[0],
-                                                        short_name: (program.title[0]._) ? program.title[0]._ : program.title[0],
-                                                        short_description: (program.desc[0]._) ? program.desc[0]._ : program.desc[0],
-                                                        program_start: stringtodate(program.$.start),
-                                                        program_end: stringtodate(program.$.stop),
-                                                        long_description: (program.desc[0]._) ? program.desc[0]._ : program.desc[0],
-                                                        duration_seconds: datetimediff_seconds(stringtodate(program.$.start), stringtodate(program.$.stop)) //is in seconds
-                                                    }).then(function (result) {
-                                                        //on each write, do nothing. we wait for the saving proccess to finish
-                                                    }).catch(function(error) {
-                                                        //error while saving records
-                                                    });
-                                                }
-                                                return null;
-                                            }).catch(function(error) {
-                                                //error while saving records
-                                            });
-                                        }
-                                        catch(error){
-                                            //todo: display info that some data were not saved?
-                                        }
-                                    }
-                                });
-                            }
-                        ], function (err) {
-                            //error while trying to read / write data in the async model
-                        });
+exports.save_epg_records = function(req, res){
 
-                    } //file records successfully read, and attempted to save them
-                }
-                catch(error){
-                    //error while trying to read the file. Probably it is empty or is missing the tv tags
-                    message = 'Malformed file';
-                }
-            });
+    var current_time = dateFormat(Date.now(), "yyyy-mm-dd 00:00:00");
+
+    if(req.body.delete_existing === true){
+        DBModel.destroy({
+            where: {id: {gt: -1}}
+        }).then(function (result) {
+            read_and_write_epg();
+            return null;
+        }).catch(function(error) {
+            if(error.message.split(': ')[0] === 'ER_ROW_IS_REFERENCED_2') return res.status(400).send({message: 'Delete failed: At least one of these programs is scheduled'}); //referenced record cannot be deleted
+            else return res.status(400).send({message: 'Unable to proceed with the action'}); //other error occurred
         });
-        message = 'Epg records were saved';
-        return res.status(200).send({message: message});
     }
-    catch(error){
-        message = 'Unable to save the epg records';
-        return res.status(400).send({message: message});
+    else{
+        read_and_write_epg(current_time);
     }
+
+    function read_and_write_epg(current_time){
+        if(fileHandler.get_extension(req.body.epg_file)=== '.csv'){
+            import_csv(req, res, current_time);
+        }
+        else if(fileHandler.get_extension(req.body.epg_file)=== '.xml'){
+            import_xml_standard(req, res, current_time); // xmlparser
+        }
+        else {
+            return res.status(400).send({message: 'Incorrect file type'}); //serverside filetype validation
+        }
+    }
+
 }
 
-function import_csv(req, res){
-    var stream = fs.createReadStream(path.resolve('./public')+req.body.epg_file); //link main url
+
+function import_xml_standard(req, res, current_time){
     var message = '';
+    var parser = new xml2js.Parser(); // krijon parser
+    var channel_list = new Array(); //associative array that will contain channel title, with id as identifier for the channels
 
-    fastcsv.fromStream(stream, {headers : true}, {ignoreEmpty: true}).validate(function(data){
-        if(req.body.channel_number){
-            return data.channel_number == req.body.channel_number;
-        }
-        else{
-            return data;
-        }
-    }).on("data-invalid", function(data){
-        //these data were filtered out
-    }).on("data", function(data){
-        //TODO: handle error of malformed csv
-        DBModel.create({
-            channels_id: data.channel_id,
-            channel_number: data.channel_number,
-            title: data.title,
-            short_name: data.short_name,
-            short_description: data.short_description,
-            program_start: data.program_start,
-            program_end: data.program_end,
-            long_description: data.long_description,
-            duration_seconds: (Date.parse(data.program_end) - Date.parse(data.program_start))/1000 //parse strings as date timestamps, convert difference from milliseconds to seconds
-        }).then(function (result) {
-        }).catch(function(error) {
-            message = 'Unable to save all epg records';
+    async.auto({
+            //lexo file
+            read_epg_file: function(callback){
+                try{
+                    fs.readFile(path.resolve('./public')+req.body.epg_file, function(err, data){
+                        callback(null, data);
+                    })
+                }
+                catch(error){
+                    message = "Unable to read this file. Epg records were not saved";
+                    callback(true);
+                }
+            },
+            parse_epg_data: ['read_epg_file', function(result, callback){
+                try{
+                    parser.parseString(result.read_epg_file, function (err, epg_records) {
+                        if(epg_records && epg_records.tv) {
+                            console.log("---------------------------------------------- Epg records parsed, channels ", epg_records.tv.channel, "----------------------------------------------")
+                            console.log("---------------------------------------------- Epg records parsed, programs ", epg_records.tv.programme, "----------------------------------------------")
+                            callback(null, 1);
+                        }
+                        else {
+                            message = "File was empty. Epg records were not saved";
+                            callback(true);
+                        }
+                    })
+                }
+                catch(error){
+                    console.log(error)
+                    message = "Unable to parse the file content. Epg records were not saved";
+                    callback(true);
+                }
+            }],
+            //lexo listen e kanaleve
+            read_channel_list: ['parse_epg_data', function(result, callback){
+                //var channels = result.read_epg_file.tv.channel;
+                console.log("The channel list ", result.read_epg_file);
+                callback(null, 1)
+            }],
+            // bla bla bla
+            insert_epg: ['read_channel_list', function(result, callback){
+                callback(null, 1)
+            }]
+        },
+        function(error, results) {
+            if(error) {
+                return res.status(400).send({message: message}); //serverside filetype validation
+            }
+            else return res.status(200).send({message: 'Epg records were saved'}); //serverside filetype validation
         });
+}
 
+function import_csv(req, res, current_time){
+    var message = '';
+    var channel_number_list = [];
+
+    async.auto({
+        get_channels: function(callback) {
+            var channel_number_stream = fs.createReadStream(path.resolve('./public')+req.body.epg_file); //link main url
+            fastcsv.fromStream(channel_number_stream, {headers : true}, {ignoreEmpty: true}).validate(function(data){
+                if(req.body.channel_number){
+                    return data.channel_number == req.body.channel_number;
+                }
+                else{
+                    return data;
+                }
+            }).on("data", function(data){
+                if(channel_number_list.indexOf(data.channel_number) === -1) {
+                    channel_number_list.push(data.channel_number);
+                }
+            }).on("end", function(){
+                callback(null);
+            });
+        },
+        delete_epg: ['get_channels', function(results, callback) {
+            if(channel_number_list.length < 1){
+                message = 'Unable to read any records. Epg data not saved';
+                callback(true);
+            }
+            else{
+                DBModel.destroy({
+                    where: {program_start: {gte: current_time}, channel_number: {in: channel_number_list}}
+                }).then(function (result) {
+                    callback(null, 1);
+                }).catch(function(error) {
+                    if(error.message.split(': ')[0] === 'ER_ROW_IS_REFERENCED_2') message = 'Delete failed: At least one of these programs is scheduled';
+                    else message = 'Unable to proceed with the action';
+                    callback(true);
+                });
+            }
+        }],
+        save_epg: ['delete_epg', function(epg_data, callback) {
+            var stream = fs.createReadStream(path.resolve('./public')+req.body.epg_file); //link main url
+            fastcsv.fromStream(stream, {headers : true}, {ignoreEmpty: true}).validate(function(data){
+                if(req.body.channel_number){
+                    return data.channel_number == req.body.channel_number;
+                }
+                else return data;
+            }).on("data", function(data){
+                DBModel.create({
+                    channels_id: data.channel_id,
+                    channel_number: data.channel_number,
+                    title: data.title,
+                    short_name: data.short_name,
+                    short_description: data.short_description,
+                    program_start: data.program_start,
+                    program_end: data.program_end,
+                    long_description: data.long_description,
+                    duration_seconds: (Date.parse(data.program_end) - Date.parse(data.program_start))/1000 //parse strings as date timestamps, convert difference from milliseconds to seconds
+                }).then(function (result) {
+                }).catch(function(error) {
+                    message = 'Unable to save some epg records';
+                });
+            }).on("end", function(){
+                callback(null);
+            });
+        }],
+    }, function(error, results) {
+        if(error) {
+            return res.status(400).send({message: message}); //serverside filetype validation
+        }
+        else return res.status(200).send({message: 'Epg records were saved'}); //serverside filetype validation
     });
-    message = (message !== '') ? message : 'Epg records were saved';
-    return res.status(200).send({message: message}); //serverside filetype validation
+
 }
 
 function import_xml_dga(req, res){

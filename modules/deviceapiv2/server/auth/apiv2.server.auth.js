@@ -118,10 +118,10 @@ exports.isAllowed = function(req, res, next) {
             }).then(function (result) {
                 if(result) {
                     if(result.account_lock) {
-                        response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'LOCKED_ACCOUNT', 'no-store');
+                        response.send_res(req, res, [], 703, -1, 'ACCOUNT_LOCK_DESCRIPTION', 'ACCOUNT_LOCK_DATA', 'no-store');
                     }
                     else if(authenticationHandler.authenticate(auth_obj.password, result.salt, result.password) === false) {
-                        response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'PASSWORD_MISMATCH', 'no-store');
+                        response.send_res(req, res, [], 704, -1, 'WRONG_PASSWORD_DESCRIPTION', 'WRONG_PASSWORD_DATA', 'no-store');
                     }
                     else {
                         req.thisuser = result;
@@ -131,7 +131,7 @@ exports.isAllowed = function(req, res, next) {
                     }
                 }
                 else{
-                    response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'USER_NOT_FOUND_DATA', 'no-store');
+                    response.send_res(req, res, [], 702, -1, 'USER_NOT_FOUND_DESCRIPTION', 'USER_NOT_FOUND_DATA', 'no-store');
                 }
             }).catch(function(error) {
                 response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');

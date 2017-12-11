@@ -6,7 +6,7 @@
 var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     db = require(path.resolve('./config/lib/sequelize')).models,
-    sequelize = require('sequelize'),
+    sequelizes =  require(path.resolve('./config/lib/sequelize')),
     dateFormat = require('dateformat'),
     moment = require('moment'),
     async = require('async'),
@@ -399,8 +399,7 @@ exports.sales_by_month = function(req, res) {
     final_where.attributes = ['id', 'saledate', [sequelize.fn('count', sequelize.col('saledate')), 'count']];
     final_where.group = [sequelize.fn('DATE_FORMAT', sequelize.col('saledate'), "%Y-%m-01")]; //group by month/year of sale (excluding day and time information)
 
-    final_where.include = [{model: db.combo, required: true, attributes: [
-        [sequelize.fn('sum', sequelize.col('value')), 'total_value']]}];
+    final_where.include = [{model: db.combo, required: true, attributes: [[sequelize.fn('sum', sequelize.col('value')), 'total_value']]}];
 
     DBModel.findAndCountAll(
         final_where
@@ -417,6 +416,29 @@ exports.sales_by_month = function(req, res) {
 
 };
 
+exports.sales_monthly_expiration = function(req, res) {
+
+    var thequery = "SELECT count(subscription_sub.login_id), subscription_sub.enddate "+
+        " from ( " +
+        " SELECT `login_id`, DATE_FORMAT(max(`end_date`), '%Y-%m') AS `enddate`  " +
+        " FROM `subscription` AS `subscription` "+
+        " GROUP BY `login_id` "+
+        " ORDER BY `subscription`.`end_date` DESC "+
+        " ) as subscription_sub "+
+        " group by enddate "+
+        " Order by enddate desc; ";
+
+
+    sequelizes.sequelize.query(thequery)
+        .then(function(result) {
+            res.send(result)
+        }).catch(function(err) {
+        res.jsonp(err);
+    });
+
+};
+
+
 exports.sales_by_expiration = function(req, res) {
     var qwhere = {},
         final_where = {},
@@ -429,8 +451,9 @@ exports.sales_by_expiration = function(req, res) {
 
     if(req.query.name) final_where.where.combo_id = req.query.name;
 
-    var start = (req.query.startsaledate) ? (req.query.startsaledate+' 00:00:00') : sequelize.literal('NOW()');
-    if(req.query.endsaledate) var end = req.query.endsaledate;
+    var start = (req.query.startsaledate) ? (req.query.startsaledate+' 00:00:00') : sequelize.literal('CURDATE()');
+    if(req.query.next) var end = sequelize.literal('CURDATE() + INTERVAL '+req.query.next+' DAY');
+    else if(req.query.endsaledate) var end = req.query.endsaledate;
     final_where.where = (end) ? {end_date: {between: [start, end]}} : {end_date: {gte: start}};
 
     if(parseInt(query._start)) final_where.offset = parseInt(query._start);
@@ -438,7 +461,7 @@ exports.sales_by_expiration = function(req, res) {
 
     final_where.attributes = ['id', 'login_id', [sequelize.fn('max', sequelize.col('end_date')), 'end_date']];
     final_where.group = ['login_id'];
-    final_where.order = [['end_date', 'DESC']]
+    final_where.order = [['end_date', 'DESC']];
 
     db.subscription.findAndCountAll(
         final_where
