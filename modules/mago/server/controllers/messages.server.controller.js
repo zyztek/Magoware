@@ -9,7 +9,6 @@ var path = require('path'),
 
 
 function save_messages(obj, messagein, ttl, action, callback){
-  console.log("at save message")
 
   DBModel.create({
     username: obj.username,
@@ -33,55 +32,54 @@ function save_messages(obj, messagein, ttl, action, callback){
  * Create
  */
 exports.create = function(req, res) {
-  console.log("at create message")
-  var no_users = (req.body.type === "one" && req.body.username === null) ? true : false; //no users selected for single user messages, don't send push
-  var no_device_type = (req.body.toandroidsmartphone === false && req.body.toandroidbox === false  && req.body.toios === false) ? true : false; //no device types selected, don't send push
+    var no_users = (req.body.type === "one" && req.body.username === null) ? true : false; //no users selected for single user messages, don't send push
+    var no_device_type = (req.body.toandroidsmartphone === false && req.body.toandroidbox === false  && req.body.toios === false) ? true : false; //no device types selected, don't send push
 
-  if(no_users || no_device_type){
-    return res.status(400).send({
-      message: 'You did not select any devices'
-    });
-  }
-  else{
-    var message = {
-      "event": "", "program_id": "", "channel_number": "", "event_time": "", "program_name": "", "description": req.body.message
-    };
-    var where = {}; //the device filters will be passed here
-    var appids = []; //appids that should receive the push will be held here
-    if(req.body.type === "one") where.login_data_id = req.body.username; //if only one user is selected, filter devices of that user
-
-    //for each selected device type, add appid in the list of appids
-    if(req.body.toandroidbox) appids.push(1);
-    if(req.body.toandroidsmartphone) appids.push(2);
-    if(req.body.toios) appids.push(3);
-    where.appid = {in: appids};
-
-    if(req.body.sendtoactivedevices) where.device_active = true; //if we only want to send push msgs to active devices, add condition
-
-    DBDevices.findAll(
-        {
-          attributes: ['googleappid'],
-          where: where,
-          include: [{model: db.login_data, attributes: ['username'], required: true, where: {get_messages: true}}],
-          logging: console.log
-        }
-    ).then(function(result) {
-      if (!result || result.length === 0) {
-        return res.status(401).send({
-          message: 'No devices found with these filters'
+    if(no_users || no_device_type){
+        return res.status(400).send({
+            message: 'You did not select any devices'
         });
-      } else {
-        var fcm_tokens = [];
-        for(var i=0; i<result.length; i++){
-          fcm_tokens.push(result[i].googleappid);
-        }
-        push_msg.send_notification(fcm_tokens, req.app.locals.settings.firebase_key, result, message, req.body.timetolive, true, true, function(result){});
-        return res.status(200).send({
-          message: 'Message sent'
+    }
+    else{
+        var message = {
+            "event": "", "program_id": "", "channel_number": "", "event_time": "", "program_name": "", "description": req.body.message
+        };
+        var where = {}; //the device filters will be passed here
+        var appids = []; //appids that should receive the push will be held here
+        if(req.body.type === "one") where.login_data_id = req.body.username; //if only one user is selected, filter devices of that user
+
+        //for each selected device type, add appid in the list of appids
+        if(req.body.toandroidbox) appids.push(1);
+        if(req.body.toandroidsmartphone) appids.push(2);
+        if(req.body.toios) appids.push(3);
+        where.appid = {in: appids};
+
+        if(req.body.sendtoactivedevices) where.device_active = true; //if we only want to send push msgs to active devices, add condition
+
+        DBDevices.findAll(
+            {
+                attributes: ['googleappid'],
+                where: where,
+                include: [{model: db.login_data, attributes: ['username'], required: true, where: {get_messages: true}}],
+                logging: console.log
+            }
+        ).then(function(result) {
+            if (!result || result.length === 0) {
+                return res.status(401).send({
+                    message: 'No devices found with these filters'
+                });
+            } else {
+                var fcm_tokens = [];
+                for(var i=0; i<result.length; i++){
+                    fcm_tokens.push(result[i].googleappid);
+                }
+                push_msg.send_notification(fcm_tokens, req.app.locals.settings.firebase_key, result, message, req.body.timetolive, true, true, function(result){});
+                return res.status(200).send({
+                    message: 'Message sent'
+                });
+            }
         });
-      }
-    });
-  }
+    }
 
 };
 
@@ -90,7 +88,6 @@ exports.create = function(req, res) {
  */
 
 exports.send_message_action = function(req, res) {
-  console.log("at send message action")
 
   DBDevices.find(
       {
@@ -105,7 +102,7 @@ exports.send_message_action = function(req, res) {
         message: 'UserName or Password does not match'
       });
     } else {
-      push_msg.sendnotification(result,'some doemo message',5,req.body.messageaction, true, function(result){
+        push_msg.sendnotification(result,'some demo message',5,req.body.messageaction, true, function(result){
         if(result){
           return res.status(200).send({
             message: 'messge send successful but not saved in database'
