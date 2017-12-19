@@ -282,59 +282,80 @@ exports.save_epg_records = function(req, res){
 
 function import_xml_standard(req, res, current_time){
     var message = '';
-    var parser = new xml2js.Parser(); // krijon parser
-    var channel_list = new Array(); //associative array that will contain channel title, with id as identifier for the channels
+    try{
+        var parser = new xml2js.Parser();
+        fs.readFile(path.resolve('./public')+req.body.epg_file, function(err, data) {
+            parser.parseString(data, function (err, result) {
+                var channel_list = new Array(); //associative array to contain title, with id as identifier for the channels
+                try{
+                    var channels = result.tv.channel; //all channel records
+                    var programs = result.tv.programme; //all programs of all channels
+                    if(result.tv.channel != undefined && result.tv.programme != undefined){
+                        async.waterfall([
+                            //save channel title in an associative array, so that we refer the title by channel id
+                            function(callback) {
+                                channels.forEach(function(array){
+                                    channel_list[''+array.$.id+''] = ({title: (array["display-name"][0]._) ? array["display-name"][0]._ : array["display-name"][0]  });
+                                });
+                                callback(null, channel_list);
+                            },
+                            //find channel id and number for each program, then save it
+                            function(channel_list, callback) {
+                                programs.forEach(function(program){
+                                    if(program.$ != undefined){
+                                        try{
+                                            db.channels.findOne({
+                                                attributes: ['id', 'channel_number', 'title'],
+                                                where: {title: channel_list[''+program.$.channel+''].title}
+                                            }).then(function (result) {
+                                                //if channel info found, let's save the epg record
+                                                if(result && ((req.body.channel_number === null) || (req.body.channel_number == result.channel_number))){
+                                                    db.epg_data.create({
+                                                        channels_id: result.id,
+                                                        channel_number: result.channel_number,
+                                                        title: (program.title[0]._) ? program.title[0]._ : program.title[0],
+                                                        short_name: (program.title[0]._) ? program.title[0]._ : program.title[0],
+                                                        short_description: (program.desc[0]._) ? program.desc[0]._ : program.desc[0],
+                                                        program_start: stringtodate(program.$.start),
+                                                        program_end: stringtodate(program.$.stop),
+                                                        long_description: (program.desc[0]._) ? program.desc[0]._ : program.desc[0],
+                                                        duration_seconds: datetimediff_seconds(stringtodate(program.$.start), stringtodate(program.$.stop)) //is in seconds
+                                                    }).then(function (result) {
+                                                        //on each write, do nothing. we wait for the saving proccess to finish
+                                                    }).catch(function(error) {
+                                                        //error while saving records
+                                                    });
+                                                }
+                                                return null;
+                                            }).catch(function(error) {
+                                                //error while saving records
+                                            });
+                                        }
+                                        catch(error){
+                                            //todo: display info that some data were not saved?
+                                        }
+                                    }
+                                });
+                            }
+                        ], function (err) {
+                            //error while trying to read / write data in the async model
+                        });
 
-    async.auto({
-            //lexo file
-            read_epg_file: function(callback){
-                try{
-                    fs.readFile(path.resolve('./public')+req.body.epg_file, function(err, data){
-                        callback(null, data);
-                    })
+                    } //file records successfully read, and attempted to save them
                 }
                 catch(error){
-                    message = "Unable to read this file. Epg records were not saved";
-                    callback(true);
+                    //error while trying to read the file. Probably it is empty or is missing the tv tags
+                    message = 'Malformed file';
                 }
-            },
-            parse_epg_data: ['read_epg_file', function(result, callback){
-                try{
-                    parser.parseString(result.read_epg_file, function (err, epg_records) {
-                        if(epg_records && epg_records.tv) {
-                            console.log("---------------------------------------------- Epg records parsed, channels ", epg_records.tv.channel, "----------------------------------------------")
-                            console.log("---------------------------------------------- Epg records parsed, programs ", epg_records.tv.programme, "----------------------------------------------")
-                            callback(null, 1);
-                        }
-                        else {
-                            message = "File was empty. Epg records were not saved";
-                            callback(true);
-                        }
-                    })
-                }
-                catch(error){
-                    console.log(error)
-                    message = "Unable to parse the file content. Epg records were not saved";
-                    callback(true);
-                }
-            }],
-            //lexo listen e kanaleve
-            read_channel_list: ['parse_epg_data', function(result, callback){
-                //var channels = result.read_epg_file.tv.channel;
-                console.log("The channel list ", result.read_epg_file);
-                callback(null, 1)
-            }],
-            // bla bla bla
-            insert_epg: ['read_channel_list', function(result, callback){
-                callback(null, 1)
-            }]
-        },
-        function(error, results) {
-            if(error) {
-                return res.status(400).send({message: message}); //serverside filetype validation
-            }
-            else return res.status(200).send({message: 'Epg records were saved'}); //serverside filetype validation
+            });
         });
+        message = 'Epg records were saved';
+        return res.status(200).send({message: message});
+    }
+    catch(error){
+        message = 'Unable to save the epg records';
+        return res.status(400).send({message: message});
+    }
 }
 
 function import_csv(req, res, current_time){
