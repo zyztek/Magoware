@@ -14,6 +14,8 @@ Download and install NODE JS from the following link:
 
 https://nodejs.org/en/download/
 
+We recommend versions 7.x.x or 8.x.x installed for nodejs
+
 Download MAGOWARE Backoffice application from Github
 
 https://github.com/MAGOWARE/backoffice-administration.git
@@ -23,7 +25,7 @@ Run the following command within the root folder to install application libriari
 sudo npm install (in linux)
 npm install (in windows)
 ```
-Edit file db.connection.js and place your database connection parameters
+Create a database on MySQL server.
 
 Make sure that the collation and charset of your schema supports the languages that you intend to use.
 
@@ -33,7 +35,6 @@ sudo node server.js (in linux)
 node server.js (in windows)
 ```
 When application runs for the first time, it will automatically create database structures and populate necessary tables with default values.
-
 
 
 ### Database migration
