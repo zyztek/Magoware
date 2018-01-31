@@ -10,22 +10,22 @@ export default function (nga, admin) {
                 .targetEntity(admin.getEntity('Channels'))
                 .targetField(nga.field('channel_number'))
                 .label('Nr'),
-        	nga.field('channel_id' , 'reference')
+            nga.field('channel_id' , 'reference')
                 .targetEntity(admin.getEntity('Channels'))
                 .targetField(nga.field('title'))
-        		.label('Channel'),
-        	nga.field('stream_source_id', 'reference')
+                .label('Channel'),
+            nga.field('stream_source_id', 'reference')
                 .targetEntity(admin.getEntity('ChannelStreamSources'))
                 .targetField(nga.field('stream_source'))
-        		.label('Stream Source'),
-        	nga.field('stream_url', 'string')
+                .label('Stream Source'),
+            nga.field('stream_url', 'string')
                 .map(function truncate(value) {
                     if (!value) {
-                            return 'No Stream Url';
-                        }
-                            return value.length > 25 ? value.substr(0, 25) + '...' : value;
-                        })
-        		.label('Stream Url'),
+                        return 'No Stream Url';
+                    }
+                    return value.length > 25 ? value.substr(0, 25) + '...' : value;
+                })
+                .label('Stream Url'),
             nga.field('stream_mode', 'choice')
                 .attributes({ placeholder: 'Stream Format' })
                 .choices([
@@ -35,20 +35,20 @@ export default function (nga, admin) {
                 .validation({ required: true })
                 .cssClasses('hidden-xs')
                 .label('Stream mode'),
-        	nga.field('token_url', 'string')
+            nga.field('token_url', 'string')
                 .map(function truncate(value) {
                     if (!value) {
-                            return 'No Token Url';
-                        }
-                            return value.length > 25 ? value.substr(0, 25) + '...' : value;
-                        })
-        		.label('Token Url'),
+                        return 'No Token Url';
+                    }
+                    return value.length > 25 ? value.substr(0, 25) + '...' : value;
+                })
+                .label('Token Url'),
             nga.field('encryption_url', 'string')
                 .label('Encryption Url'),
             nga.field('token', 'boolean')
                 .label('Token'),
-        	nga.field('encryption', 'boolean')
-        		.label('Encryption'),
+            nga.field('encryption', 'boolean')
+                .label('Encryption'),
             nga.field('stream_format', 'choice')
                 .choices([
                     { value: 0, label: 'MPEG Dash' },
@@ -58,13 +58,13 @@ export default function (nga, admin) {
                 ])
                 .validation({ required: true })
                 .label('Stream Format'),
-        	
+
         ])
         .listActions(['edit'])
 
-       
+
         .exportFields([
-         channelstream.listView().fields(),
+            channelstream.listView().fields(),
         ]);
 
 
@@ -138,8 +138,8 @@ export default function (nga, admin) {
                 .validation({ required: true })
                 .label('Encryption Url'),
             nga.field('template')
-                    .label('')
-                    .template(edit_button),                
+                .label('')
+                .template(edit_button),
         ]);
 
     channelstream.editionView()
@@ -149,7 +149,7 @@ export default function (nga, admin) {
             channelstream.creationView().fields(),
         ]);
 
-    
+
 
     return channelstream;
 

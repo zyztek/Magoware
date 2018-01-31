@@ -43,6 +43,8 @@ export default function (nga, admin) {
                 .label('Account Locked'),
             nga.field('get_messages', 'boolean')
                 .label('Get messages'),
+            nga.field('show_adult', 'boolean')
+                .label('Show adult'),
             nga.field('auto_timezone', 'boolean')
                 .cssClasses('hidden-xs')
                 .label('Auto Timezone'),
@@ -137,6 +139,9 @@ export default function (nga, admin) {
             .attributes({ placeholder: 'Auto Timezone' })
             .validation({ required: true})
             .label('Get messages'),
+        nga.field('show_adult', 'boolean')
+            .validation({ required: true})
+            .label('Show adult content'),
         nga.field('auto_timezone','boolean')
             .attributes({ placeholder: 'Auto Timezone' })
             .validation({ required: true})
@@ -244,6 +249,9 @@ export default function (nga, admin) {
             .attributes({ placeholder: 'Auto Timezone' })
             .validation({ required: true})
             .label('Get messages'),
+        nga.field('show_adult', 'boolean')
+            .validation({ required: true})
+            .label('Show adult content'),
         nga.field('auto_timezone','boolean')
             .attributes({ placeholder: 'Auto Timezone' })
             .validation({ required: true})

@@ -4,9 +4,9 @@
  * Module dependencies.
  */
 var path = require('path'),
-  errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
-  db = require(path.resolve('./config/lib/sequelize')).models,
-  DBModel = db.vod_stream_source;
+    errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
+    db = require(path.resolve('./config/lib/sequelize')).models,
+    DBModel = db.vod_stream_source;
 
 /**
  * Create
@@ -102,7 +102,7 @@ exports.list = function(req, res) {
   final_where.include = [];
 
   DBModel.findAndCountAll(
-      
+
       final_where
 
   ).then(function(results) {
@@ -112,7 +112,7 @@ exports.list = function(req, res) {
       });
     } else {
 
-      res.setHeader("X-Total-Count", results.count);      
+      res.setHeader("X-Total-Count", results.count);
       res.json(results.rows);
     }
   }).catch(function(err) {

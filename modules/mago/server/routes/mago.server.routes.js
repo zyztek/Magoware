@@ -25,27 +25,27 @@ module.exports = function(app) {
 
     /*========== chart ============ */
     app.route('/api/dash/chart/salesreports')
-      .all(policy.isAllowed)
-      .get(dashboardController.chartSalesReport);
+        .all(policy.isAllowed)
+        .get(dashboardController.chartSalesReport);
 
     app.route('/api/dash/chart/subsactive')
-      .all(policy.isAllowed)
-      .get(dashboardController.chartsSubsActive);
+        .all(policy.isAllowed)
+        .get(dashboardController.chartsSubsActive);
 
     app.route('/api/dash/chart/subexpire')
-      .all(policy.isAllowed)
-      .get(dashboardController.chartsSubsExpires);
+        .all(policy.isAllowed)
+        .get(dashboardController.chartsSubsExpires);
 
 
 
 
     /* ===== Reports ===== */
     app.route('/api/reports/subscribers')
-      .all(policy.isAllowed).get(reportsController.listOfSubscribers);
+        .all(policy.isAllowed).get(reportsController.listOfSubscribers);
     app.route('/api/reports/sales')
-      .all(policy.isAllowed).get(reportsController.listOfSales);
+        .all(policy.isAllowed).get(reportsController.listOfSales);
     app.route('/api/reports/expiring')
-      .all(policy.isAllowed).get(reportsController.expiringNextWeek);
+        .all(policy.isAllowed).get(reportsController.expiringNextWeek);
     app.route('/api/reports/product')
-      .all(policy.isAllowed).get(reportsController.listSalesByProduct);
+        .all(policy.isAllowed).get(reportsController.listSalesByProduct);
 };

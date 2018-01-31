@@ -4,9 +4,9 @@
  * Module dependencies.
  */
 var path = require('path'),
-  errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
-  db = require(path.resolve('./config/lib/sequelize')).models,
-  DBModel = db.vod;
+    errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
+    db = require(path.resolve('./config/lib/sequelize')).models,
+    DBModel = db.vod;
 
 /**
  * Create
@@ -82,7 +82,7 @@ exports.delete = function(req, res) {
  */
 exports.totalhits = function(req, res) {
 
-      var qwhere = {},
+  var qwhere = {},
       final_where = {},
       query = req.query;
 
@@ -105,8 +105,8 @@ exports.totalhits = function(req, res) {
   //end build final where
 
   DBModel.findAndCountAll(
-    
-    final_where
+
+      final_where
 
 
   ).then(function(results) {

@@ -25,7 +25,7 @@ module.exports = function(sequelize, DataTypes) {
 
         description: {
             type: DataTypes.STRING(128),
-                allowNull: false
+            allowNull: false
         },
 
         url: {
@@ -35,12 +35,12 @@ module.exports = function(sequelize, DataTypes) {
 
         upgrade_min_api: {
             type: DataTypes.STRING(16),
-                allowNull: false
+            allowNull: false
         },
 
         upgrade_min_app_version: {
             type: DataTypes.STRING(16),
-                allowNull: false
+            allowNull: false
         },
         beta_version: {
             type: DataTypes.BOOLEAN,

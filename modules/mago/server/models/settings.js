@@ -55,6 +55,11 @@ module.exports = function(sequelize, DataTypes) {
             defaultValue: '',
             allowNull: false
         },
+        help_page: {
+            type: DataTypes.STRING(255),
+            defaultValue: '/help_and_support',
+            allowNull: false
+        },
         vod_subset_nr: {
             type: DataTypes.INTEGER(11),
             defaultValue: 200,

@@ -89,9 +89,9 @@ export default function (nga, admin) {
                     nga.field('channel_id', 'reference')
                         .targetEntity(admin.getEntity('Channels'))
                         .targetField(nga.field('isavailable', 'boolean'))
-                        .label('Available'),
+                        .label('available'),
                 ])
-                .listActions(['<ma-delete-button label="Remove" entry="entry" entity="entity" size="xs"></ma-delete-button>'])
+                //.listActions(['<ma-delete-button label="Remove" entry="entry" entity="entity" size="xs"></ma-delete-button>'])
 
                 .perPage(15),
             nga.field('template')

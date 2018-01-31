@@ -56,6 +56,24 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'deleteorappend' })
                 .validation({ required: true })
                 .label('Delete existing data'),
+            nga.field('timezone', 'number')
+                .attributes({ placeholder: 0 })
+                .validation({
+                    validator: function(value) {
+                        if (value == null) value = 0;
+                        if(value<-12 || value>12) throw new Error('Timezone should be in the range of [-12:12]');
+                    }
+                })
+                .label('Generated with timezone: '),
+            nga.field('encoding', 'choice')
+                .attributes({ placeholder: 'utf-8' })
+                .choices([
+                    { value: 'ascii', label: 'ascii' },
+                    { value: 'utf-8', label: 'utf-8' },
+                    { value: 'latin1 ', label: 'latin1 ' }
+                ])
+                .validation({ required: true })
+                .label('Epg file encoding'),
             nga.field('epg_file','file')
                 .uploadInformation({ 'url': '/file-upload/single-file/epg/epg_file', 'accept': 'image/*, .csv, text/xml, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'apifilename': 'result'})
                 .template('<div class="row">'+

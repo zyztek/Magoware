@@ -7,31 +7,31 @@ function details($stateProvider) {
         url: '/personal',
         headers: { "Content-Type": "application/json;charset=UTF-8" },
         controller: ['Restangular', '$scope', 'notification', (Restangular, $scope, notification) => {
-           
+
             Restangular.one('personal-details').get()
-                    .then(function successCallback(response) {
-                            $scope.user = {
-                                username: response.username,
-                                email: response.email,
-                                telephone: response.telephone,
-                                role: localStorage.userRole,
-                            };
+            .then(function successCallback(response) {
+                $scope.user = {
+                    username: response.username,
+                    email: response.email,
+                    telephone: response.telephone,
+                    role: localStorage.userRole,
+                };
 
-                          }, function errorCallback(response) {
-                        });
+            }, function errorCallback(response) {
+            });
 
-                // Start Update Details
+    // Start Update Details
 
-                $scope.updateDetails = function () {                  
-                    Restangular.one('personal-details').put($scope.user)
-                        .then(function successCallback(response) {
-                          }, function errorCallback(response) {
-                          })
-                }
+    $scope.updateDetails = function () {
+        Restangular.one('personal-details').put($scope.user)
+            .then(function successCallback(response) {
+            }, function errorCallback(response) {
+            })
+    }
 
-        }],
-        template: temp
-    });
+}],
+    template: temp
+});
 
 }
 

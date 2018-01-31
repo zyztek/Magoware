@@ -8,9 +8,9 @@ angular.module('ngVis', [])
         };
     })
 
-/**
- * TimeLine directive
- */
+    /**
+     * TimeLine directive
+     */
     .directive('visTimeline', function () {
         'use strict';
         return {
@@ -75,9 +75,9 @@ angular.module('ngVis', [])
         };
     })
 
-/**
- * Directive for network chart.
- */
+    /**
+     * Directive for network chart.
+     */
     .directive('visNetwork', function () {
         return {
             restrict: 'EA',
@@ -159,9 +159,9 @@ angular.module('ngVis', [])
         };
     })
 
-/**
- * Directive for graph2d.
- */
+    /**
+     * Directive for graph2d.
+     */
     .directive('visGraph2d', function () {
         'use strict';
         return {

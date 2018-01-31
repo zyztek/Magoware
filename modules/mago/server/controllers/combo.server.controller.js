@@ -39,7 +39,7 @@ exports.read = function(req, res) {
  * Update
  */
 exports.update = function(req, res) {
-	var updateData = req.combos;
+    var updateData = req.combos;
 
     logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
     updateData.updateAttributes(req.body).then(function(result) {
@@ -127,29 +127,29 @@ exports.list = function(req, res) {
  */
 exports.dataByID = function(req, res, next, id) {
 
-  if ((id % 1 === 0) === false) { //check if it's integer
-    return res.status(404).send({
-      message: 'Data is invalid'
-    });
-  }
-
-  DBModel.find({
-    where: {
-      id: id
-    },
-    include: [{model:db.combo_packages}]
-  }).then(function(result) {
-    if (!result) {
-      return res.status(404).send({
-        message: 'No data with that identifier has been found'
-      });
-    } else {
-      req.combos = result;
-      next();
-      return null;
+    if ((id % 1 === 0) === false) { //check if it's integer
+        return res.status(404).send({
+            message: 'Data is invalid'
+        });
     }
-  }).catch(function(err) {
-    return next(err);
-  });
+
+    DBModel.find({
+        where: {
+            id: id
+        },
+        include: [{model:db.combo_packages}]
+    }).then(function(result) {
+        if (!result) {
+            return res.status(404).send({
+                message: 'No data with that identifier has been found'
+            });
+        } else {
+            req.combos = result;
+            next();
+            return null;
+        }
+    }).catch(function(err) {
+        return next(err);
+    });
 
 };

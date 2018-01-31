@@ -15,10 +15,10 @@ function makesalt(){
 
 //returns encrypted value of the plaintext password, with the given salt
 function encryptPassword(password, salt) {
-     if (!password || !salt)
-     return '';
-     salt = new Buffer(salt, 'base64');
-     return crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha1').toString('base64'); //at least 640000 times is suggested, will see later
+    if (!password || !salt)
+        return '';
+    salt = new Buffer(salt, 'base64');
+    return crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha1').toString('base64'); //at least 640000 times is suggested, will see later
 }
 
 //compares db password with the password that the client sends, by encryting it with the db salt

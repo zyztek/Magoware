@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 var path = require('path'),
-  errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
+    errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     db = require(path.resolve('./config/lib/sequelize')).models,
     DBModel = db.devices;
 
@@ -84,11 +84,11 @@ exports.delete = function(req, res) {
  */
 exports.list = function(req, res) {
 
-    var qwhere = {},
+  var qwhere = {},
       final_where = {},
       query = req.query;
 
-    if(query.q) {
+  if(query.q) {
     qwhere.$or = {};
     qwhere.$or.username = {};
     qwhere.$or.username.$like = '%'+query.q+'%';
@@ -100,7 +100,7 @@ exports.list = function(req, res) {
     qwhere.$or.device_brand.$like = '%'+query.q+'%';
     qwhere.$or.os = {};
     qwhere.$or.os.$like = '%'+query.q+'%';
-    }
+  }
 
   final_where.where = qwhere;
   if(parseInt(query._start)) final_where.offset = parseInt(query._start);
@@ -115,7 +115,7 @@ exports.list = function(req, res) {
 
   DBModel.findAndCountAll(
 
-    final_where
+      final_where
 
   ).then(function(results) {
     if (!results) {
@@ -125,11 +125,11 @@ exports.list = function(req, res) {
       return null;
     } else {
 
-      res.setHeader("X-Total-Count", results.count);      
+      res.setHeader("X-Total-Count", results.count);
       return res.json(results.rows);
     }
   }).catch(function(err) {
-      return res.jsonp(err);
+    return res.jsonp(err);
   });
 };
 
@@ -161,8 +161,8 @@ exports.dataByID = function(req, res, next, id) {
       return null;
     }
   }).catch(function(err) {
-      next(err);
-      return null;
+    next(err);
+    return null;
   });
 
 };

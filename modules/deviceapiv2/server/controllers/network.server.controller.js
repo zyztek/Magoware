@@ -30,7 +30,7 @@ exports.dbtest = function(req, res) {
 /**
  * @api {POST} /apiv2/network/gcm Device Register
  * @apiName GCM
- * @apiGroup APIV2
+ * @apiGroup DeviceAPI
  *
  * @apiParam {Number} googleappid Users unique ID.
  * @apiParam {Number} boxid Users unique ID.

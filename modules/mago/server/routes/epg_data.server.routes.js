@@ -13,8 +13,6 @@ var path = require('path'),
 module.exports = function(app) {
 
     /* ===== epg data ===== */
-    //app.route('/api/epgdata_demo')
-       // .get(epgData.list_demo);
 
     app.route('/api/epgdata')
         .all(policy.isAllowed)

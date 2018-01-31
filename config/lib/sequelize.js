@@ -111,6 +111,7 @@ db.connect = function(database, username, password, options) {
                                     old_encryption_key: '0123456789abcdef',
                                     new_encryption_key: '0123456789abcdef',
                                     firebase_key: '',
+                                    help_page: '/help_and_support',
                                     vod_subset_nr: 200,
                                     activity_timeout: 10800,
                                     channel_log_time:6,

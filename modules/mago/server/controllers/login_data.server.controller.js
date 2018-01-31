@@ -4,32 +4,55 @@
  * Module dependencies.
  */
 var path = require('path'),
-  errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
+    errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     logHandler = require(path.resolve('./modules/mago/server/controllers/logs.server.controller')),
     authenticationHandler = require(path.resolve('./modules/deviceapiv2/server/controllers/authentication.server.controller')),
-  db = require(path.resolve('./config/lib/sequelize')).models,
-  DBModel = db.login_data;
+    db = require(path.resolve('./config/lib/sequelize')).models,
+    DBModel = db.login_data;
 
 /**
- * Create
+ * @api {post} /api/logindata Create User account
+ * @apiVersion 0.2.0
+ * @apiName Create User account
+ * @apiGroup Backoffice
+ * @apiHeader {String} authorization Token string acquired from login api.
+ * @apiParam {Number} customer_id  Mandatory field customer_id.
+ * @apiParam {String} username  Mandatory field username.
+ * @apiParam {String} password  Mandatory field password.
+ * @apiParam {String} pin  Mandatory field pin.
+ * @apiParam {String} player  Mandatory field player.
+ * @apiParam {Boolean} account_lock  Mandatory field account_lock.
+ * @apiParam {Number} activity_timeout  Mandatory field activity_timeout.
+ * @apiParam {Boolean} auto_timezone  Mandatory field auto_timezone. *
+ * @apiParam {Number} timezone  Mandatory auto_timezone timezone. *
+ * @apiParam {Boolean} beta_user  Mandatory field beta_user.
+ * @apiParam {Number} channel_stream_source_id  Mandatory field channel_stream_source_id.
+ * @apiParam {Number} vod_stream_source  Mandatory field vod_stream_source.
+ * @apiParam {Boolean} get_messages  Mandatory field get_messages.*
+ * @apiParam {Boolean} show_adult  Mandatory field show_adult.*
+ *
+ * @apiSuccess (200) {String} message Record created successfuly
+ * @apiError (40x) {String} message Error message on creating the user account.
+ *
+
  */
 exports.create = function(req, res) {
 
   var newData = req.body;
-    newData.salt = authenticationHandler.makesalt();
-    logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
-    newData['updatedate'] = new Date();
-    DBModel.create(newData).then(function(result) {
-      if (!result) {
-        return res.status(400).send({message: 'fail create data'});
-      } else {
-        return res.jsonp(result);
-      }
-    }).catch(function(err) {
-      return res.status(400).send({
-        message: errorHandler.getErrorMessage(err)
-      });
+  newData.salt = authenticationHandler.makesalt();
+  logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
+  newData['updatedate'] = new Date();
+  DBModel.create(newData).then(function(result) {
+    if (!result) {
+      return res.status(400).send({message: 'fail create data'});
+    } else {
+      return res.jsonp(result);
+    }
+  }).catch(function(err) {
+    return res.status(400).send({
+      message: errorHandler.getErrorMessage(err)
     });
+  });
 };
 
 /**
@@ -40,22 +63,45 @@ exports.read = function(req, res) {
 };
 
 /**
- * Update
+ * @api {put} /api/logindata/id Update User account
+ * @apiVersion 0.2.0
+ * @apiName Update User account
+ * @apiGroup Backoffice
+ * @apiHeader {String} authorization Token string acquired from login api.
+ * @apiParam {Number} customer_id  Optional field customer_id.
+ * @apiParam {String} password  Optional field password.
+ * @apiParam {String} pin  Optional field pin.
+ * @apiParam {String} player  Optional field player.
+ * @apiParam {Boolean} account_lock  Optional field account_lock.
+ * @apiParam {Number} activity_timeout  Optional field activity_timeout.
+ * @apiParam {Boolean} auto_timezone  Optional field auto_timezone.
+ * @apiParam {Number} timezone  Optional field timezone.
+ * @apiParam {Boolean} beta_user  Optional field beta_user.
+ * @apiParam {Number} channel_stream_source_id  Optional field channel_stream_source_id.
+ * @apiParam {Number} vod_stream_source  Optional field vod_stream_source.
+ * @apiParam {Boolean} get_messages  Optional field get_messages.
+ * @apiParam {Boolean} show_adult  Optional field show_adult.
+ * @apiSuccess (200) {String} message Json of updated record
+ * @apiError (40x) {Text} message {
+ * "message": informing_message
+ * }
+ *
+
  */
 exports.update = function(req, res) {
 
-    if(req.body.updatevodtimestamp === true) {req.body.vodlastchange = Date.now(); }
-    if(req.body.updatelivetvtimestamp === true) {req.body.livetvlastchange = Date.now(); }
-    var updateData = req.loginData;
-    logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
+  if(req.body.updatevodtimestamp === true) {req.body.vodlastchange = Date.now(); }
+  if(req.body.updatelivetvtimestamp === true) {req.body.livetvlastchange = Date.now(); }
+  var updateData = req.loginData;
+  logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
 
-    updateData.updateAttributes(req.body).then(function(result) {
-        res.json(result);
-    }).catch(function(err) {
-        return res.status(400).send({
-            message: errorHandler.getErrorMessage(err)
-        });
+  updateData.updateAttributes(req.body).then(function(result) {
+    res.json(result);
+  }).catch(function(err) {
+    return res.status(400).send({
+      message: errorHandler.getErrorMessage(err)
     });
+  });
 };
 
 /**
@@ -124,7 +170,7 @@ exports.list = function(req, res) {
       });
     } else {
 
-      res.setHeader("X-Total-Count", results.count);      
+      res.setHeader("X-Total-Count", results.count);
       res.json(results.rows);
     }
   }).catch(function(err) {

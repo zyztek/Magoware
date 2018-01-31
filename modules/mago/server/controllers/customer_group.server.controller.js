@@ -4,9 +4,9 @@
  * Module dependencies.
  */
 var path = require('path'),
-  errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
-  db = require(path.resolve('./config/lib/sequelize')).models,
-  DBModel = db.customer_group;
+    errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
+    db = require(path.resolve('./config/lib/sequelize')).models,
+    DBModel = db.customer_group;
 
 /**
  * Create
@@ -113,7 +113,7 @@ exports.list = function(req, res) {
       });
     } else {
 
-      res.setHeader("X-Total-Count", results.count);      
+      res.setHeader("X-Total-Count", results.count);
       res.json(results.rows);
     }
   }).catch(function(err) {

@@ -29,7 +29,7 @@
   {
     "api_url": "/api/salesreports","description": "sales report","api_group_id": 2
   },
-   {
+  {
     "api_url": "/api/vodpackages","description": "vod packages","api_group_id": 2
   },
   {

@@ -7,7 +7,28 @@ var path = require('path'),
     DBModel = db.commands,
     DBDevices = db.devices;
 
+/*
+ function save_messages(obj, messagein, ttl, action, callback){
+ console.log("at save message")
 
+ DBModel.create({
+ username: obj.username,
+ googleappid: obj.googleappid,
+ title: messagein,
+ message: messagein,
+ action: action
+ }).then(function(result) {
+ if (!result) {
+ console.log('Fail to create data')
+ } else {
+ console.log('Messages saved')
+ }
+ }).catch(function(err) {
+
+ });
+
+ }
+ */
 
 /**
  * Create
@@ -21,24 +42,6 @@ exports.create = function(req, res) {
         });
     }
     else{
-        if(req.body.command === 'file_replace'){
-            console.log("req.body", req.body)
-            var message = {
-                "action": req.body.command,
-                "parameter1": req.body.parameter1,
-                "parameter2": req.body.parameter2,
-                "parameter3": req.body.parameter3
-            };
-        }
-        else{
-            if(req.body.command === 'SOFTWARE_INSTALL') var message = {"software_install": req.body.command};
-            else if(req.body.command === 'DELETE_SHP') var message = {"delete_shp": req.body.command};
-            else if(req.body.command === 'DELETE_DATA') var message = {"delete_data": req.body.command};
-            else var message = {"command": req.body.command};
-        }
-
-        console.log("Message ", message)
-
         var where = {}; //the device filters will be passed here
         var appids = []; //appids that should receive the push will be held here
         if(req.body.type === "one") where.login_data_id = req.body.username; //if only one user is selected, filter devices of that user
@@ -53,7 +56,7 @@ exports.create = function(req, res) {
 
         DBDevices.findAll(
             {
-                attributes: ['googleappid'],
+                attributes: ['googleappid', 'appid', 'app_version'],
                 where: where,
                 include: [{model: db.login_data, attributes: ['username'], required: true, raw: true, where: {get_messages: true}}],
                 logging: console.log
@@ -67,11 +70,22 @@ exports.create = function(req, res) {
                 var fcm_tokens = [];
                 var users = [];
                 for(var i=0; i<result.length; i++){
-                    fcm_tokens.push(result[i].googleappid);
-                    users.push(result[i].login_datum.id)
+                    if(result[i].appid === 1 && result[i].app_version >= '2.2.2')
+                        var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
+                    else if(result[i].appid === 2 && result[i].app_version >= '1.1.2.2')
+                        var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
+                    else if(result[i].appid === 3 && result[i].app_version >= '1.3957040')
+                        var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
+                    else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0')
+                        var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
+                    else var message = {
+                            "action": req.body.command,
+                            "parameter1": req.body.parameter1,
+                            "parameter2": req.body.parameter2,
+                            "parameter3": req.body.parameter3
+                        };
+                    push_msg.send_notification(result[i].googleappid, req.app.locals.settings.firebase_key, result[i].login_datum.id, message, req.body.timetolive, false, true, function(result){});
                 }
-
-                push_msg.send_notification(fcm_tokens, req.app.locals.settings.firebase_key, users, message, req.body.timetolive, false, true, function(result){});
                 return res.status(200).send({
                     message: 'Message sent'
                 });

@@ -199,6 +199,10 @@ export default function (nga, admin) {
             .title('Logs')
             .icon('<span class="fa fa-book fa-fw"></span>')
         )
+        .addChild(nga.menu(admin.getEntity('PaymentTransactions'))
+            .title('Payment Transaction')
+            .icon('<span class="fa fa-book fa-fw"></span>')
+        )
 
         .addChild(nga.menu()
             .title('Push messages')

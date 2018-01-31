@@ -21,6 +21,10 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING(255),
             allowNull: false
         },
+        stream_format: {
+            type: DataTypes.STRING(2),
+            allowNull: false
+        },
         token: {
             type: DataTypes.BOOLEAN,
             allowNull: false
@@ -30,6 +34,10 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false
         },
         token_url: {
+            type: DataTypes.STRING(255),
+            allowNull: false
+        },
+        encryption_url: {
             type: DataTypes.STRING(255),
             allowNull: false
         }

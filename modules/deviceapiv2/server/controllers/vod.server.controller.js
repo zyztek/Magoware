@@ -25,7 +25,7 @@ exports.list = function(req, res) {
     models.vod.findAll({
         attributes: ['id', 'title', 'pin_protected', 'duration', 'description', 'director', 'starring', 'category_id', 'createdAt', 'rate', 'year', 'icon_url', 'image_url'],
         include: [
-            {model: models.vod_stream, required: true, attributes: ['url', 'encryption', 'token', 'token_url']},
+            {model: models.vod_stream, required: true, attributes: ['url', 'encryption', 'token', 'stream_format', 'token_url']},
             {model: models.vod_category, required: true, attributes: [], where:{password:{in: allowed_content}, isavailable: true}}
         ],
         where: {pin_protected:{in: allowed_content}, isavailable: true},
@@ -44,6 +44,7 @@ exports.list = function(req, res) {
                         raw_obj.title = obj.title;
                         raw_obj.pin_protected = (obj.pin_protected === true) ? 1 : 0;
                         raw_obj.duration = obj.duration;
+                        raw_obj.stream_format = obj[k][j].stream_format;
                         raw_obj.url = obj[k][j].url;
                         raw_obj.description = obj.description + ' Director: ' + obj.director + ' Starring: ' + obj.starring;
                         raw_obj.icon = req.app.locals.settings.assets_url+obj.icon_url;
@@ -55,6 +56,7 @@ exports.list = function(req, res) {
                         raw_obj.token = (obj[k][j].token) ? "1" : "0";
                         raw_obj.TokenUrl = (obj[k][j].token_url) ? obj[k][j].token_url : "";
                         raw_obj.encryption = (obj[k][j].encryption) ? "1" : "0";
+                        raw_obj.encryption_url = (obj[k][j].encryption_url) ? obj[k][j].encryption_url : "";
                     });
                 }
             });

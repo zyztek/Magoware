@@ -49,20 +49,18 @@ exports.akamai_token_v2_generator = function(req,res) {
     };
 
     //var token_generator = new token_generator.default(config);
-    var token = new akamai_token_generator.default(config).generateToken();
+    var token = "?" + new akamai_token_generator.default(config).generateToken();
     //var token = token_generator.generateToken();
     //responses.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', token, 'no-store');
-    var theresponse = {
-        status_code: 200,
-        error_code: 1,
-        timestamp: Date.now(),
-        error_description: "OK",
-        extra_data: token,
-        response_object: []
-    };
+
+    var theresponse = new responses.OK();
+    theresponse.extra_data = token;
 
     res.send(theresponse);
 };
+
+
+
 
 exports.flussonic_token_generator =  function(req, res) {
     var secure_token = "uGhKNDl54sd123"; //server side only
@@ -75,21 +73,13 @@ exports.flussonic_token_generator =  function(req, res) {
     var endtime = req.query.endtime || (Date.now()/1000|0) + 3600;
 
     var tohash = stream_name + ip + starttime + endtime + secure_token + salt;
-    //console.log(req.params[0]);
 
     var token = "?token="+mysha1(tohash)+"-" + salt + "-" + endtime + "-" + starttime;
 
-    var theresponse = {
-        status_code: 200,
-        error_code: 1,
-        timestamp: Date.now(),
-        error_description: "OK",
-        extra_data: token,
-        response_object: []
-    };
+    var theresponse = new responses.OK();
+    theresponse.extra_data = token;
 
     res.send(theresponse);
-    //responses.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', token, 'no-store');
 };
 
 exports.flussonic_token__remote =  function(req, res) {
@@ -105,7 +95,7 @@ exports.flussonic_token__remote =  function(req, res) {
     var queryparams = 'sing?' + 'password=' + password+'&name=' + stream_name + '&salt=' + salt + '&ip=' + ip + '&startime=' + starttime + '&endtime=' + endtime;
 
     request(token_url+queryparams, function (error, response, body) {
-        var thisresponse = new responses.OK;
+        var thisresponse = new responses.OK();
 
         if(response.statusCode === 200) {
             thisresponse.extra_data = body;
@@ -114,8 +104,5 @@ exports.flussonic_token__remote =  function(req, res) {
         else {
             res.send(thisresponse);
         }
-        //console.log('error:', error); // Print the error if one occurred
-        //console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-        //console.log('body:', body); // Print the HTML for the Google homepage.
     });
 };

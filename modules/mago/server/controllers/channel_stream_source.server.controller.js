@@ -4,9 +4,9 @@
  * Module dependencies.
  */
 var path = require('path'),
-  errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
-  db = require(path.resolve('./config/lib/sequelize')).models,
-  DBModel = db.channel_stream_source;
+    errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
+    db = require(path.resolve('./config/lib/sequelize')).models,
+    DBModel = db.channel_stream_source;
 
 /**
  * Create
@@ -91,7 +91,7 @@ exports.list = function(req, res) {
         message: 'No data found'
       });
     } else {
-      res.setHeader("X-Total-Count", results.count);      
+      res.setHeader("X-Total-Count", results.count);
       res.json(results.rows);
     }
   }).catch(function(err) {

@@ -3,6 +3,7 @@ var path = require('path'),
     db = require(path.resolve('./config/lib/sequelize')),
     response = require(path.resolve("./config/responses.js")),
     password_encryption = require(path.resolve('./modules/deviceapiv2/server/controllers/authentication.server.controller.js')),
+    push_msg = require(path.resolve('./custom_functions/push_messages')),
     crypto = require('crypto'),
     models = db.models;
 
@@ -211,4 +212,31 @@ exports.logout_user = function(req, res) {
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
+};
+
+//Sends an action push message to all active devices where this user is loged in
+exports.lock_account = function lock_account(login_id, username) {
+    models.settings.findOne({
+        attributes: ['firebase_key']
+    }).then(function (setting) {
+        models.devices.findAll({
+            attributes: ['googleappid', 'app_version', 'appid'], where: {login_data_id: login_id, device_active: true}
+        }).then(function (result) {
+            if(result && result.length>0){
+                for(var i=0; i<result.length; i++){
+                    if(result[i].appid === 1 && result[i].app_version >= '2.2.2') var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
+                    else if(result[i].appid === 2 && result[i].app_version >= '1.1.2.2') var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
+                    else if(result[i].appid === 3 && result[i].app_version >= '1.3957040') var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
+                    else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0') var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
+                    else var message = {"action": "lock_account", "parameter1": "", "parameter2": "", "parameter3": ""};
+                    push_msg.send_notification(result[i].googleappid, setting.firebase_key, username, message, 5, false, true, function(result){});
+                }
+            }
+        }).catch(function(error) {
+            //unable to retrieve firebase tokens for this user, push notification not sent
+        });
+        return null;
+    }).catch(function(error) {
+        //could not read firebase server key, push notification not sent
+    });
 };

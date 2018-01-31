@@ -1,10 +1,10 @@
 'use strict';
 
 var path = require('path'),
-  config = require(path.resolve('./config/config')),
-  reCaptcha = require(path.resolve('./config/lib/reCaptcha')),
-  async = require('async'),
-  nodemailer = require('nodemailer');
+    config = require(path.resolve('./config/config')),
+    reCaptcha = require(path.resolve('./config/lib/reCaptcha')),
+    async = require('async'),
+    nodemailer = require('nodemailer');
 
 var smtpTransport = nodemailer.createTransport(config.mailer.options);
 
@@ -88,7 +88,7 @@ exports.contact = function(req, res, next) {
           done('Failed to send the email, please try again later.');
         } else {
           return res.send({
-          message: 'Thank you for contacting us! We will get back to you as soon as possible!'
+            message: 'Thank you for contacting us! We will get back to you as soon as possible!'
           });
         }
       });

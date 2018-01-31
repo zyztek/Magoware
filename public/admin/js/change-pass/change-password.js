@@ -9,21 +9,21 @@ export default function ($stateProvider) {
         controller: ['Restangular', '$scope', 'notification', (Restangular, $scope, notification) => {
 
             $scope.pwdata = {
-                currentPassword: '',
-                newPassword: '',
-                verifyPassword: ''
-            };
+            currentPassword: '',
+            newPassword: '',
+            verifyPassword: ''
+        };
 
-            $scope.createPost = function () {
-                Restangular.one('user/change-password').customPOST($scope.pwdata)
-                    .then(function successCallback(response) {
-                        notification.log(response.message, { addnCls: 'humane-flatty-success' });
-                    },function errorCallback(response) {
-                        notification.log(response.data.message, { addnCls: 'humane-flatty-error' });
-                    });
-            }
-        }],
+    $scope.createPost = function () {
+        Restangular.one('user/change-password').customPOST($scope.pwdata)
+            .then(function successCallback(response) {
+                notification.log(response.message, { addnCls: 'humane-flatty-success' });
+            },function errorCallback(response) {
+                notification.log(response.data.message, { addnCls: 'humane-flatty-error' });
+            });
+    }
+}],
 
-        template: Template
-    });
-};  
+    template: Template
+});
+};

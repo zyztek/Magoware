@@ -50,6 +50,24 @@ exports.update = function(req, res) {
 
 };
 
+
+/**
+ * @api {post} /api/annul Annul Sale
+ * @apiVersion 0.2.0
+ * @apiName Annul Sale
+ * @apiGroup Backoffice
+ * @apiHeader {String} authorization Token string acquired from login api.
+ * @apiParam {Number} login_id  Mandatory field login_id.
+ * @apiParam {Number} product  Mandatory field product.
+ * @apiParam {Number} sale_id  Mandatory field sale_id.
+ * @apiParam {String} username  Mandatory field username.
+ * @apiSuccess (200) {String} message Json of updated record
+ * @apiError (40x) {Text} message {
+ * "message": informing_message
+ * }
+ *
+
+ */
 exports.annul = function(req, res) {
     var response = {};
     var username = (req.body.username) ? req.body.username : '';

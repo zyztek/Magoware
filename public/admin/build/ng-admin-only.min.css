@@ -283,8 +283,8 @@ table.dataTable thead .sorting:after {
 
 #wrapper .navbar-static-top {
   margin-bottom: 0; }
-  #wrapper .navbar-static-top .navbar-right {
-    margin-right: 15px; }
+#wrapper .navbar-static-top .navbar-right {
+  margin-right: 15px; }
 
 pre.ascii {
   border: none;
@@ -346,17 +346,17 @@ ul.collapsible {
   padding: 1em;
   text-align: center;
   background-color: #DFF0D8; }
-  .dashboard-invite p {
-    padding: .5em;
-    margin: 0; }
+.dashboard-invite p {
+  padding: .5em;
+  margin: 0; }
 
 /**
 * Grid
 */
 #page-wrapper .page-header {
   margin: 10px 0 15px; }
-  #page-wrapper .page-header .lead {
-    margin-bottom: 0; }
+#page-wrapper .page-header .lead {
+  margin-bottom: 0; }
 
 ma-view-actions {
   margin: 3px 0 0 0;
@@ -375,46 +375,46 @@ ma-view-actions {
 
 .list-header .filters .input-reference .form-control {
   float: none; }
-  .list-header .filters .input-reference .form-control .ui-select-match-text, .list-header .filters .input-reference .form-control .ui-select-placeholder {
-    padding-right: 20px; }
+.list-header .filters .input-reference .form-control .ui-select-match-text, .list-header .filters .input-reference .form-control .ui-select-placeholder {
+  padding-right: 20px; }
 
 .grid {
   background-color: #fff; }
-  .grid .ng-admin-type-number, .grid .ng-admin-type-float {
-    text-align: right;
-    padding-right: 1em; }
-  .grid .label {
-    margin-right: 5px;
-    font-weight: normal;
-    font-size: 12px;
-    padding-top: 4px;
-    text-decoration: none; }
-  .grid td a.multiple:hover {
-    text-decoration: none; }
-  .grid thead tr .glyphicon {
-    font-size: 13px;
-    color: #aaa; }
+.grid .ng-admin-type-number, .grid .ng-admin-type-float {
+  text-align: right;
+  padding-right: 1em; }
+.grid .label {
+  margin-right: 5px;
+  font-weight: normal;
+  font-size: 12px;
+  padding-top: 4px;
+  text-decoration: none; }
+.grid td a.multiple:hover {
+  text-decoration: none; }
+.grid thead tr .glyphicon {
+  font-size: 13px;
+  color: #aaa; }
 
 div.bottom-loader {
   margin-top: 40px;
   position: inherit;
   width: auto;
   height: auto; }
-  div.bottom-loader:after {
-    position: relative;
-    display: inherit;
-    margin: 0 auto; }
-  div.bottom-loader:before {
-    display: none; }
+div.bottom-loader:after {
+  position: relative;
+  display: inherit;
+  margin: 0 auto; }
+div.bottom-loader:before {
+  display: none; }
 
 .pagination-bar {
   text-align: right;
   margin: 20px 0; }
-  .pagination-bar .pagination {
-    margin: 0 0 0 20px; }
-  .pagination-bar .total {
-    display: inline-block;
-    padding: 5px; }
+.pagination-bar .pagination {
+  margin: 0 0 0 20px; }
+.pagination-bar .total {
+  display: inline-block;
+  padding: 5px; }
 
 /**
 * Edition form
@@ -449,32 +449,32 @@ div.bottom-loader {
 
 .form-horizontal .date_widget {
   width: 10em; }
-  @media (max-width: 768px) {
-    .form-horizontal .date_widget {
-      width: 100%; } }
+@media (max-width: 768px) {
+  .form-horizontal .date_widget {
+    width: 100%; } }
 
 .form-horizontal .datetime_widget {
   width: 15em; }
-  @media (max-width: 768px) {
-    .form-horizontal .datetime_widget {
-      width: 100%; } }
+@media (max-width: 768px) {
+  .form-horizontal .datetime_widget {
+    width: 100%; } }
 
 .form-horizontal .remove_button_container {
   position: absolute;
   right: -7em;
   z-index: 2; }
-  @media (max-width: 992px) {
-    .form-horizontal .remove_button_container {
-      position: relative;
-      right: 0;
-      display: block;
-      text-align: right; } }
+@media (max-width: 992px) {
+  .form-horizontal .remove_button_container {
+    position: relative;
+    right: 0;
+    display: block;
+    text-align: right; } }
 
 .form-horizontal .ta-toolbar button {
   font-size: 12px;
   padding: 5px 8px; }
-  .form-horizontal .ta-toolbar button.active {
-    z-index: 1; }
+.form-horizontal .ta-toolbar button.active {
+  z-index: 1; }
 
 .form-horizontal .ng-admin-type-embedded_list .ng-admin-type-boolean ma-choice-field {
   min-width: 12em; }
@@ -490,8 +490,8 @@ div.bottom-loader {
 
 .form-horizontal#show-view .show-value .table {
   margin: 0; }
-  .form-horizontal#show-view .show-value .table td {
-    border-top: 0; }
+.form-horizontal#show-view .show-value .table td {
+  border-top: 0; }
 
 .form-horizontal#show-view .ng-admin-type-embedded_list .table-condensed > thead > tr > th, .form-horizontal#show-view .ng-admin-type-referenced_list .table-condensed > thead > tr > th {
   padding-top: 0; }

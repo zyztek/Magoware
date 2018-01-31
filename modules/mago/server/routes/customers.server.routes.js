@@ -14,18 +14,18 @@ module.exports = function(app) {
     /* ===== customer data ===== */
     app.route('/api/customerdata')
         .get(customerData.list);
-		
+
     app.route('/api/customerdata')
         .all(policy.isAllowed)
-        .post(customerData.create);		
+        .post(customerData.create);
 
     app.route('/api/customerdata/:customerDataId')
         .get(customerData.read);
-		
-app.route('/api/customerdata/:customerDataId')
+
+    app.route('/api/customerdata/:customerDataId')
         .all(policy.isAllowed)
         .put(customerData.update)
-        .delete(customerData.delete);		
+        .delete(customerData.delete);
 
     app.param('customerDataId', customerData.dataByID);
 };

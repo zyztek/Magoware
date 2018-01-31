@@ -26,7 +26,7 @@ function unschedule_program(event_id){
 
 function send_notification(event_time, firebase_key, login_data_id, channel_number, program_id){
     models.devices.findAll({
-        attributes: ['googleappid'],
+        attributes: ['googleappid', 'app_version', 'appid'],
         where: {login_data_id: login_data_id, device_active: true},
         include: [{model: models.login_data, attributes: ['username'], required: true}]
     }).then(function(devices) {
@@ -43,20 +43,27 @@ function send_notification(event_time, firebase_key, login_data_id, channel_numb
                     console.log("jo epg ose epg length 0")
                 }
                 else{
-                    //todo: prepare payload                                                      ----
-                    var fcm_tokens = [];
                     for(var i=0; i<devices.length; i++){
-                        fcm_tokens.push(devices[i].googleappid);
+                        if(devices[i].appid === 1 && devices[i].app_version >= '2.2.2')
+                            var message = new push_msg.SCHEDULE_PUSH(epg_program.title, epg_program.long_description, '2', "scheduling", program_id.toString(), channel_number.toString(), event_time.toString());
+                        else if(devices[i].appid === 2 && devices[i].app_version >= '1.1.2.2'){
+                            var message = new push_msg.SCHEDULE_PUSH(epg_program.title, epg_program.long_description, '2', "scheduling", program_id.toString(), channel_number.toString(), event_time.toString());
+                        }
+                        else if(devices[i].appid === 3 && devices[i].app_version >= '1.3957040')
+                            var message = new push_msg.SCHEDULE_PUSH(epg_program.title, epg_program.long_description, '2', "scheduling", program_id.toString(), channel_number.toString(), event_time.toString());
+                        else if(devices[i].appid === 4 && devices[i].app_version >= '6.1.3.0')
+                            var message = new push_msg.SCHEDULE_PUSH(epg_program.title, epg_program.long_description, '2', "scheduling", program_id.toString(), channel_number.toString(), event_time.toString());
+                        else var message = {
+                                "event": "scheduling", //todo: te hiqet?
+                                "program_id": program_id.toString(),
+                                "channel_number": channel_number.toString(),
+                                "event_time": event_time.toString(),
+                                "program_name": epg_program.title,
+                                "description": epg_program.long_description
+                            };
+                        push_msg.send_notification(devices[i].googleappid, firebase_key, devices[0].login_datum.username, message, 0, true, false, 0);
                     }
-                    var message = {
-                        "event": "scheduling",
-                        "program_id": program_id.toString(),
-                        "channel_number": channel_number.toString(),
-                        "event_time": event_time.toString(),
-                        "program_name": epg_program.title,
-                        "description": epg_program.long_description
-                    };
-                    push_msg.send_notification(fcm_tokens, firebase_key, devices[0].login_datum.username, message, 0, true, false, 0); //todo: 0 e fundit ishte callback ...
+
                 }
             }).catch(function(error) {
                 console.log(error)
@@ -72,7 +79,6 @@ function send_notification(event_time, firebase_key, login_data_id, channel_numb
 }
 
 exports.reload_scheduled_programs = function() {
-    console.log("tek reschedule")
     var now = new Date();
     var current_time = dateFormat(now.setMinutes(now.getMinutes() + 5), "yyyy-mm-dd HH:MM:ss");
 
@@ -96,5 +102,58 @@ exports.is_scheduled = function(event_id){
     else return true;
 };
 
+function end_subscription(login_id, ending_after, app_ids, screensize, activity, firebase_key){
+    if(activity === 'livetv' && screensize === 1){
+        try{
+            livetv_l_subscription_end[login_id] = setTimeout(function(){
+                send_action('termination', login_id, app_ids, firebase_key)
+            }, ending_after);
+        } catch(e){}
+    }
+    else if(activity === 'livetv' && screensize === 2){
+        try{
+            var theidinit = login_id;
+            livetv_s_subscription_end[theidinit] = setTimeout(function(){
+                //livetv_s_subscription_end[login_id] = setTimeout(function(){
+                send_action('termination', login_id, app_ids, firebase_key)
+            }, ending_after);
+        } catch(e){}
+    }
+    else if(activity === 'vod' && screensize === 1){
+        try{
+            vod_l_subscription_end[login_id] = setTimeout(function(){
+                send_action('termination', login_id, app_ids, firebase_key)
+            }, ending_after);
+        } catch(e){}
+    }
+    else{
+        try{
+            vod_s_subscription_end[login_id] = setTimeout(function(){
+                send_action('termination', login_id, app_ids, firebase_key)
+            }, ending_after);
+        } catch(e){}
+    }
+}
+
+function send_action(action, login_id, app_ids, firebase_key){
+    models.devices.findOne({
+        attributes: ['googleappid', 'username', 'app_version', 'appid'], where: {login_data_id: login_id, device_active: true, appid: {in: app_ids}}, logging: console.log //todo: username will be removed from table devices
+    }).then(function(result){
+        if(result) {
+            for(var i=0; i<result.length; i++){
+                if(result[i].appid === 1 && result[i].app_version >= '2.2.2') var message = new push_msg.ACTION_PUSH('Action', "Your subscription has ended", '5', "termination");
+                else if(result[i].appid === 2 && result[i].app_version >= '1.1.2.2') var message = new push_msg.ACTION_PUSH('Action', "Your subscription has ended", '5', "termination");
+                else if(result[i].appid === 3 && result[i].app_version >= '1.3957040') var message = new push_msg.ACTION_PUSH('Action', "Your subscription has ended", '5', "termination");
+                else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0') var message = new push_msg.ACTION_PUSH('Action', "Your subscription has ended", '5', "termination");
+                else var message = {"action": "termination", "parameter1": "", "parameter2": "", "parameter3": ""};
+                push_msg.send_notification(result.googleappid, firebase_key, result.username, message, 5, false, false, null);
+            }
+        }
+    }).catch(function(error){
+        console.log(error)
+    });
+}
+
 exports.schedule_program = schedule_program;
 exports.unschedule_program = unschedule_program;
+exports.end_subscription = end_subscription;

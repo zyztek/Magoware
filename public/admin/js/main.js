@@ -170,6 +170,7 @@ myApp.directive('dashboardSummary', require('./dashboard/dashboardSummary'));
 myApp.directive('graph', require('./dashboard/graphs'));
 myApp.directive('sendpush', require('./smsbatch/sendpush'));
 myApp.directive('sale', require('./smsbatch/sale'));
+myApp.directive('vod', require('./smsbatch/vod'));
 myApp.directive('approveReview', require('./groups/approveReview'));
 
 //myApp.directive('roles', require('./grouprights/radioRoles'));
@@ -211,10 +212,11 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     admin.addEntity(nga.entity('mychannels'));
     admin.addEntity(nga.entity('Genres'));
     admin.addEntity(nga.entity('LoginData'));
-    admin.addEntity(nga.entity('livepackages'));
     admin.addEntity(nga.entity('Packages'));
-    admin.addEntity(nga.entity('vodPackages'));
+    admin.addEntity(nga.entity('livepackages'));
     admin.addEntity(nga.entity('packagechannels'));
+    admin.addEntity(nga.entity('vodPackages'));
+    admin.addEntity(nga.entity('package_vod'));
     admin.addEntity(nga.entity('packagetypes'));
     admin.addEntity(nga.entity('Salesreports'));
     admin.addEntity(nga.entity('sales_by_product'));
@@ -238,6 +240,7 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     admin.addEntity(nga.entity('vodstreams'));
     admin.addEntity(nga.entity('VodStreamSources'));
     admin.addEntity(nga.entity('vodsubtitles'));
+    admin.addEntity(nga.entity('PaymentTransactions'));
 
     //Config
 
@@ -282,6 +285,8 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     require('./vodStream/config')(nga, admin);
     require('./vodStreamSource/config')(nga, admin);
     require('./vodSubtitles/config')(nga, admin);
+    require('./paymentTransactions/config')(nga, admin);
+
 
     // Menu / Header / Dashboard / Layout
 

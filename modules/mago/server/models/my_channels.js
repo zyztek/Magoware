@@ -17,7 +17,7 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.INTEGER(11),
             allowNull: false
         },
-		genre_id: {
+        genre_id: {
             type: DataTypes.INTEGER(11),
             allowNull: false
         },
@@ -39,8 +39,8 @@ module.exports = function(sequelize, DataTypes) {
         }
     }, {
         tableName: 'my_channels',
-            associate: function(models) {
-                my_channels.belongsTo(models.genre, {foreignKey: 'genre_id'});
+        associate: function(models) {
+            my_channels.belongsTo(models.genre, {foreignKey: 'genre_id'});
         }
 
     });

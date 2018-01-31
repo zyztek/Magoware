@@ -1,6 +1,7 @@
 "use strict";
 var path = require('path');
 var authenticationHandler = require(path.resolve('./modules/deviceapiv2/server/controllers/authentication.server.controller'));
+var login_data_ctrl = require(path.resolve('./modules/deviceapiv2/server/controllers/credentials.server.controller'));
 
 module.exports = function(sequelize, DataTypes) {
     var loginData = sequelize.define('login_data', {
@@ -125,7 +126,10 @@ module.exports = function(sequelize, DataTypes) {
             login_data.set('salt', salt);
             login_data.set('password', authenticationHandler.encryptPassword(login_data.password, salt));
         }
-    })
+        if (login_data.changed('account_lock') && login_data.account_lock === true) {
+            login_data_ctrl.lock_account(login_data.id, login_data.username);
+        }
+    });
 
     loginData.beforeCreate(function(login_data, options) {
         login_data.set('salt', login_data.salt);

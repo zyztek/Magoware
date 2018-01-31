@@ -3,6 +3,7 @@ var path = require('path'),
     db = require(path.resolve('./config/lib/sequelize')),
     response = require(path.resolve("./config/responses.js")),
     vod = require(path.resolve("./modules/deviceapiv2/server/controllers/vod.server.controller.js")),
+    schedule = require(path.resolve("./modules/deviceapiv2/server/controllers/schedule.server.controller.js")),
     dateFormat = require('dateformat'),
     moment = require('moment'),
     async = require('async'),
@@ -51,42 +52,42 @@ exports.settings = function(req, res) {
         },
         //CHECKING IF THE USER NEEDS TO REFRESH SERVER SIDE DATA
         function(login_data, callback) {
-			if(!req.body.livetvtimestamp && !req.body.vodtimestamp && !req.body.mainmenutimestamp){
-				callback(null, login_data, false);
-			}
-			else{
-				if (req.body.activity === 'livetv') {
-					//db value of last livetv refresh is bigger than client last refresh -> return true. Else return false
-					if ((req.body.livetvtimestamp >= parseFloat(req.app.locals.settings.livetvlastchange)) && (req.body.livetvtimestamp >= parseFloat(req.thisuser.livetvlastchange))){
-						callback(null, login_data, false);
-					}
-					else{
-						okresponse.timestamp = req.app.locals.settings.livetvlastchange;
-						callback(null, login_data, true);
-					}
-				}
-				else if (req.body.activity === 'vod') {
-					//db value of last vod refresh is bigger than client last refresh -> return true. Else return false
-					if ((req.body.vodtimestamp >= parseFloat(req.app.locals.settings.vodlastchange)) && (req.body.vodtimestamp >= parseFloat(req.thisuser.vodlastchange))){
-						callback(null, login_data, false);
-					}
-					else {
-						callback(null, login_data, true);
-					}
-				}
-				else if(req.body.activity === 'login'){
-					//db value of last main menu or livetv refresh is bigger than client last refresh -> return true. Else return false
-					if (req.body.mainmenutimestamp >= parseFloat(req.app.locals.settings.menulastchange)){
-						callback(null, login_data, false);
-					}
-					else {
-						callback(null, login_data, true);
-					}
-				}
-				else{
-					callback(null, login_data, false); //in case of unexpected activity value, return false
-				}
-			}            
+            if(!req.body.livetvtimestamp && !req.body.vodtimestamp && !req.body.mainmenutimestamp){
+                callback(null, login_data, false);
+            }
+            else{
+                if (req.body.activity === 'livetv') {
+                    //db value of last livetv refresh is bigger than client last refresh -> return true. Else return false
+                    if ((req.body.livetvtimestamp >= parseFloat(req.app.locals.settings.livetvlastchange)) && (req.body.livetvtimestamp >= parseFloat(req.thisuser.livetvlastchange))){
+                        callback(null, login_data, false);
+                    }
+                    else{
+                        okresponse.timestamp = req.app.locals.settings.livetvlastchange;
+                        callback(null, login_data, true);
+                    }
+                }
+                else if (req.body.activity === 'vod') {
+                    //db value of last vod refresh is bigger than client last refresh -> return true. Else return false
+                    if ((req.body.vodtimestamp >= parseFloat(req.app.locals.settings.vodlastchange)) && (req.body.vodtimestamp >= parseFloat(req.thisuser.vodlastchange))){
+                        callback(null, login_data, false);
+                    }
+                    else {
+                        callback(null, login_data, true);
+                    }
+                }
+                else if(req.body.activity === 'login'){
+                    //db value of last main menu or livetv refresh is bigger than client last refresh -> return true. Else return false
+                    if (req.body.mainmenutimestamp >= parseFloat(req.app.locals.settings.menulastchange)){
+                        callback(null, login_data, false);
+                    }
+                    else {
+                        callback(null, login_data, true);
+                    }
+                }
+                else{
+                    callback(null, login_data, false); //in case of unexpected activity value, return false
+                }
+            }
         },
         //GETTING DAYS LEFT, DEPENDING ON THE ACTIVITY OF THE USER
         function(login_data, refresh, callback){
@@ -108,7 +109,37 @@ exports.settings = function(req, res) {
                     var end_date = (enddate[0]) ? moment(enddate[0].end_date, "YYYY-M-DD HH:mm:ss") : moment(new Date(), "YYYY-M-DD HH:mm:ss");  //if no subscription found, enddate set as current time to return 0 days left
                     var current_date = moment(new Date(), "YYYY-M-DD HH:mm:ss");
                     var seconds_left = end_date.diff(current_date, 'seconds');
-                    var daysleft = Number((seconds_left / 86400).toFixed(0));
+                    //re-evaluating push task for subscription end. All current tasks of this screen size are deleted, a new task is created
+                    if(req.auth_obj.appid === '2' || req.auth_obj.appid === '3'){
+                        if(livetv_s_subscription_end[req.thisuser.id]){
+                            //destroy push task for live tv small screen for this user
+                            clearTimeout(livetv_s_subscription_end[req.thisuser.id]);
+                            delete livetv_s_subscription_end[req.thisuser.id];
+                        }
+                        if(vod_s_subscription_end[req.thisuser.id]){
+                            //destroy push task for vod small screen for this user
+                            clearTimeout(vod_s_subscription_end[req.thisuser.id]);
+                            delete vod_s_subscription_end[req.thisuser.id];
+                        }
+                    }
+                    else {
+                        if(livetv_l_subscription_end[req.thisuser.id]){
+                            //destroy push task for live tv large screen for this user
+                            clearTimeout(livetv_l_subscription_end[req.thisuser.id]);
+                            delete livetv_l_subscription_end[req.thisuser.id];
+                        }
+                        if(vod_l_subscription_end[req.thisuser.id]){
+                            //destroy push task for vod large screen for this user
+                            clearTimeout(vod_l_subscription_end[req.thisuser.id]);
+                            delete vod_l_subscription_end[req.thisuser.id];
+                        }
+                    }
+
+                    if(seconds_left > 0){
+                        schedule.end_subscription(req.thisuser.id, seconds_left*1000, [req.auth_obj.appid], req.auth_obj.screensize, req.body.activity, req.app.locals.settings.firebase_key); //create push task for the ending of this type of subscription
+                    }
+
+                    var daysleft = Math.ceil(Number(Math.ceil(seconds_left / 86400).toFixed(0)));
                     callback(null, login_data, daysleft, refresh);
                     return null;
                 }).catch(function(error) {
@@ -166,7 +197,7 @@ exports.settings = function(req, res) {
                             if(JSON.parse(ip_info).gmtOffset !== undefined && isvalidoffset(JSON.parse(ip_info).gmtOffset) !== false) {
                                 callback(null, login_data, daysleft, refresh, available_upgrade, isvalidoffset(JSON.parse(ip_info).gmtOffset)); //iptimezone calculated only for large screen devices, after login, for autotimezone true
                             }
-                                else callback(null, login_data, daysleft, refresh, available_upgrade, login_data.timezone); //return client timezone on error
+                            else callback(null, login_data, daysleft, refresh, available_upgrade, login_data.timezone); //return client timezone on error
                         });
                     }).on("error", function(e){
                         callback(null, login_data, daysleft, refresh, available_upgrade, login_data.timezone); //return client timezone on error
@@ -193,7 +224,8 @@ exports.settings = function(req, res) {
                     callback(null, login_data, daysleft, refresh, available_upgrade, offset, record_count); //return nr of vod records
                     return null;
                 }).catch(function(error) {
-                    //todo: return some response?
+                    callback(null, login_data, daysleft, refresh, available_upgrade, offset, 1000); //return nr of vod records
+                    return null;
                 });
             }
             else{
@@ -299,6 +331,25 @@ exports.upgrade = function(req, res) {
     else{
         response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'NO_UPGRADES', 'private,max-age=86400');
     }
+};
+
+
+/**
+ * @api {get} /help_support Help and support page
+ * @apiVersion 0.2.0
+ * @apiName Help and support page
+ * @apiGroup DeviceAPI
+ * @apiHeader {--} -- --
+ * @apiSuccess (200) {webpage} message Help page set in the management system, default help page otherwise
+ * @apiError (40x) {--} -- --
+ *
+
+ */
+exports.help_support = function(req, res) {
+    //If settings.help_page is not a valid column in the settings table or if the value is left empty, returns the default support page
+    //Otherwise returns the page defined in the management system
+    var support_page = (!req.app.locals.settings.help_page || req.app.locals.settings.help_page.length < 1) ? '/help_and_support' : req.app.locals.settings.help_page;
+    res.redirect(support_page);
 };
 
 

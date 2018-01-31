@@ -146,6 +146,9 @@ module.exports = function(app) {
         .all(authpolicy.isAllowed)
         .post(settingsController.upgrade);
 
+    app.route('/help_support')
+        .get(settingsController.help_support);
+
     //main device menu
     app.route('/apiv2/main/device_menu')
         .all(authpolicy.isAllowed)

@@ -15,7 +15,19 @@ var path = require('path'),
 
 
 /**
- * Create
+ * @api {post} /api/subscriptions Add subscription
+ * @apiVersion 0.2.0
+ * @apiName Add subscription
+ * @apiGroup Backoffice
+ * @apiHeader {String} authorization Token string acquired from login api.
+ * @apiParam {Number} login_id  Mandatory field login_id.
+ * @apiParam {Number} combo_id  Mandatory field combo_id.
+ * @apiParam {String} start_date  Mandatory field start_date.
+ *
+ * @apiSuccess (200) {String} message Record created successfuly
+ * @apiError (40x) {String} message Error message on creating the user account.
+ *
+
  */
 exports.create = function(req, res) {
 
@@ -137,13 +149,26 @@ exports.read = function(req, res) {
 };
 
 /**
- * Update
+ * @api {put} /api/subscriptions/id Update Subscription
+ * @apiVersion 0.2.0
+ * @apiName Update Subscription
+ * @apiGroup Backoffice
+ * @apiHeader {String} authorization Token string acquired from login api.
+ * @apiParam {String} start_date  Optional field start_date.
+ * @apiParam {String} end_date  Optional field end_date.
+ * @apiSuccess (200) {String} message Json of updated record
+ * @apiError (40x) {Text} message {
+ * "message": informing_message
+ * }
+ *
+
  */
 exports.update = function(req, res) {
   var updateData = req.subscription;
 
   updateData.updateAttributes(req.body).then(function(result) {
-    res.json(result);
+    logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'update sub', JSON.stringify(req.body));
+    return res.json(result);
   }).catch(function(err) {
     return res.status(400).send({
       message: errorHandler.getErrorMessage(err)
@@ -186,15 +211,12 @@ exports.delete = function(req, res) {
 exports.list = function(req, res) {
 
   var query = req.query;
-  var offset_start = parseInt(query._start);
-  var records_limit = query._end - query._start;
   var qwhere = {};
   var user_qwhere = {};
   if(query.login_id) qwhere.login_id = query.login_id;
-  if(offset_start && records_limit){
-    qwhere.offset = offset_start;
-    qwhere.limit = records_limit;
-  }
+  //Ensures that subscription records are paginated
+  if(parseInt(query._start)) var offset_start = parseInt(query._start);
+  if(parseInt(query._end)) var records_limit = parseInt(query._end)-parseInt(query._start);
 
   if(query.q) {
     user_qwhere.$or = {};
@@ -205,7 +227,9 @@ exports.list = function(req, res) {
   DBModel.findAndCountAll({
     where: qwhere,
     order: 'login_id DESC',
-    include: [{model:db.login_data, where: user_qwhere, required: true}, {model:db.package, required: true}]
+    include: [{model:db.login_data, where: user_qwhere, required: true}, {model:db.package, required: true}],
+    offset: offset_start,
+    limit: records_limit
   }).then(function(results) {
     if (!results) {
       return res.status(404).send({

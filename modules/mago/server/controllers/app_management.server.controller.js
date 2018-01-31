@@ -4,9 +4,9 @@
  * Module dependencies.
  */
 var path = require('path'),
-  errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
-  db = require(path.resolve('./config/lib/sequelize')).models,
-  DBModel = db.app_management,
+    errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
+    db = require(path.resolve('./config/lib/sequelize')).models,
+    DBModel = db.app_management,
     fs = require('fs');
 
 /**
@@ -39,18 +39,18 @@ exports.read = function(req, res) {
  */
 exports.update = function(req, res) {
 
-    var updateData = req.appManagement;
+  var updateData = req.appManagement;
 
-    if(updateData.url != req.body.url) {
-        var deletefile = path.resolve('./public'+updateData.url);
-    }
+  if(updateData.url != req.body.url) {
+    var deletefile = path.resolve('./public'+updateData.url);
+  }
 
   updateData.updateAttributes(req.body).then(function(result) {
-      if(deletefile) {
-          fs.unlink(deletefile, function (err) {
-              //todo: return some response?
-          });
-      }
+    if(deletefile) {
+      fs.unlink(deletefile, function (err) {
+        //todo: return some response?
+      });
+    }
     res.json(result);
   }).catch(function(err) {
     req.body.url=url_fields[0];
@@ -99,7 +99,7 @@ exports.list = function(req, res) {
       final_where = {},
       query = req.query;
 
-    if(query.q) {
+  if(query.q) {
     qwhere.$or = {};
     qwhere.$or.title = {};
     qwhere.$or.title.$like = '%'+query.q+'%';
@@ -115,7 +115,7 @@ exports.list = function(req, res) {
 
   DBModel.findAndCountAll(
 
-     final_where
+      final_where
 
 
   ).then(function(results) {
@@ -125,7 +125,7 @@ exports.list = function(req, res) {
       });
     } else {
 
-      res.setHeader("X-Total-Count", results.count);      
+      res.setHeader("X-Total-Count", results.count);
       res.json(results.rows);
     }
   }).catch(function(err) {

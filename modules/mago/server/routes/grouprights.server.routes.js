@@ -23,7 +23,7 @@ module.exports = function(app) {
         //.all(policy.isAllowed)
         .get(grouprights.read)
         .put(grouprights.update);
-        //.delete(groups.delete);
+    //.delete(groups.delete);
 
     app.param('grouprightsId', grouprights.dataByID);
 

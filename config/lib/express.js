@@ -25,6 +25,10 @@ var config = require('../config'),
 global.languages = {};
 const language_folder_path = './config/languages/';
 global.vod_list = {};
+global.livetv_s_subscription_end = [];
+global.livetv_l_subscription_end = [];
+global.vod_s_subscription_end = [];
+global.vod_l_subscription_end = [];
 
 /**
  * Initialize local variables

@@ -40,7 +40,6 @@ function sale(Restangular, $uibModal, $q, notification, $state) {
                                     $q.all(scope.selection.map(e => Restangular.one('annul')
                                             .customPOST({ sale_id: e.values.id,  username: e.values.user_username, login_id: e.values.login_data_id, product: e.values.combo_id})))
                                     .then(success => notification.log(success[0].data.message +'', { addnCls: 'humane-flatty-success' }) && console.log("The response is ", success))
-                                    //.catch(e => notification.log('A problem occurred, please try again', { addnCls: 'humane-flatty-error' }) && console.error("The error te sale ",e) ) //todo: if not response, ex timeout or network issue?
                                     $state.reload(); //action is performed, reload page with latest data
                                 }
 

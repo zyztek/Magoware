@@ -4,9 +4,9 @@
  * Module dependencies.
  */
 var path = require('path'),
-  errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
-  db = require(path.resolve('./config/lib/sequelize')).models,
-  DBModel = db.packages_channels;
+    errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
+    db = require(path.resolve('./config/lib/sequelize')).models,
+    DBModel = db.packages_channels;
 
 /**
  * Create
@@ -99,7 +99,7 @@ exports.list = function(req, res) {
       });
     } else {
 
-      res.setHeader("X-Total-Count", results.count);      
+      res.setHeader("X-Total-Count", results.count);
       res.json(results.rows);
     }
   }).catch(function(err) {
@@ -111,9 +111,9 @@ exports.list = function(req, res) {
  * middleware
  */
 exports.dataByID = function(req, res, next, id) {
-    if ((id % 1 === 0) === false) { //check if it's integer
-        return res.status(404).send({ message: 'Data is invalid' });
-    }
+  if ((id % 1 === 0) === false) { //check if it's integer
+    return res.status(404).send({ message: 'Data is invalid' });
+  }
 
   DBModel.find({
     where: {

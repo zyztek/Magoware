@@ -29,7 +29,6 @@ exports.create = function(req, res) {
 };
 
 function addLog(user_id, user_ip, action, details){
-    //TODO: remove template from details.template, when exists
     DBModel.create({
         user_id: user_id,
         user_ip: user_ip,

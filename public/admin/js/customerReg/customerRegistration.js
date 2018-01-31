@@ -7,8 +7,8 @@ export default function ($stateProvider) {
         url: '/customerRegistration',
         params: { },
         controller: ['$scope', ($scope) => {
-           $scope.segments = segments.values;
-        }],
-        template: customerRgst
-    });
+            $scope.segments = segments.values;
+}],
+    template: customerRgst
+});
 };

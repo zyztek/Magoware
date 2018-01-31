@@ -79,29 +79,29 @@ exports.delete = function(req, res) {
  */
 exports.list = function(req, res) {
 
-  var query = req.query;
-  var offset_start = parseInt(query._start);
-  var records_limit = query._end - query._start;
-  var qwhere = {};
-  if(query.combo_id) qwhere.combo_id = query.combo_id;
+    var query = req.query;
+    var offset_start = parseInt(query._start);
+    var records_limit = query._end - query._start;
+    var qwhere = {};
+    if(query.combo_id) qwhere.combo_id = query.combo_id;
 
-  DBModel.findAndCountAll({
-    where: qwhere,
-    offset: offset_start,
-    limit: records_limit,
-    include: [db.combo, db.package]
-  }).then(function(results) {
-    if (!results) {
-      return res.status(404).send({
-        message: 'No data found'
-      });
-    } else {
-      res.setHeader("X-Total-Count", results.count);      
-      res.json(results.rows);
-    }
-  }).catch(function(err) {
-    res.jsonp(err);
-  });
+    DBModel.findAndCountAll({
+        where: qwhere,
+        offset: offset_start,
+        limit: records_limit,
+        include: [db.combo, db.package]
+    }).then(function(results) {
+        if (!results) {
+            return res.status(404).send({
+                message: 'No data found'
+            });
+        } else {
+            res.setHeader("X-Total-Count", results.count);
+            res.json(results.rows);
+        }
+    }).catch(function(err) {
+        res.jsonp(err);
+    });
 };
 
 /**
@@ -109,28 +109,28 @@ exports.list = function(req, res) {
  */
 exports.dataByID = function(req, res, next, id) {
 
-  if ((id % 1 === 0) === false) { //check if it's integer
-    return res.status(404).send({
-      message: 'Data is invalid'
-    });
-  }
-
-  DBModel.find({
-    where: {
-      id: id
-    },
-    include: [{model: db.combo}, {model: db.package}]
-  }).then(function(result) {
-    if (!result) {
-      return res.status(404).send({
-        message: 'No data with that identifier has been found'
-      });
-    } else {
-      req.comboPackage = result;
-      next();
+    if ((id % 1 === 0) === false) { //check if it's integer
+        return res.status(404).send({
+            message: 'Data is invalid'
+        });
     }
-  }).catch(function(err) {
-    return next(err);
-  });
+
+    DBModel.find({
+        where: {
+            id: id
+        },
+        include: [{model: db.combo}, {model: db.package}]
+    }).then(function(result) {
+        if (!result) {
+            return res.status(404).send({
+                message: 'No data with that identifier has been found'
+            });
+        } else {
+            req.comboPackage = result;
+            next();
+        }
+    }).catch(function(err) {
+        return next(err);
+    });
 
 };
