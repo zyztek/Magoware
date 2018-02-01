@@ -1,6 +1,6 @@
 {
   "name": "magoware_portal",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "db_migration_nr": "db.006",
   "description": "MAGOWARE Administartion Portal",
   "main": "server.js",
