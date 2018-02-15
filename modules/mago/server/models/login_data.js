@@ -65,7 +65,7 @@ module.exports = function(sequelize, DataTypes) {
         activity_timeout: {
             type: DataTypes.INTEGER(11),
             allowNull: false,
-            defaultValue: 9000
+            defaultValue: 10800
         },
         get_messages: {
             type: DataTypes.BOOLEAN,

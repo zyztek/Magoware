@@ -93,7 +93,7 @@ exports.createaccount = function(req,res) {
 						show_adult:				  0,
 						auto_timezone:			  1,
 						player:					  'default',
-						activity_timeout:		  9000,
+						activity_timeout:		  10800,
 						get_messages:			  0,
 						force_upgrade:			  0,
 						account_lock:			  0,

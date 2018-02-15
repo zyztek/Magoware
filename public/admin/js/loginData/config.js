@@ -102,7 +102,7 @@ export default function (nga, admin) {
         nga.field('activity_timeout', 'string')
             .attributes({ placeholder: 'Activity time out' })
             .validation({ required: true })
-            .defaultValue(9000)
+            .defaultValue(10800)
             .label('Activity Time Out (sec)'),
         nga.field('timezone', 'choice')
             .choices([
@@ -198,7 +198,7 @@ export default function (nga, admin) {
         nga.field('activity_timeout', 'string')
             .attributes({ placeholder: 'Activity time out' })
             .validation({ required: true })
-            .defaultValue(300)
+            .defaultValue(10800)
             .label('Activity Time Out'),
         nga.field('timezone', 'choice')
             .choices([
