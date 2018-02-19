@@ -34,7 +34,7 @@ export default function (nga, admin) {
 						.attributes({ placeholder: 'Activity Timeout' })
 						.template('<div class="form-group">'+
 								'<ma-input-field field="field" value="entry.values.activity_timeout"></ma-input-field>'+
-								'<small id="emailHelp" class="form-text text-muted">If there is no activity for this time then application will return to main menu.</small>'+
+								'<small id="emailHelp" class="form-text text-muted">If there is no activity for this time then application will return to main menu. Default value 3 hr</small>'+
 								'</div>')
 						.label('Activity Time Out'),
 				nga.field('log_event_interval' ,'number')

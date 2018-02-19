@@ -6,6 +6,71 @@ var path = require('path'),
     crypto = require('crypto'),
     models = db.models;
 
+//RETURNS LIST OF VOD PROGRAMS VIA GET Request
+/**
+ * @api {post} /apiv2/vod/list /apiv2/vod/list
+ * @apiVersion 0.2.0
+ * @apiName GetVodList
+ * @apiGroup DeviceAPI
+ *
+ * @apiHeader {String} auth Users unique access-key.
+ * @apiDescription Returns video on demand assets/movies
+ */
+exports.list_get = function(req, res) {
+    var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+    //var allowed_content = [0,1];
+    var offset = parseInt(req.params.pagenumber);
+    var limit = parseInt(req.app.locals.settings.vod_subset_nr);
+
+    models.vod.findAll({
+        attributes: ['id', 'title', 'pin_protected', 'duration', 'description', 'director', 'starring', 'category_id', 'createdAt', 'rate', 'year', 'icon_url', 'image_url'],
+        include: [
+            {model: models.vod_stream, required: true, attributes: ['url', 'encryption', 'token', 'stream_format', 'token_url']},
+            {model: models.vod_category, required: true, attributes: [], where:{password:{in: allowed_content}, isavailable: true}}
+        ],
+        where: {pin_protected:{in: allowed_content}, isavailable: true},
+        offset: offset,
+        limit: limit
+    }).then(function (result) {
+        var raw_result = [];
+        //flatten nested json array
+        result.forEach(function(obj){
+            var raw_obj = {};
+
+            Object.keys(obj.toJSON()).forEach(function(k) {
+                if (typeof obj[k] == 'object') {
+                    Object.keys(obj[k]).forEach(function(j) {
+                        raw_obj.id = String(obj.id);
+                        raw_obj.title = obj.title;
+                        raw_obj.pin_protected = (obj.pin_protected === true) ? 1 : 0;
+                        raw_obj.duration = obj.duration;
+                        raw_obj.stream_format = obj[k][j].stream_format;
+                        raw_obj.url = obj[k][j].url;
+                        raw_obj.description = obj.description + ' Director: ' + obj.director + ' Starring: ' + obj.starring;
+                        raw_obj.icon = req.app.locals.settings.assets_url+obj.icon_url;
+                        raw_obj.largeimage = req.app.locals.settings.assets_url+obj.image_url;
+                        raw_obj.categoryid = String(obj.category_id);
+                        raw_obj.dataaded = obj.createdAt.getTime();
+                        raw_obj.rate = String(obj.rate);
+                        raw_obj.year = String(obj.year);
+                        raw_obj.token = (obj[k][j].token) ? "1" : "0";
+                        raw_obj.TokenUrl = (obj[k][j].token_url) ? obj[k][j].token_url : "";
+                        raw_obj.encryption = (obj[k][j].encryption) ? "1" : "0";
+                        raw_obj.encryption_url = (obj[k][j].encryption_url) ? obj[k][j].encryption_url : "";
+                    });
+                }
+            });
+            raw_result.push(raw_obj);
+        });
+
+        response.send_res_get(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
+
+    }).catch(function(error) {
+        //res.send(error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+    });
+
+};
 
 //RETURNS LIST OF VOD PROGRAMS
 /**
@@ -99,6 +164,36 @@ exports.categories = function(req, res) {
     });
 };
 
+//RETURNS FULL LIST OF CATEGORIES GET
+/**
+ * @api {post} /apiv2/vod/categories /apiv2/vod/categories
+ * @apiVersion 0.2.0
+ * @apiName GetVodCategories
+ * @apiGroup DeviceAPI
+ *
+ * @apiHeader {String} auth Users unique access-key.
+ * @apiDescription Returns full list of categories
+ */
+exports.categories_get = function(req, res) {
+    var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+
+    models.vod_category.findAll({
+        attributes: [ 'id', 'name', 'password', 'sorting', [db.sequelize.fn("concat", req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'IconUrl'],
+            [db.sequelize.fn("concat", req.app.locals.settings.assets_url, db.sequelize.col('small_icon_url')), 'small_icon_url']],
+        where: {password:{in: allowed_content}, isavailable: true}
+    }).then(function (result) {
+        //type conversation of id from int to string. Setting static values
+        for(var i=0; i< result.length; i++){
+            result[i].toJSON().id = String(result[i].toJSON().id);
+            result[i].toJSON().password = "False";
+            result[i].toJSON().pay = "False";
+        }
+        response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
+    }).catch(function(error) {
+        response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+    });
+};
+
 //RETURNS ALL SUBTITLES FOR THE SELECTED PROGRAM
 /**
  * @api {post} /apiv2/vod/subtitles /apiv2/vod/subtitles
@@ -132,6 +227,41 @@ exports.subtitles = function(req, res) {
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
+
+//RETURNS ALL SUBTITLES FOR THE SELECTED PROGRAM GET METHOD
+/**
+ * @api {post} /apiv2/vod/subtitles /apiv2/vod/subtitles
+ * @apiVersion 0.2.0
+ * @apiName GetVodSubtitles
+ * @apiGroup DeviceAPI
+ *
+ * @apiHeader {String} auth Users unique access-key.
+ * @apiDescription Returns all subtitles list
+ */
+exports.subtitles_get = function(req, res) {
+    var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+
+    models.vod_subtitles.findAll({
+        attributes: [ ['vod_id', 'vodid'], 'title', [db.sequelize.fn("concat", req.app.locals.settings.assets_url, db.sequelize.col('subtitle_url')), 'url'] ],
+        include: [
+            { model: models.vod, required: true, attributes: [], where: {pin_protected: {in: allowed_content}, isavailable: true},
+                include: [
+                    {model: models.vod_stream, required: true, attributes: []},
+                    {model: models.vod_category, required: true, attributes: [], where:{password:{in: allowed_content}, isavailable: true}}
+                ]
+            }
+        ]
+    }).then(function (result) {
+        //type conversation of id from int to string
+        for(var i=0; i< result.length; i++){
+            result[i].toJSON().vodid = String(result[i].toJSON().vodid);
+        }
+        response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
+    }).catch(function(error) {
+        response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+    });
+};
+
 
 
 
@@ -207,6 +337,31 @@ exports.mostwatched = function(req, res) {
 
 };
 
+//MOST WATCHED GET METHOD
+exports.mostwatched_get = function(req, res) {
+    var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+
+    //if hits for a specific movie are requested
+    models.vod.findAll({
+        attributes: ['id', 'clicks'],
+        limit: 30,
+        order: [[ 'clicks', 'DESC' ]],
+        where: {pin_protected: {in: allowed_content}, isavailable: true},
+        include: [
+            {model: models.vod_stream, required: true, attributes: []},
+            {model: models.vod_category, required: true, attributes: [], where:{password:{in: allowed_content}, isavailable: true}}
+        ]
+    }).then(function (result) {
+        for(var i=0; i< result.length; i++){
+            result[i].toJSON().id = String(result[i].toJSON().id);
+        }
+        response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
+    }).catch(function(error) {
+        response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+    });
+
+};
+
 exports.mostrated = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
 
@@ -234,6 +389,37 @@ exports.mostrated = function(req, res) {
     });
 
 };
+
+//most rated GET METHOD
+exports.mostrated_get = function(req, res) {
+    var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+
+    //if most rated movies are requested
+    models.vod.findAll({
+        attributes: ['id', 'rate'],
+        where: {pin_protected: {in: allowed_content}, isavailable: true},
+        limit: 30,
+        order: [[ 'rate', 'DESC' ]],
+        include: [
+            {model: models.vod_stream, required: true, attributes: []},
+            {model: models.vod_category, required: true, attributes: [], where:{password:{in: allowed_content}, isavailable: true}}
+        ]
+    }).then(function (result) {
+        var mostrated = [];
+        for(var i=0; i< result.length; i++){
+            var mostrated_object = {};
+            mostrated_object.id = result[i].id;
+            mostrated_object.rate = parseInt(result[i].rate);
+            mostrated.push(mostrated_object);
+        }
+        response.send_res_get(req, res, mostrated, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
+    }).catch(function(error) {
+        response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+    });
+
+};
+
+
 
 exports.related = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
@@ -280,6 +466,26 @@ exports.suggestions = function(req, res) {
 
 };
 
+//sugesstions GET METHOD
+exports.suggestions_get = function(req, res) {
+    var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+
+    models.vod.findAll({
+        attributes: ['id'],
+        where: {pin_protected: {in: allowed_content}, isavailable: true},
+        include: [
+            {model: models.vod_stream, required: true, attributes: []},
+            {model: models.vod_category, required: true, attributes: [], where:{password:{in: allowed_content}, isavailable: true}}
+        ],
+        limit: 10
+    }).then(function (result) {
+        response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
+    }).catch(function(error) {
+        response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+    });
+
+};
+
 exports.categoryfilms = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
 
@@ -304,6 +510,33 @@ exports.categoryfilms = function(req, res) {
     });
 
 };
+
+//category GET METHOD
+exports.categoryfilms_get = function(req, res) {
+    var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+
+    models.vod.findAll({
+        attributes: ['id'],
+        where: {pin_protected: {in: allowed_content}, isavailable: true},
+        include: [
+            {model: models.vod_stream, required: true, attributes: []},
+            {model: models.vod_category, required: true, attributes: [], where:{password:{in: allowed_content}, isavailable: true, id: req.body.category_id}}
+        ]
+    }).then(function (result) {
+        var raw_result = [];
+        //flatten nested json array
+        result.forEach(function(obj){
+            var raw_obj = {};
+            raw_obj.id = String(obj.id);
+            raw_result.push(raw_obj);
+        });
+        response.send_res(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
+    }).catch(function(error) {
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+    });
+
+};
+
 
 exports.searchvod = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
@@ -350,7 +583,7 @@ exports.resume_movie = function(req, res) {
         response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
     }).catch(function(error) {
         if (error.message.split(': ')[0] === 'ER_NO_REFERENCED_ROW_2'){
-            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'INVALID_INPUT', 'no-store');
+           response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'INVALID_INPUT', 'no-store');
         }
         else response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });

@@ -59,8 +59,8 @@ function send_notification(fcm_token, firebase_key, user, message, ttl, push_mes
     }
 
     request(options, function (error, response, body) {
-        if(!error && response.body && is_info === true){
-            if(JSON.parse(response.body).success === 1){
+        if(!error && body && is_info === true){
+            if(JSON.parse(body) && (JSON.parse(body).success === 1)){
                 var title = (!message.data) ? message.parameter1 : message.data.title;
                 var description = (!message.data) ? message.parameter2 : message.data.body;
                 exports.save_message(user, fcm_token, description, push_message, title); //save record for sent info messages

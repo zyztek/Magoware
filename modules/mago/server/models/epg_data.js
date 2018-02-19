@@ -45,12 +45,17 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.INTEGER(11),
             allowNull: false
         }
-    }, {
+    },
+        {
         tableName: 'epg_data',
         associate: function(models) {
             epgData.belongsTo(models.channels, {foreignKey: 'channels_id'});
             epgData.hasMany(models.program_schedule, {foreignKey: 'program_id'});
-        }
+        },
+        indexes: [
+            { fields: ['program_start', 'channel_number'], unique: true },
+            { fields: ['program_end', 'channel_number'], unique: true }
+        ]
     });
     return epgData;
 };

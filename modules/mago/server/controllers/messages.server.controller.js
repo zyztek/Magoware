@@ -71,7 +71,7 @@ exports.create = function(req, res) {
                     else if(result[i].appid === 3 && result[i].app_version >= '1.3957040') var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1');
                     else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0') var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1'); //todo: replace app version
                     else var message = {"action": "notification", "parameter1": req.body.message, "parameter2": req.body.message, "parameter3": ""};
-                    push_msg.send_notification(result[i].googleappid, req.app.locals.settings.firebase_key, req.body.username, message, req.body.timetolive, true, true, function(result){});
+                    push_msg.send_notification(result[i].googleappid, req.app.locals.settings.firebase_key, result[i].login_datum.username, message, req.body.timetolive, true, true, function(result){});
                 }
                 return res.status(200).send({
                     message: 'Message sent'

@@ -11,7 +11,7 @@
   },
   {
     "id":3,
-    "api_group_name":"livtv",
+    "api_group_name":"livetv",
     "description":"Live tv - related APIs"
   },
   {

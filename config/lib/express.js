@@ -290,25 +290,7 @@ module.exports.init = function(db) {
   this.initErrorRoutes(app);
 
   // Configure Socket.io
-  this.configureSocketIO(app, db);
-
-
-  if (config.secure && config.secure.ssl === true) {
-    var options = {
-      key:    fs.readFileSync(path.resolve(config.secure.privateKey)), //read certificate key file
-      cert:   fs.readFileSync(path.resolve(config.secure.certificate)), // read certificate file
-      ca:     fs.readFileSync(path.resolve(config.secure.ca)), //reads list of intermediate certificates
-      requestCert:        false,
-      rejectUnauthorized: false
-    };
-
-    app = https.createServer(options, app);
-    console.log('Running HTTPS');
-  }
-  else {
-    app =  http.createServer(app);
-    console.log('Running HTTP');
-  }
+  app = this.configureSocketIO(app, db);
 
   return app;
 };

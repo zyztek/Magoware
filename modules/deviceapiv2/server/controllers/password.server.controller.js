@@ -89,9 +89,7 @@ exports.forgot = function(req, res, next) {
                     include: [{model:db.customer_data, required:true}]
                 }).then(function(user) {
                     if (!user) {
-                        return res.status(400).send({
-                            message: 'No account with that username has been found'
-                        });
+                        return res.status(400).send(response.USER_NOT_FOUND);
                     }  else {
                         //generate new password
                         var plaintext_password = randomstring.generate({ length: 4, charset: 'alphanumeric' });

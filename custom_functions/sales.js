@@ -161,7 +161,7 @@ exports.add_subscription_transaction = function(req,res,sale_or_refund,transacti
                     return Promise.all(transactions_array, {transaction:t}); //execute transaction
 
                 }).then(function (result) {
-                    return {status: true,message:'subscription executed correctly'};
+                    return {status: true,message:'transaction executed correctly'};
                 }).catch(function (err) {
                     console.log(err);
                     return {status: false,message:'error executing transaction'};

@@ -34,24 +34,21 @@ exports.akamai_token_v2_generator = function(req,res) {
     var config = {
         algorithm : 'SHA256',
         acl : '*',
-        window : 9001,
-        key : "BB4D383893D0EE64",
+        window : req.app.locals.streamtokens.AKAMAI.WINDOW,
+        key : req.app.locals.streamtokens.AKAMAI.TOKEN_KEY,
         //ip: getClientIp(req),
         ip: req.ip.replace('::ffff:', ''),
         startTime:0,
         url:'',
         session:'',
-        data:'',
-        salt:'',
+        data:'bbbbb',
+        salt: req.app.locals.streamtokens.AKAMAI.SALT,
         delimeter:'~',
         escape_early:false,
         name:'__token__'
     };
 
-    //var token_generator = new token_generator.default(config);
     var token = "?" + new akamai_token_generator.default(config).generateToken();
-    //var token = token_generator.generateToken();
-    //responses.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', token, 'no-store');
 
     var theresponse = new responses.OK();
     theresponse.extra_data = token;
@@ -60,21 +57,44 @@ exports.akamai_token_v2_generator = function(req,res) {
 };
 
 
+exports.akamai_token_v2_generator_tibo_mobile = function(req,res) {
+    var config = {
+        algorithm : 'SHA256',
+        acl : '*',
+        window : req.app.locals.streamtokens.AKAMAI.WINDOW,
+        key : "BB4D383893D0EE64",
+        //ip: getClientIp(req),
+        ip: req.ip.replace('::ffff:', ''),
+        startTime:0,
+        url:'',
+        session:'',
+        data:'',
+        salt: req.app.locals.streamtokens.AKAMAI.SALT,
+        delimeter:'~',
+        escape_early:false,
+        name:'__token__'
+    };
+
+    var token = "?" + new akamai_token_generator.default(config).generateToken();
+    var theresponse = new responses.OK();
+    theresponse.extra_data = token;
+    res.send(theresponse);
+};
 
 
 exports.flussonic_token_generator =  function(req, res) {
-    var secure_token = "uGhKNDl54sd123"; //server side only
-    var password = req.query.password || "tQZ71bHq";
-    var salt = req.query.salt || "QKu458HJi";
+    var token_key = req.app.locals.streamtokens.FLUSSONIC.TOKEN_KEY; //server side only
+    var password = req.query.password || req.app.locals.streamtokens.FLUSSONIC.PASSWORD; //Can be sent as query parameter
+    var salt = req.query.salt || req.app.locals.streamtokens.FLUSSONIC.SALT; //Can be sent as query parameter
 
     var stream_name = req.params[0];
     var ip = req.query.ip || req.ip.replace('::ffff:', '');
     var starttime = req.query.starttime || Date.now()/1000|0;
-    var endtime = req.query.endtime || (Date.now()/1000|0) + 3600;
+    var endtime = req.query.endtime || (Date.now()/1000|0) + req.app.locals.streamtokens.FLUSSONIC.WINDOW;;
 
-    var tohash = stream_name + ip + starttime + endtime + secure_token + salt;
+    var tohash = stream_name + ip + starttime + endtime + token_key + salt;
 
-    var token = "?token="+mysha1(tohash)+"-" + salt + "-" + endtime + "-" + starttime;
+    var token = "?token="+mysha1(tohash)+ "-" + salt + "-" + endtime + "-" + starttime;
 
     var theresponse = new responses.OK();
     theresponse.extra_data = token;
@@ -83,7 +103,6 @@ exports.flussonic_token_generator =  function(req, res) {
 };
 
 exports.flussonic_token__remote =  function(req, res) {
-
     var stream_name = req.params.stream_name;
     var token_url = req.query.tokenurl;
     var password = 'password';

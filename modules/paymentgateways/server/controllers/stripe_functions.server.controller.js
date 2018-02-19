@@ -1,13 +1,29 @@
 'use strict'
 var path = require('path'),
     response = require(path.resolve("./config/responses.js")),
+
     stripe = require('stripe')('sk_test_Z4OH3P3t6XXwInfSUAnk2t0y'),
 
     db = require(path.resolve('./config/lib/sequelize')).models,
     subscription_functions = require(path.resolve('./custom_functions/sales.js')),
     customer_functions = require(path.resolve('./custom_functions/customer_functions.js')),
-    //DBCombos = db.combo,
+    DBCombos = db.combo,
     DBModel = db.payment_transactions;
+
+/*
+ * @api {get} /apiv2/payments/stripe/getkey Get Stripe Token Key
+ * @apiVersion 0.2.0
+ * @apiName Get Stripe Key
+ * @apiGroup Device API
+ */
+exports.stripe_get_key = function(req,res) {
+    var thisresponse = new response.OK();
+    thisresponse.response_object = [{
+        stripekey:req.app.locals.paymenttokens.STRIPE.API_KEY
+    }]
+    console.log(req.app.locals);
+    res.send(thisresponse);
+};
 
 
 
@@ -18,7 +34,7 @@ var path = require('path'),
  * @apiGroup Device API
  * @apiParam {String} auth AUTH Token.
  * @apiParam {Number} product_id  Mandatory field product_id.
- * @apiParam {String} user_id  Mandatory field user_id.
+ * @apiParam {String} username  Mandatory field user_id.
  * @apiParam {String} firstname  Mandatory field firstname.
  * @apiParam {String} lastname  Mandatory field lastname.
  * @apiParam {String} stripetoken  Mandatory field stripetoken.
@@ -49,77 +65,96 @@ exports.stripe_charge = function(req,res) {
     var stripeobj = {
         amount: 1000,
         currency: "usd",
-        description: "Example charge",
-        statement_descriptor: "Descriptor 22char",
-        metadata: {Firstname: req.body.firstname, Lastname: req.body.lastname, Product: "some test product"},
+        //description: "Example charge",
+        //statement_descriptor: "Descriptor 22char",
+        metadata: {Firstname: req.body.firstname, Lastname: req.body.lastname, product_id: req.body.product_id, username:req.body.username},
         source: req.body.stripetoken
     };
 
-    myobj.amount = stripeobj.amount = 99;//req.body.amount;
+    DBCombos.findOne({
+        where: {id:req.body.product_id}
+    }).then(function (result) {
 
-    //if(customer_functions.create_login_data(req,res,req.body.user_id)) {
-    customer_functions.create_login_data(req,res,req.body.username).then(function(value){
-        if(value.status) {
-                //user found or created. Start payment process
-                stripe.charges.create(stripeobj, function(err, charge) {
-                    if(err) {
-                        //payment failed
-                        myobj.transaction_id = err.requestId;
-                        myobj.message = err.type;
-                        myobj.payment_success = false;
-                        myobj.refunds_info = err.message;
-                        myobj.full_log = JSON.stringify(err);
-                        thisresponse.status_code = err.statusCode;
-                        thisresponse.error_code = err.statusCode;
-                        thisresponse.error_description = err.message;
-                        thisresponse.extra_data = err.message;
-                        DBModel.create(myobj); //insert record
-                        res.status(400).send(thisresponse);
-                    }
-                    else {
-                        //payment successful
-                        myobj.transaction_id = charge.id;
-                        myobj.message = charge.outcome.seller_message;
-                        myobj.payment_status = charge.outcome.type;
-                        myobj.payment_success = true;
-                        myobj.refunds_info = charge.refunds.url;
-                        myobj.full_log = JSON.stringify(charge);
-                        DBModel.create(myobj); //insert payment log into database
-                        thisresponse.extra_data = charge.outcome.seller_message;
+        if(!result) {
+            thisresponse.error_code = 400;
+            thisresponse.extra_data = "Product not found";
+            res.send(thisresponse);
+        } else {
+            myobj.amount = stripeobj.amount = result.dataValues.value;
 
-                        subscription_functions.add_subscription_transaction(req,res,sale_or_refund,myobj.transaction_id).then(function(value) {
-                            if(value.status) {
-                                thisresponse.extra_data = value.message;
-                                res.send(thisresponse);
-                            }
-                            else {
-                                thisresponse.extra_data = value.message;
-                                thisresponse.status_code = 400;
-                                res.status(400).send(thisresponse);
-                            }
-                        });
-                    }
-                });
-            }
-            else {
+            customer_functions.create_login_data(req,res,req.body.username).then(function(value){
+                if(value.status) {
+                    //user found or created. Start payment process
+                    stripe.charges.create(stripeobj, function(err, charge) {
+                        if(err) {
+                            //payment failed
+                            myobj.transaction_id = err.requestId;
+                            myobj.message = err.type;
+                            myobj.payment_success = false;
+                            myobj.refunds_info = err.message;
+                            myobj.full_log = JSON.stringify(err);
+                            thisresponse.status_code = err.statusCode;
+                            thisresponse.error_code = err.statusCode;
+                            thisresponse.error_description = err.message;
+                            thisresponse.extra_data = err.message;
+                            DBModel.create(myobj); //insert record
+                            res.send(thisresponse);
+                        }
+                        else {
+                            //payment successful
+                            myobj.transaction_id = charge.id;
+                            myobj.message = charge.outcome.seller_message;
+                            myobj.payment_status = charge.outcome.type;
+                            myobj.payment_success = true;
+                            myobj.refunds_info = charge.refunds.url;
+                            myobj.full_log = JSON.stringify(charge);
+                            DBModel.create(myobj); //insert payment log into database
+                            thisresponse.extra_data = charge.outcome.seller_message;
+                            res.send(thisresponse);
+                        }
+                    });
+                }
+                else {
                     thisresponse.error_code = 400;
                     thisresponse.extra_data = value.message; //"There was an error creating username. ";
-                    //console.log('login data not created');
-                    res.status(400).send(thisresponse);
-            }
-    })
+                    res.send(thisresponse);
+                }
+            });
+            return null;
+        }
+    }).catch(function(error) {
+        console.log('some error',error);
+    });
 };
 
+//incoming webhook from stripe
+exports.stripe_add_subscription = function(req,res) {
 
+    req.body.username = req.body.data.object.metadata.username;
+    req.body.product_id = req.body.data.object.metadata.product_id;
+    var transaction_id = req.body.data.object.id;
+    var sale_or_refund = 1; //sale
+
+    subscription_functions.add_subscription_transaction(req,res,sale_or_refund,transaction_id).then(function(value) {
+        if(value.status) {
+            //thisresponse.extra_data = value.message;
+            res.send(value);
+        }
+        else {
+            //thisresponse.extra_data = value.message;
+            //thisresponse.status_code = 400;
+            res.status(400).send(value);
+        }
+    });
+};
+
+//incoming webhook from stripe
 exports.stripe_refund = function(req,res) {
     const endpointSecret = "whsec_3j1DXYo5wvw5DsCDnTZZKQqOWhTd4Koi";
     var sig = req.headers["stripe-signature"];
     var sale_or_refund = -1;
     var thisresponse = new response.OK();
-    //var transaction_id = "ch_1Bq8mnKfcj7pVCd6SBuE5L9l"; //req.body.data.object.refunds.data.charge;
     var transaction_id = req.body.data.object.id;
-    console.log(req.body.data.object.refunds);
-
 
     db.salesreport.findOne({
         where: {transaction_id: transaction_id}
@@ -133,15 +168,9 @@ exports.stripe_refund = function(req,res) {
 
             subscription_functions.add_subscription_transaction(req,res,sale_or_refund,transaction_id).then(function(value) {
                 if(value.status) {
-                    //thisresponse.extra_data = value.message;
-                    //res.send(thisresponse);
                     res.json({received: true});
-
                 }
                 else {
-                    //thisresponse.extra_data = value.message;
-                    //thisresponse.status_code = 400;
-                    //res.status(400).send(thisresponse);
                     res.json({received: false});
                 }
             });
@@ -169,3 +198,53 @@ exports.render_payment_form = function(req,res) {
     });
 };
 
+
+exports.stripe_order_charge = function (req,res) {
+    var thisresponse = new response.OK();
+    var sale_or_refund = 1;
+
+    if(!req.body.username || !req.body.product_id) {
+        thisresponse.extra_data = "Missing username or product ID.";
+        res.status(400).send("Missing username or product ID.");
+        return null;
+    }
+
+    var myobj  = {
+        date : Date.now(),
+        payment_provider : 'stripe',
+        customer_username: req.body.username,
+        product_id: req.body.product_id,
+        transaction_token: req.body.stripetoken
+    };
+
+    var stripeobject = {
+        currency: "usd",
+        email: req.body.email,
+        metadata: {Firstname: req.body.firstname, Lastname: req.body.lastname, product_id: req.body.product_id, username:req.body.username},
+        items: [{
+            type: 'sku',
+            parent: req.body.product_id,
+            quantity: 1
+        }]
+    };
+
+    stripe.orders.create(
+        stripeobject
+        , function(err, order) {
+
+            //console.log(order,err);
+            if(order) {
+                stripe.orders.pay(order.id, {
+                    source: req.body.stripetoken
+                }, function(err, orderstatus) {
+                    if(orderstatus)
+                        res.send(orderstatus)
+                    else
+                        res.send(err)
+                });
+            }
+            else {
+                res.send(err);
+            }
+        });
+};

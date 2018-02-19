@@ -36,7 +36,6 @@ exports.flussonic_catchup_stream = function(req,res) {
         if(Object.keys(req.query).length > 0) {
             response_object.streamurl += "?"+querystring.stringify(req.query);
         }
-
         clear_response.response_object[0] = response_object;
 
         res.send(clear_response);

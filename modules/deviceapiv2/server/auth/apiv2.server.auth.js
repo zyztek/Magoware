@@ -63,13 +63,18 @@ exports.emptyCredentials = function(req, res, next) {
 }
 
 exports.isAllowed = function(req, res, next) {
-    //lexo auth
-    if(req.body.auth){
+
+
+    if(req.body.auth){  //serach for auth
         var auth = decodeURIComponent(req.body.auth);
     }
-    else{
+    else if(req.headers.auth){ //
+        var auth = decodeURIComponent(req.headers.auth);
+    }
+    else {
         var auth = decodeURIComponent(req.params.auth);
     }
+
     //krijo objektin e auth
 
     if(isplaintext(auth, req.plaintext_allowed)){

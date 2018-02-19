@@ -67,33 +67,30 @@ db.connect = function(database, username, password, options) {
                                     isavailable: 1
                                 }
                             }).then(function(group) {
-                                winston.info('Admin group created successfully');
-                                callback(null);
+                                winston.info('Admin group created successfully. Creating user admin ...');
+                                //create admin user
+                                var salt = randomstring.generate(64);
+                                db.models['users'].findOrCreate({
+                                    where: {username: 'admin'},
+                                    defaults: {
+                                        username: 'admin',
+                                        password: 'admin',
+                                        hashedpassword: authentication.encryptPassword('admin', salt),
+                                        salt: salt,
+                                        isavailable: 1,
+                                        group_id: 1
+                                    }
+                                }).then(function(user) {
+                                    winston.info('Admin user created successfully.');
+                                    callback(null);
+                                    return null;
+                                }).catch(function(err) {
+                                    winston.info('Error creating Admin user');
+                                    callback(null);
+                                });
                                 return null;
                             }).catch(function(err) {
                                 winston.info('Error creating Admin group');
-                                callback(null);
-                            });
-                        },
-                        //create admin user
-                        function(callback) {
-                            var salt = randomstring.generate(64);
-                            db.models['users'].findOrCreate({
-                                where: {username: 'admin'},
-                                defaults: {
-                                    username: 'admin',
-                                    password: 'admin',
-                                    hashedpassword: authentication.encryptPassword('admin', salt),
-                                    salt: salt,
-                                    isavailable: 1,
-                                    group_id: 1
-                                }
-                            }).then(function(user) {
-                                winston.info('Admin user created successfully.');
-                                callback(null);
-                                return null;
-                            }).catch(function(err) {
-                                winston.info('Error creating Admin user');
                                 callback(null);
                             });
                         },
@@ -187,23 +184,31 @@ db.connect = function(database, username, password, options) {
                     winston.info("Database synchronized");
                     return null;
                 }).then(function() {
-                //Populating app_group table
-                db.models['app_group'].bulkCreate(
-                    default_app_groups
-                ).then(function(done) {
-                    winston.info('Default app_groups data created successfuly.');
-                    return null;
-                }).catch(function(err) {
-                    winston.info('Error creating app_group items.',err);
-                    return null;
-                });
-                return null;
-            }).then(function() {
                 //Populating activity table
                 db.models['activity'].bulkCreate(
                     default_activity
                 ).then(function(done) {
-                    winston.info('Default activity data created successfuly.');
+                    winston.info('Default activity data created successfuly. Creating App group table ...');
+                    //Populating app_group table
+                    db.models['app_group'].bulkCreate(
+                        default_app_groups
+                    ).then(function(done) {
+                        winston.info('Default app_groups data created successfuly. Creating package type table ...');
+                        //Populating app_group table
+                        db.models['package_type'].bulkCreate(
+                            default_package_type
+                        ).then(function(done) {
+                            winston.info('Default package_type data created successfuly.');
+                            return null;
+                        }).catch(function(err) {
+                            winston.info('Error creating package_type items.',err);
+                            return null;
+                        });
+                        return null;
+                    }).catch(function(err) {
+                        winston.info('Error creating app_group items.',err);
+                        return null;
+                    });
                     return null;
                 }).catch(function(err) {
                     winston.info('Error creating activity itmes',err);
@@ -223,38 +228,24 @@ db.connect = function(database, username, password, options) {
                 });
                 return null;
             }).then(function() {
-                //Populating app_group table
-                db.models['package_type'].bulkCreate(
-                    default_package_type
-                ).then(function(done) {
-                    winston.info('Default package_type data created successfuly.');
-                    return null;
-                }).catch(function(err) {
-                    winston.info('Error creating package_type items.',err);
-                    return null;
-                });
-                return null;
-            }).then(function() {
                 //Populating api_group table
                 db.models['api_group'].bulkCreate(
                     default_api_group
                 ).then(function(done) {
-                    winston.info('Default api_group data created successfuly.');
+                    winston.info('Default api_group data created successfuly. Creating api url table ...');
+                    //Populating api_url table
+                    db.models['api_url'].bulkCreate(
+                        default_api_url
+                    ).then(function(done) {
+                        winston.info('Default api_url data created successfuly.');
+                        return null;
+                    }).catch(function(err) {
+                        winston.info('Error creating api_url items.',err);
+                        return null;
+                    });
                     return null;
                 }).catch(function(err) {
                     winston.info('Error creating api_group items.',err);
-                    return null;
-                });
-                return null;
-            }).then(function() {
-                //Populating api_url table
-                db.models['api_url'].bulkCreate(
-                    default_api_url
-                ).then(function(done) {
-                    winston.info('Default api_url data created successfuly.');
-                    return null;
-                }).catch(function(err) {
-                    winston.info('Error creating api_url items.',err);
                     return null;
                 });
                 return null;

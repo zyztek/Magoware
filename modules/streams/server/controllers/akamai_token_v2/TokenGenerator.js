@@ -96,7 +96,7 @@ var TokenGenerator = function () {
     }, {
         key: 'getSaltField',
         value: function getSaltField() {
-            return this.salt ? 'salt='.this.salt + this.delimiter : '';
+            return this.salt ? 'salt=' + this.salt + this.delimiter : '';
         }
     }, {
         key: '_encode',

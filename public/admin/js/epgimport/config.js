@@ -72,7 +72,6 @@ export default function (nga, admin) {
                     { value: 'utf-8', label: 'utf-8' },
                     { value: 'latin1 ', label: 'latin1 ' }
                 ])
-                .validation({ required: true })
                 .label('Epg file encoding'),
             nga.field('epg_file','file')
                 .uploadInformation({ 'url': '/file-upload/single-file/epg/epg_file', 'accept': 'image/*, .csv, text/xml, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'apifilename': 'result'})
@@ -97,4 +96,3 @@ export default function (nga, admin) {
     return epgImport;
 
 }
-

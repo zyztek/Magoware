@@ -13,12 +13,18 @@ var path = require('path'),
 module.exports = function(app) {
 
     app.route('/apiv2/token/akamaitokenv2/*')
-
         //.all(authpolicy.isAllowed)
+        .get(tokenGenerators.akamai_token_v2_generator)
         .post(tokenGenerators.akamai_token_v2_generator);
+
+    app.route('/apiv2/token/mobileakamaitokenv2/*')
+        //.all(authpolicy.isAllowed)
+        .get(tokenGenerators.akamai_token_v2_generator_tibo_mobile)
+        .post(tokenGenerators.akamai_token_v2_generator_tibo_mobile);
 
     app.route('/apiv2/token/flussonic/*')
         //.all(authpolicy.isAllowed)
+        .get(tokenGenerators.flussonic_token_generator)
         .post(tokenGenerators.flussonic_token_generator);
 
     app.route('/apiv2/catchup/flussonic')

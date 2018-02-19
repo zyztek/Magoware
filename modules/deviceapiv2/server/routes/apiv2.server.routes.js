@@ -46,18 +46,22 @@ module.exports = function(app) {
     //channels
     app.route('/apiv2/channels/list')
         .all(authpolicy.isAllowed)
+        .get(channelsController.list_get)
         .post(channelsController.list);
 
     app.route('/apiv2/channels/genre')
         .all(authpolicy.isAllowed)
+        .get(channelsController.genre_get)
         .post(channelsController.genre);
 
     app.route('/apiv2/channels/epg')
         .all(authpolicy.isAllowed)
+        .get(channelsController.epg_get)
         .post(channelsController.epg);
 
     app.route('/apiv2/channels/event')
         .all(authpolicy.isAllowed)
+        .get(channelsController.event_get)
         .post(channelsController.event);
 
     app.route('/apiv2/channels/daily_epg')
@@ -70,6 +74,8 @@ module.exports = function(app) {
     app.route('/apiv2/channels/favorites')
         .all(authpolicy.isAllowed)
         .post(channelsController.favorites);
+
+
     app.route('/apiv2/channels/program_info')
         .all(authpolicy.isAllowed)
         .post(channelsController.program_info);
@@ -80,6 +86,7 @@ module.exports = function(app) {
 
     app.route('/apiv2/channels/catchup_events')
         .all(authpolicy.isAllowed)
+        .get(catchupController.catchup_events_get)
         .post(catchupController.catchup_events);
 
     app.route('/apiv2/channels/catchup_stream')
@@ -87,49 +94,59 @@ module.exports = function(app) {
         .post(catchupController.catchup_stream);
 
 
-
-    //!!!!!!!!!!!!!! below moved to folder controller streams.
-    //token, drm, stream security functions
-    //flussonic token generator
-    //app.route('/apiv2/token/flussonic_remote/:stream_name')
-    //.all(authpolicy.isAllowed)
-    //    .get(token_drmController.flussonic_token__remote);
-
-    //app.route('/apiv2/token/flussonic/:stream_name')
-    //    //.all(authpolicy.isAllowed)
-    //    .post(token_drmController.flussonic_token);
-
-
-
     //vod set top box
     app.route('/apiv2/vod/list')
         .all(authpolicy.isAllowed)
         .post(vodController.list);
+
+    app.route('/apiv2/vod/list/:pagenumber')
+        .all(authpolicy.isAllowed)
+        .get(vodController.list_get);
+
     app.route('/apiv2/vod/categories')
         .all(authpolicy.isAllowed)
+        .get(vodController.categories_get)
         .post(vodController.categories);
+
+
     app.route('/apiv2/vod/subtitles')
         .all(authpolicy.isAllowed)
+        .get(vodController.subtitles_get)
         .post(vodController.subtitles);
+
+
     app.route('/apiv2/vod/totalhits')
         .all(authpolicy.isAllowed)
         .post(vodController.totalhits);
 
     app.route('/apiv2/vod/mostwatched')
         .all(authpolicy.isAllowed)
+        .get(vodController.mostwatched_get)
         .post(vodController.mostwatched);
+
+
     app.route('/apiv2/vod/mostrated')
         .all(authpolicy.isAllowed)
+        .get(vodController.mostrated_get)
         .post(vodController.mostrated);
+
+
     app.route('/apiv2/vod/related')
         .all(authpolicy.isAllowed)
         .post(vodController.related);
+
     app.route('/apiv2/vod/suggestions')
         .all(authpolicy.isAllowed)
+        .get(vodController.suggestions_get)
         .post(vodController.suggestions);
+
+
     app.route('/apiv2/vod/categoryfilms')
         .all(authpolicy.isAllowed)
+        .get(vodController.categoryfilms_get)
         .post(vodController.categoryfilms);
+
+
     app.route('/apiv2/vod/searchvod')
         .all(authpolicy.isAllowed)
         .post(vodController.searchvod);
@@ -152,6 +169,7 @@ module.exports = function(app) {
     //main device menu
     app.route('/apiv2/main/device_menu')
         .all(authpolicy.isAllowed)
+        .get(mainController.device_menu_get)
         .post(mainController.device_menu);
 
     /*******************************************************************
@@ -190,17 +208,22 @@ module.exports = function(app) {
      *******************************************************************/
     app.route('/apiv2/customer_app/settings')
         .all(authpolicy.isAllowed)
+        .get(customersAppController.user_settings_get)
         .post(customersAppController.user_settings);
+
     app.route('/apiv2/customer_app/user_data')
         .all(authpolicy.isAllowed)
+        .get(customersAppController.user_data_get)
         .post(customersAppController.user_data);
 
     app.route('/apiv2/customer_app/update_user_data')
         .all(authpolicy.isAllowed)
         .post(customersAppController.update_user_data);
+
     app.route('/apiv2/customer_app/update_user_settings')
         .all(authpolicy.isAllowed)
         .post(customersAppController.update_user_settings);
+
     app.route('/apiv2/customer_app/change_password')
         .all(authpolicy.isAllowed)
         .post(customersAppController.change_password);
@@ -210,19 +233,24 @@ module.exports = function(app) {
 
     app.route('/apiv2/customer_app/salereport')
         .all(authpolicy.isAllowed)
+        .get(customersAppController.salereport_get)
         .post(customersAppController.salereport);
 
     app.route('/apiv2/customer_app/subscription')
         .all(authpolicy.isAllowed)
+        .get(customersAppController.subscription_get)
         .post(customersAppController.subscription);
 
     app.route('/apiv2/customer_app/genre')
         .all(authpolicy.isAllowed)
+        .get(customersAppController.genre_get)
         .post(customersAppController.genre);
 
     app.route('/apiv2/customer_app/channel_list')
         .all(authpolicy.isAllowed)
+        .get(customersAppController.channel_list_get)
         .post(customersAppController.channel_list);
+
     app.route('/apiv2/customer_app/add_channel')
         .all(authpolicy.isAllowed)
         .post(customersAppController.add_channel);
@@ -239,6 +267,7 @@ module.exports = function(app) {
      *******************************************************************/
     app.route('/apiv2/products/product_list')
         .all(authpolicy.isAllowed)
+        .get(productsAppController.product_list_get)
         .post(productsAppController.product_list);
 
 

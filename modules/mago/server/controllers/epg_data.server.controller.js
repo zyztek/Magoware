@@ -187,18 +187,20 @@ exports.list = function(req, res) {
 exports.list_chart_epg = function(req, res) {
 
     //get EPG data from last 7 days
-    var d = new Date();
-    d.setDate(d.getDate()-7);
+    var past = new Date();
+    var future = new Date();
+    past.setDate(past.getDate()-4);
+    future.setDate(future.getDate()+7);
 
     DBChannels.findAll({
-        attributes: ['id', ['channel_number', 'group'],['program_start','start'],['program_end','end'],['title','content']],
+        attributes: ['id', ['channel_number', 'group'],['title','content']],
         //limit: 100,
-        where: {program_start: {gte: d}}
+        //where: {program_start: {gte: d}}
     }).then(function(channels){
         DBModel.findAll({
                 attributes: ['id', ['channel_number', 'group'],['program_start','start'],['program_end','end'],['title','content']],
                 //limit: 100,
-                where: {program_start: {gte: d}}
+                where: {program_start: {gte: past}, program_end :{lte: future}}
             }
         ).then(function(results) {
             if (!results) {
@@ -248,7 +250,7 @@ exports.dataByID = function(req, res, next, id) {
 
 exports.save_epg_records = function(req, res){
 
-    var current_time = dateFormat(Date.now(), "yyyy-mm-dd 00:00:00");
+    var current_time = dateFormat(Date.now(), "yyyy-mm-dd HH:MM:ss");
     req.body.timezone = (req.body.timezone && (-12 < req.body.timezone < 12) ) ? req.body.timezone : 0; //valid timezone input or default timezone 0
     req.body.encoding = (req.body.encoding && (['ascii', 'utf-8', 'latin1', ].indexOf(req.body.encoding) !== -1) ) ? req.body.encoding : 'utf-8'; //valid encoding input or default encoding utf-8
 
@@ -256,7 +258,7 @@ exports.save_epg_records = function(req, res){
         DBModel.destroy({
             where: {id: {gt: -1}}
         }).then(function (result) {
-            read_and_write_epg();
+            read_and_write_epg(current_time);
             return null;
         }).catch(function(error) {
             if(error.message.split(': ')[0] === 'ER_ROW_IS_REFERENCED_2') return res.status(400).send({message: 'Delete failed: At least one of these programs is scheduled'}); //referenced record cannot be deleted
@@ -336,7 +338,7 @@ function import_xml_standard(req, res, current_time){
                                                 //if channel info found, let's save the epg record
                                                 if( result && ((req.body.channel_number === null) || (req.body.channel_number == result.channel_number)) ){
                                                     //only insert future programs (where program_start > current)
-                                                    if( moment(stringtodate(program.$.start)).subtract(req.body.timezone, 'hour') > current_time){
+                                                    if( moment(stringtodate(program.$.start)).subtract(req.body.timezone, 'hour').format('YYYY-MM-DD HH:mm:ss') > moment(current_time).format('YYYY-MM-DD HH:mm:ss')){
                                                         db.epg_data.create({
                                                             channels_id: result.id,
                                                             channel_number: result.channel_number,
@@ -362,7 +364,6 @@ function import_xml_standard(req, res, current_time){
                                         }
                                         catch(error){
                                             //todo: display info that some data were not saved?
-                                            console.log(error)
                                         }
                                     }
                                 });
@@ -396,60 +397,62 @@ function import_csv(req, res, current_time){
     var channel_number_list = [];
 
     async.auto({
+        //reads entire csv file. saves into channel_number_list only the number of those channels that are in the file and are not filtered out by the channel_number input
         get_channels: function(callback) {
             var channel_number_stream = fs.createReadStream(path.resolve('./public')+req.body.epg_file, req.body.encoding); //link main url
             fastcsv.fromStream(channel_number_stream, {headers : true}, {ignoreEmpty: true}).validate(function(data){
                 if(req.body.channel_number){
-                    return data.channel_number == req.body.channel_number; //if a channel_number is specified,
+                    return data.channel_number == req.body.channel_number; //if a channel_number is specified, filter out other channels
                 }
                 else{
                     return data;
                 }
             }).on("data", function(data){
                 if(channel_number_list.indexOf(data.channel_number) === -1) {
-                    channel_number_list.push(data.channel_number);
+                    channel_number_list.push(data.channel_number); //prepare array with numbers of channels whose programs will be imported
                 }
             }).on("end", function(){
-                callback(null);
+                callback(null); //reading file ended. pass control to next function
             });
         },
+        //deletes future epg for channels whose epg will be imported
         delete_epg: ['get_channels', function(results, callback) {
             if(channel_number_list.length < 1){
                 message = 'Unable to read any records. Epg data not saved';
-                callback(true);
+                callback(true); // no channels to import epg. pass control to the end
             }
             else{
                 DBModel.destroy({
                     where: {program_start: {gte: current_time}, channel_number: {in: channel_number_list}}
                 }).then(function (result) {
-                    callback(null, 1);
+                    callback(null, 1); // future epg was deleted for channels on our list. pass control to next function
                 }).catch(function(error) {
                     if(error.message.split(': ')[0] === 'ER_ROW_IS_REFERENCED_2') message = 'Delete failed: At least one of these programs is scheduled';
                     else message = 'Unable to proceed with the action';
-                    callback(true);
+                    callback(true); // error occured while deleting future epg. pass control to the end
                 });
             }
         }],
         save_epg: ['delete_epg', function(epg_data, callback) {
-            var stream = fs.createReadStream(path.resolve('./public')+req.body.epg_file, req.body.encoding); //link main url
+            var stream = fs.createReadStream(path.resolve('./public')+req.body.epg_file, req.body.encoding); // read csv file
             fastcsv.fromStream(stream, {headers : true}, {ignoreEmpty: true}).validate(function(data){
                 if(req.body.channel_number){
-                    return data.channel_number == req.body.channel_number;
+                    return data.channel_number == req.body.channel_number; //if a channel_number is specified, filter out epg for other channels
                 }
-                else return data;
+                else return data; //no channel_number was specified, return all records
             }).on("data", function(data){
-                //only insert future programs (where program_start > current)
-                if(data && (moment(data.program_start).subtract(req.body.timezone, 'hour') > current_time) ){
+                //only insert future programs (where program_start > current). take into account timezone used to generate the epg file
+                if(data && (moment(data.program_start, 'MM/DD/YYYY HH:mm:ss').subtract(req.body.timezone, 'hour').format('YYYY-MM-DD HH:mm:ss') > moment(current_time).format('YYYY-MM-DD HH:mm:ss')) ){
                     DBModel.create({
                         channels_id: data.channel_id,
                         channel_number: data.channel_number,
                         title: data.title,
                         short_name: data.short_name,
                         short_description: data.short_description,
-                        program_start: moment(data.program_start).subtract(req.body.timezone, 'hour'),
-                        program_end: moment(data.program_end).subtract(req.body.timezone, 'hour'),
+                        program_start: moment(data.program_start, 'MM/DD/YYYY HH:mm:ss').subtract(req.body.timezone, 'hour'),
+                        program_end: moment(data.program_end, 'MM/DD/YYYY HH:mm:ss').subtract(req.body.timezone, 'hour'),
                         long_description: data.long_description,
-                        duration_seconds: (Date.parse(data.program_end) - Date.parse(data.program_start))/1000 //parse strings as date timestamps, convert difference from milliseconds to seconds
+                        duration_seconds: data.duration
                     }).then(function (result) {
                     }).catch(function(error) {
                         message = 'Unable to save some epg records';
@@ -461,18 +464,36 @@ function import_csv(req, res, current_time){
         }]
     }, function(error, results) {
         if(error) {
-            return res.status(400).send({message: message}); //serverside filetype validation
+            return res.status(400).send({message: message});
         }
-        else return res.status(200).send({message: 'Epg records were saved'}); //serverside filetype validation
+        else return res.status(200).send({message: 'Epg records were saved'});
     });
 
 }
 
+//import xml file, digitalb format
 function import_xml_dga(req, res, current_time){
-    var parser = new xml2js.Parser();
-    fs.readFile(path.resolve('./public'+req.body.epg_file), req.body.encoding, function(err, data) {
-        parser.parseString(data, function (err, result) {
-            var all_programs = result.WIDECAST_DVB.channel; //stores the whole list of channel objects from the xml file
+    var import_log = [];
+    async.auto({
+        read_file: function(callback) {
+            fs.readFile(path.resolve('./public'+req.body.epg_file), req.body.encoding, function(err, data) {
+                if(err) {
+                    callback(true, {"message": 'Error reading this xml file'});
+                }
+                else callback(null, data);
+            });
+        },
+        parse_file: ['read_file', function(results, callback) {
+            var parser = new xml2js.Parser();
+            parser.parseString(results.read_file, function (err, epg_data) {
+                if(err) {
+                    callback(true, {"message": 'Error parsing this xml file'});
+                }
+                else callback(null, epg_data);
+            });
+        }],
+        save_epg: ['parse_file', function(results, callback) {
+            var all_programs = results.parse_file.WIDECAST_DVB.channel; //stores the whole list of channel objects from the xml file
             // iterate over each channel
             all_programs.forEach(function(channels){
                 var channel_name = channels.$.name;
@@ -485,42 +506,53 @@ function import_xml_dga(req, res, current_time){
                     if(channel_data){
                         //destroys future epg for filtered channels
                         db.epg_data.destroy({
-                            where: {channel_number: filtered_channel_number, program_start: {gte: current_time}}
+                            where: {channel_number: channel_data.channel_number, program_start: {gte: current_time}}
                         }).then(function (result) {
                             //iterate over all events of this channel
                             channels.event.forEach(function(events){
-                                if(events && (moment(events.$.start_time).subtract(req.body.timezone, 'hour') > current_time) ){
+                                if(events && (moment(events.$.start_time).subtract(req.body.timezone, 'hour').format('YYYY-MM-DD HH:mm:ss') > moment(current_time).format('YYYY-MM-DD HH:mm:ss')) ){
                                     //only insert future programs (where program_start > current)
                                     db.epg_data.create({
-                                        channels_id: channel_data.id, //ok
-                                        channel_number: channel_data.channel_number, //ok
-                                        title: channel_name, //ok
+                                        channels_id: channel_data.id,
+                                        channel_number: channel_data.channel_number,
+                                        title: events.short_event_descriptor[0].$.name,
                                         short_name: events.short_event_descriptor[0].$.name,
                                         short_description: events.short_event_descriptor[0]._,
                                         program_start: moment(events.$.start_time).subtract(req.body.timezone, 'hour'),
-                                        program_end: moment.unix(parseInt(moment(events.$.start_time).format('X')) + parseInt(events.$.duration) - req.body.timezone*3600  ).format('YYYY-MM-DD HH:mm:ss') , // ok
+                                        program_end: moment.unix(parseInt(moment(events.$.start_time).format('X')) + parseInt(events.$.duration) - req.body.timezone*3600  ).format('YYYY-MM-DD HH:mm:ss'),
                                         long_description: events.extended_event_descriptor[0].text[0],
                                         duration_seconds: events.$.duration //is in seconds
                                     }).catch(function(error) {
-                                        console.log(error)
-                                        // return res.status(400).send({message: 'Unable to save the epg records'});
+                                        import_log.push({"error": "Failed to create epg record", "error_logs": error});
                                     });
                                 }
-
+                                else{
+                                    import_log.push({"error": "Failed to create epg record", "error_logs": "Event time has expired "+events});
+                                }
                             });
                         }).catch(function(error) {
-                            callback(true);//todo: provide some info to error
+                            import_log.push({"error": "Failed to delete epg record", "error_logs": error});
+                            callback(null); //event deletion failed. pass control to next epg record iteration
                         });
+                    }
+                    else{
+                        import_log.push({"error": "Channel not found", "error_logs": "Channel "+channel_name+" either does not exist, or was filtered by your input channel number."});
                     }
                     return null;
                 }).catch(function(error) {
-                    console.log(error)
+                    import_log.push({"error": "Error searching for channel", "error_logs": error});
+                    callback(null);
                 });
             });
+            callback(null); //passes control to next step, sending status
+        }]
+    }, function(error, results) {
 
-        });
-        if(err) {
-            //todo error
+        if(error) {
+            return res.status(400).send({message: error}); //todo: catch message from callback
+        }
+        else {
+            return res.status(200).send({message: 'Epg records were saved'}); //serverside filetype validation
         }
     });
 }

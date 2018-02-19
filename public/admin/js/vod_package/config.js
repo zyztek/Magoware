@@ -73,35 +73,40 @@ export default function (nga, admin) {
 
             nga.field('Vod films', 'referenced_list')
                 .label('Vods')
-                .targetEntity(admin.getEntity('package_vod'))
-                .targetReferenceField('vod_id')
+                .targetEntity(admin.getEntity('Vods'))
+                .targetReferenceField('package_id')
                 .targetFields([
-                    nga.field('vod_id', 'reference')
-                        .targetEntity(admin.getEntity('Vods'))
-                        .targetField(nga.field('icon_url', 'file')
-                            .template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />'))
+                    nga.field('icon_url', 'file')
+                        .template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />')
+                        .cssClasses('hidden-xs')
                         .label('Icon'),
-                    nga.field('vod_id', 'reference')
-                        .targetEntity(admin.getEntity('Vods'))
-                        .targetField(nga.field('title'))
+                    nga.field('title', 'string')
                         .label('Title'),
-                    nga.field('vod_id', 'reference')
-                        .targetEntity(admin.getEntity('Vods'))
-                        .targetField(nga.field('vod_category.name'))
+
+                    nga.field('category_id', 'reference')
+                        .targetEntity(admin.getEntity('VodCategories'))
+                        .targetField(nga.field('name'))
                         .label('Genre'),
-                    nga.field('vod_id', 'reference')
-                        .targetEntity(admin.getEntity('Vods'))
-                        .targetField(nga.field('isavailable', 'boolean'))
+                    nga.field('rate', 'number')
+                        .attributes({ placeholder: 'Rate' })
+                        .validation({ required: true })
+                        .label('Rate'),
+                    nga.field('duration')
+                        .validation({ required: true })
+                        .attributes({ placeholder: 'Duration' })
+                        .label('Duration'),
+
+                    nga.field('isavailable', 'boolean')
                         .label('Available'),
                 ])
-                .listActions(['<ma-delete-button label="Remove" entry="entry" entity="entity" size="xs"></ma-delete-button>'])
+                //.listActions(['<ma-delete-button label="Remove" entry="entry" entity="entity" size="xs"></ma-delete-button>'])
                 .perPage(15),
             nga.field('template')
                 .label('')
                 .template('<div class="row">'+
                     '<div class="btn-group inline pull-right"> '+
                     '<div class="btn btn-small"><ma-filtered-list-button entity-name="Vods" class="pull-right" label="SEE ALL VODS" filter="{ vod_id: entry.values.id }"></ma-filtered-list-button></div> '+
-                    '<div class="btn btn-small"><ma-create-button entity-name="vodPackages" class="pull-right" label="ADD VOD" default-values="{ package_id: entry.values.id }"></ma-create-button></div> '+
+                        //'<div class="btn btn-small"><ma-create-button entity-name="vodPackages" class="pull-right" label="ADD VOD" default-values="{ package_id: entry.values.id }"></ma-create-button></div> '+
                     '</div>'+
                     '</div>'),
         ]);
