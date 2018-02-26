@@ -10,18 +10,18 @@ export default function (nga, admin) {
                 .label('ID'),
             nga.field('transaction_id', 'string')
                 .label('Transaction ID'),
+            nga.field('transaction_type', 'string')
+                .label('Transaction Type'),
             nga.field('transaction_token', 'string')
                 .label('Transaction Token'),
             nga.field('message', 'string')
                 .label('Message'),
             nga.field('customer_username', 'string')
                 .label('Customer Username'),
-            nga.field('product_id', 'number')
+            nga.field('product_id', 'text')
                 .label('Product'),
-
             nga.field('payment_provider', 'string')
                 .label('Payment Provider'),
-
             nga.field('payment_success', 'boolean')
                 .label('Payment Success'),
 
@@ -41,6 +41,9 @@ export default function (nga, admin) {
             nga.field('transaction_id', 'string')
                 .label('Transaction ID')
                 .editable(false),
+            nga.field('transaction_type', 'string')
+                .label('Transaction Type')
+                .editable(false),
             nga.field('transaction_token', 'string')
                 .editable(false)
                 .label('Transaction Token'),
@@ -50,7 +53,7 @@ export default function (nga, admin) {
             nga.field('customer_username', 'string')
                 .editable(false)
                 .label('Customer Username'),
-            nga.field('product_id', 'number')
+            nga.field('product_id', 'text')
                 .editable(false)
                 .label('Product'),
             nga.field('payment_provider', 'string')

@@ -9,6 +9,11 @@ module.exports = function(sequelize, DataTypes) {
             autoIncrement: true,
             unique: true
         },
+        product_id:{
+            type: DataTypes.STRING(32),
+            allowNull: false,
+            unique: true
+        },
         name: {
             type: DataTypes.STRING(32),
             allowNull: false

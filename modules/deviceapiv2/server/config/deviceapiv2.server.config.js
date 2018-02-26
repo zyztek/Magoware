@@ -12,7 +12,10 @@ module.exports = function(app,   db) {
     DBModel.findOne({
 
     }).then(function (result) {
-        app.locals.settings = result;
+
+        app.locals.settings = Object.assign(app.locals.settings, result.dataValues);
+        app.locals.backendsettings = result.dataValues;
+
     }).catch(function(error) {
         //todo: handdle error
     });

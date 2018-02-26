@@ -31,10 +31,7 @@ exports.create_login_data = function(req, res, login_data_username) {
 
     var newData = req.body;
     newData.salt = authenticationHandler.makesalt();
-    //logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
-
-    if(!login_data_username) return {status: false, message:"username cannot be blank"};
-
+    if(!login_data_username) return {status: false, message: "username cannot be blank"};
     newData.username = login_data_username;
     if(!newData.customer_id) newData.customer_id = 1;
     if(!newData.password) newData.password = login_data_username;
@@ -101,7 +98,6 @@ exports.create_customer_with_login = function(req, res) {
                             req.body.channel_stream_source_id = (req.body.channel_stream_source_id)?req.body.channel_stream_source_id:1;
                             req.body.vod_stream_source = (req.body.vod_stream_source)?req.body.vod_stream_source:1;
                             req.body.pin = (req.body.pin)?req.body.pin:1234;
-
                             return db.login_data.create(req.body, {transaction: t});
                         });
 

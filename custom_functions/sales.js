@@ -71,7 +71,6 @@ exports.add_subscription_transaction = function(req,res,sale_or_refund,transacti
 
     var transactions_array = [];
 
-
     if(!sale_or_refund) sale_or_refund = 1;
     if(!transaction_id) transaction_id = crypto.randomBytes(16).toString('base64');
     if(typeof start_date == 'undefined') start_date = Date.now(); //
@@ -79,7 +78,7 @@ exports.add_subscription_transaction = function(req,res,sale_or_refund,transacti
     // Loading Combo with All its packages
     return db.combo.findOne({
         where: {
-            id: req.body.product_id,
+            product_id: req.body.product_id,
             isavailable: true
         }, include: [{model:db.combo_packages,include:[db.package]}]
     }).then(function(combo) {
@@ -132,13 +131,12 @@ exports.add_subscription_transaction = function(req,res,sale_or_refund,transacti
                         }
                     });//end package loop
 
-                    if(sale_or_refund) console.log('sale ore refund',sale_or_refund);
-
                     var salesreportdata = {
                         transaction_id: transaction_id,
                         user_id : 1,
                         distributorname: 1,
-                        combo_id: req.body.product_id,
+                        //combo_id: req.body.product_id,
+                        combo_id: combo.id,
                         login_data_id: loginData.id,
                         user_username: loginData.id,
                         saledate: Date.now(),
@@ -151,6 +149,11 @@ exports.add_subscription_transaction = function(req,res,sale_or_refund,transacti
                         );
                     }
                     else {
+                        salesreportdata.active = 0;
+                        salesreportdata.cancelation_date = Date.now();
+                        salesreportdata.cancelation_user = 1;
+                        salesreportdata.cancelation_reason = "api request";
+
                         transactions_array.push(
                             db.salesreport.update(salesreportdata,
                                 {where: {transaction_id: transaction_id}
@@ -163,7 +166,6 @@ exports.add_subscription_transaction = function(req,res,sale_or_refund,transacti
                 }).then(function (result) {
                     return {status: true,message:'transaction executed correctly'};
                 }).catch(function (err) {
-                    console.log(err);
                     return {status: false,message:'error executing transaction'};
                 })
             });

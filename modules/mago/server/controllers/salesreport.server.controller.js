@@ -436,49 +436,83 @@ exports.sales_by_month = function(req, res) {
 };
 
 exports.sales_monthly_expiration = function(req, res) {
+    //todo: vetem activity true???
 
-    var thequery = "SELECT count(subscription_sub.login_id), subscription_sub.enddate "+
-        " from ( " +
-        " SELECT `login_id`, DATE_FORMAT(max(`end_date`), '%Y-%m') AS `enddate`  " +
-        " FROM `subscription` AS `subscription` "+
-        " GROUP BY `login_id` "+
-        " ORDER BY `subscription`.`end_date` DESC "+
-        " ) as subscription_sub "+
-        " group by enddate "+
-        " Order by enddate desc; ";
+    //todo: filter per nje user te caktuar?
 
+    console.log("sales_monthly_expiration")
+    var qwhere = {},
+        final_where = {},
+        query = req.query;
+    final_where.where = qwhere; //start building where
 
-    sequelizes.sequelize.query(thequery)
-        .then(function(result) {
-            res.send(result)
-        }).catch(function(err) {
+    var client_filter = (req.query.username) ? '%'+req.query.username+'%' : '%%';
+
+    var start = (req.query.startsaledate) ? (req.query.startsaledate+' 00:00:00') : sequelize.literal('CURDATE()');
+    if(req.query.next) var end = sequelize.literal('CURDATE() + INTERVAL '+req.query.next+' DAY');
+    else if(req.query.endsaledate) var end = (req.query.endsaledate+' 00:00:00');
+
+    final_where.where = (end) ? {end_date: {between: [start, end]}} : {end_date: {gte: start}};
+
+    if(parseInt(query._start)) final_where.offset = parseInt(query._start);
+    if(parseInt(query._end)) final_where.limit = parseInt(query._end)-parseInt(query._start);
+
+    final_where.attributes = ['id', 'login_id', [sequelize.fn('count', sequelize.col('end_date')), 'count'], [sequelize.fn('max', sequelize.col('end_date')), 'end_date']];
+    final_where.include = [{model: db.login_data, required: true, attributes: ['username'], where: {username: {like: client_filter}}}]
+    //final_where.group = ['login_id'];
+    final_where.group = [sequelize.fn('DATE_FORMAT', sequelize.col('end_date'), "%Y-%m-01")]; //group by month/year of sale (excluding day and time information)
+    final_where.order = [['end_date', 'DESC']];
+
+    db.subscription.findAndCountAll(
+        final_where
+    ).then(function(results) {
+        if (!results) {
+            return res.status(404).send({ message: 'No data found' });
+        } else {
+            res.setHeader("X-Total-Count", results.count.length);
+            res.json(results.rows);
+        }
+    }).catch(function(err) {
         res.jsonp(err);
     });
 
 };
 
-
+/**
+ * @api {post} /api/sales_by_expiration Sales - Subscription expiration
+ * @apiVersion 0.2.0
+ * @apiName Sales - Subscription expiration
+ * @apiGroup Backoffice
+ * @apiHeader {String} authorization Token string acquired from login api.
+ * @apiParam {String} active  Optional field active.
+ * @apiParam {String} name  Optional field name.
+ * @apiParam {String} startsaledate  Optional field startsaledate.
+ * @apiParam {String} endsaledate  Optional field endsaledate.
+ * @apiParam {String} _start  Optional field _start.
+ * @apiParam {String} _end  Optional field _end.
+ * @apiParam {String} _orderBy  Optional field _orderBy.
+ *
+ * @apiSuccess (200) {String} message Full list of active subscriptions, sorted by their expiration date (descending order)
+ * @apiError (40x) {String} message Error message.
+ */
 exports.sales_by_expiration = function(req, res) {
     var qwhere = {},
         final_where = {},
         query = req.query;
     final_where.where = qwhere; //start building where
 
-    if(req.query.login_id) final_where.where.login_id = {like: '%'+req.query.login_id+'%'};
-    if(query.login_data_id) final_where.where.login_data_id = query.login_data_id;
-    if(req.query.distributorname) final_where.where.distributorname = {like: '%'+req.query.distributorname+'%'};
-
-    if(req.query.name) final_where.where.combo_id = req.query.name;
-
+    var client_filter = (req.query.username) ? '%'+req.query.username+'%' : '%%';
     var start = (req.query.startsaledate) ? (req.query.startsaledate+' 00:00:00') : sequelize.literal('CURDATE()');
     if(req.query.next) var end = sequelize.literal('CURDATE() + INTERVAL '+req.query.next+' DAY');
     else if(req.query.endsaledate) var end = req.query.endsaledate;
+
     final_where.where = (end) ? {end_date: {between: [start, end]}} : {end_date: {gte: start}};
 
     if(parseInt(query._start)) final_where.offset = parseInt(query._start);
     if(parseInt(query._end)) final_where.limit = parseInt(query._end)-parseInt(query._start);
 
     final_where.attributes = ['id', 'login_id', [sequelize.fn('max', sequelize.col('end_date')), 'end_date']];
+    final_where.include = [{model: db.login_data, required: true, attributes: ['username'], where: {username: {like: client_filter}}}]
     final_where.group = ['login_id'];
     final_where.order = [['end_date', 'DESC']];
 

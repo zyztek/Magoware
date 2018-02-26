@@ -11,15 +11,22 @@ var path = require('path'),
 
 module.exports = function(app) {
 
+    //get stripe key
     app.route('/apiv2/payments/stripe/getkey')
         //.all(authpolicy.isAllowed)
         .get(stripeFunctions.stripe_get_key);
 
+    //stripe one off charge
     app.route('/apiv2/payments/stripe/charge')
         //.all(authpolicy.isAllowed)
-        .post(stripeFunctions.stripe_charge);
+        .post(stripeFunctions.stripe_one_off_charge);
 
-    app.route('/apiv2/payments/stripe/chargeorder')
+    //stripe subscribe to plan
+    app.route('/apiv2/payments/stripe/subscribe')
+        //.all(authpolicy.isAllowed)
+        .post(stripeFunctions.stripe_subscription_charge);
+
+    app.route('/apiv2/payments/stripe/ordercharge')
         //.all(authpolicy.isAllowed)
         .post(stripeFunctions.stripe_order_charge);
 

@@ -20,6 +20,9 @@ module.exports = function(app) {
         //.all(policy.isAllowed)
         .post(customController.create_customer_with_login);
 
+    app.route('/api/accountslist')
+        //.all(policy.isAllowed)
+        .get(customController.list_logins_with_customer);
     // app.route('/api/customerdata/:customerDataId')
     //     .get(customerData.read);
 

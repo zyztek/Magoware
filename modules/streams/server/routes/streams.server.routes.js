@@ -17,6 +17,11 @@ module.exports = function(app) {
         .get(tokenGenerators.akamai_token_v2_generator)
         .post(tokenGenerators.akamai_token_v2_generator);
 
+    app.route('/apiv2/token/catchupakamaitokenv2/*')
+        //.all(authpolicy.isAllowed)
+        .get(tokenGenerators.catchup_akamai_token_v2_generator)
+        .post(tokenGenerators.catchup_akamai_token_v2_generator);
+
     app.route('/apiv2/token/mobileakamaitokenv2/*')
         //.all(authpolicy.isAllowed)
         .get(tokenGenerators.akamai_token_v2_generator_tibo_mobile)

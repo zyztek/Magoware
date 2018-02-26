@@ -16,6 +16,11 @@ module.exports = function(sequelize, DataTypes) {
             unique: true
         },
 
+        transaction_type: {
+            type: DataTypes.STRING(32),
+            allowNull: false
+        },
+
         transaction_token: {
             type: DataTypes.STRING(128),
             allowNull: false,
@@ -45,10 +50,9 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false
         },
         product_id: {
-            type: DataTypes.INTEGER(11),
-            allowNull: false
+            type: DataTypes.STRING(32),
+            allowNull: true
         },
-
         amount: {
             type: DataTypes.BIGINT,
             allowNull: false

@@ -5,23 +5,23 @@ export default function (nga, admin) {
         .batchActions([])
         .fields([
 
-            nga.field('login_id', 'reference')
-                .targetEntity(admin.getEntity('LoginData'))
-                .targetField(nga.field('username'))
-                .cssClasses('hidden-xs')
+            nga.field('login_datum.username', 'string')
                 .label('Client'),
             nga.field('end_date', 'date')
                 .cssClasses('hidden-xs')
                 .label('Expiration date')
         ])
         .filters([
+            nga.field('username', 'string')
+                .attributes({ placeholder: 'Client' }),
             nga.field('startsaledate', 'date')
                 .attributes({ placeholder: 'From date' })
                 .label('From date'),
             nga.field('endsaledate', 'date')
                 .attributes({placeholder: 'To date' })
                 .label('To date'),
-            nga.field('next', 'number')
+            nga.field('next', 'string')
+                .attributes({placeholder: 30 })
                 .label('Expires in (days)')
         ])
         .exportFields([

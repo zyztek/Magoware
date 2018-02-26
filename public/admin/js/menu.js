@@ -57,7 +57,7 @@ export default function (nga, admin) {
                 .title('Sales by month')
                 .icon('<span class="fa fa-list fa-fw"></span>')
             )
-            .addChild(nga.menu(admin.getEntity('sales_by_month'))
+            .addChild(nga.menu(admin.getEntity('sales_monthly_expiration'))
                 .title('Account expiration by month')
                 .icon('<span class="fa fa-list fa-fw"></span>')
             )

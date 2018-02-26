@@ -300,14 +300,15 @@ function import_xml_standard(req, res, current_time){
                             delete_existing_epg: function(callback) {
                                 async.forEach(channels, function (channel, callback) {
                                     var filtered_channel_number = (req.body.channel_number) ? req.body.channel_number : {gte: -1};
+                                    var channel_name = (channel["display-name"][0]._) ? channel["display-name"][0]._ : channel["display-name"]
                                     db.channels.findOne({
-                                        attributes: ['channel_number'], where: {title: channel["display-name"], channel_number: filtered_channel_number}
+                                        attributes: ['channel_number'], where: {title: channel_name, channel_number: filtered_channel_number}
                                     }).then(function (ch_result) {
                                         if(ch_result){
                                             db.epg_data.destroy({
                                                 where: {channel_number: filtered_channel_number, program_start: {gte: current_time}}
                                             }).then(function (result) {
-                                                channel_list[''+channel.$.id+''] = ({title: channel["display-name"]});
+                                                channel_list[''+channel.$.id+''] = ({title: channel_name});
                                                 callback(null, channel_list); //move control to next foreach iteration
                                             }).catch(function(error) {
                                                 callback(true);//todo: provide some info to error
@@ -339,15 +340,17 @@ function import_xml_standard(req, res, current_time){
                                                 if( result && ((req.body.channel_number === null) || (req.body.channel_number == result.channel_number)) ){
                                                     //only insert future programs (where program_start > current)
                                                     if( moment(stringtodate(program.$.start)).subtract(req.body.timezone, 'hour').format('YYYY-MM-DD HH:mm:ss') > moment(current_time).format('YYYY-MM-DD HH:mm:ss')){
+                                                        var program_title = (program.title[0]._) ? program.title[0]._ : program.title[0];
+                                                        var program_desc = (program.desc[0]._) ? program.desc[0]._ : program.desc[0];
                                                         db.epg_data.create({
                                                             channels_id: result.id,
                                                             channel_number: result.channel_number,
-                                                            title: (program.title[0]._) ? program.title[0]._ : program.title[0],
-                                                            short_name: (program.title[0]._) ? program.title[0]._ : program.title[0],
-                                                            short_description: (program.desc[0]._) ? program.desc[0]._ : program.desc[0],
+                                                            title: (program_title) ? program_title : " ",
+                                                            short_name: (program_title) ? program_title : " ",
+                                                            short_description: (program_desc) ? program_desc : " ",
                                                             program_start: moment(stringtodate(program.$.start)).subtract(req.body.timezone, 'hour'),
                                                             program_end: moment(stringtodate(program.$.stop)).subtract(req.body.timezone, 'hour'),
-                                                            long_description: (program.desc[0]._) ? program.desc[0]._ : program.desc[0],
+                                                            long_description: (program_desc) ? program_desc : " ",
                                                             duration_seconds: datetimediff_seconds(stringtodate(program.$.start), stringtodate(program.$.stop)) //is in seconds
                                                         }).then(function (result) {
                                                             //on each write, do nothing. we wait for the saving proccess to finish

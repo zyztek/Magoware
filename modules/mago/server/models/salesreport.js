@@ -9,6 +9,11 @@ module.exports = function(sequelize, DataTypes) {
             autoIncrement: true,
             unique: true
         },
+        transaction_id: {
+            type: DataTypes.STRING(128),
+            allowNull: false
+        },
+
         user_id: {
             type: DataTypes.INTEGER(11),
             allowNull: false
@@ -37,6 +42,18 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.BOOLEAN,
             defaultValue: 1,
             allowNull: false
+        },
+        cancelation_date: {
+            type: DataTypes.DATE,
+            allowNull: true
+        },
+        cancelation_user: {
+            type: DataTypes.STRING(128),
+            allowNull: true
+        },
+        cancelation_reason: {
+            type: DataTypes.STRING(128),
+            allowNull: true
         }
     }, {
         tableName: 'salesreport',

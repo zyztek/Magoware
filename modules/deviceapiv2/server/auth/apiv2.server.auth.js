@@ -42,6 +42,30 @@ function auth_decrypt(encryptedText, key) {
     }
 }
 
+function auth_decrypt1(token_string, key) {
+    var C = CryptoJS;
+    token_string = token_string.replace(/(,\+)/g, ',').replace(/\\r|\\n|\n|\r/g, ''); //remove all occurrences of '+' characters before each token component, remove newlines and carriage returns
+    var token_object = querystring.parse(token_string,",","="); //convert token string into token object. library
+    var test = token_object.auth.replace(/ /g, "+"); //handle library bug that replaces all '+' characters with spaces
+
+    test = C.enc.Base64.parse(test);
+    key = C.enc.Utf8.parse(key);
+    var aes = C.algo.AES.createDecryptor(key, {
+        mode: C.mode.CBC,
+        padding: C.pad.Pkcs7,
+        iv: key
+    });
+    var decrypted = aes.finalize(test);
+    try {
+        //console.log("decrypted", decrypted)
+        return C.enc.Utf8.stringify(decrypted);
+    }
+    catch(err) {
+        return "error";
+    }
+}
+
+
 function auth_veryfyhash(password,salt,hash) {
     var b = new Buffer(salt, 'base64');
     var iterations = 1000;
@@ -77,25 +101,41 @@ exports.isAllowed = function(req, res, next) {
 
     //krijo objektin e auth
 
-    if(isplaintext(auth, req.plaintext_allowed)){
-        if(req.plaintext_allowed){
-            var auth_obj = parse_plain_auth(auth); //nese lejohet plaintext, ndaje dhe parsoje
+    if(req.headers.auth){
+        console.log("req headers ")
+        if(missing_params(querystring.parse(auth_decrypt1(auth,req.app.locals.settings.new_encryption_key),";","=")) === false){
+            var auth_obj = querystring.parse(auth_decrypt1(auth,req.app.locals.settings.new_encryption_key),";","=");
         }
-        else{
-            response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'PLAINTEXT_TOKEN', 'no-store');
-        }
-    }
-    else{
-        if(missing_params(querystring.parse(auth_decrypt(auth,req.app.locals.settings.new_encryption_key),";","=")) === false){
-            var auth_obj = querystring.parse(auth_decrypt(auth,req.app.locals.settings.new_encryption_key),";","=");
-        }
-        else if(missing_params(querystring.parse(auth_decrypt(auth,req.app.locals.settings.old_encryption_key),";","=")) === false && req.app.locals.settings.key_transition === true){
-            var auth_obj = querystring.parse(auth_decrypt(auth,req.app.locals.settings.old_encryption_key),";","=");
+        else if(missing_params(querystring.parse(auth_decrypt1(auth,req.app.locals.settings.old_encryption_key),";","=")) === false && req.app.locals.settings.key_transition === true){
+            var auth_obj = querystring.parse(auth_decrypt1(auth,req.app.locals.settings.old_encryption_key),";","=");
         }
         else {
             response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'INVALID_TOKEN', 'no-store');
         }
     }
+    else{
+        if(isplaintext(auth, req.plaintext_allowed)){
+            if(req.plaintext_allowed){
+                var auth_obj = parse_plain_auth(auth); //nese lejohet plaintext, ndaje dhe parsoje
+            }
+            else{
+                response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'PLAINTEXT_TOKEN', 'no-store');
+            }
+        }
+        else{
+            if(missing_params(querystring.parse(auth_decrypt(auth,req.app.locals.settings.new_encryption_key),";","=")) === false){
+                var auth_obj = querystring.parse(auth_decrypt(auth,req.app.locals.settings.new_encryption_key),";","=");
+            }
+            else if(missing_params(querystring.parse(auth_decrypt(auth,req.app.locals.settings.old_encryption_key),";","=")) === false && req.app.locals.settings.key_transition === true){
+                var auth_obj = querystring.parse(auth_decrypt(auth,req.app.locals.settings.old_encryption_key),";","=");
+            }
+            else {
+                response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'INVALID_TOKEN', 'no-store');
+            }
+        }
+    }
+
+
 
     if(auth_obj){
         if((req.body.hdmi === 'true') && (['2', '3'].indexOf(auth_obj.appid) !== -1)){

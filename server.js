@@ -7,6 +7,7 @@ var prompt = require('prompt');
 var dbfile = path.resolve("./config/env/db.connection.js");
 
 process.env.NODE_ENV = 'development'; //this value should be set to production to enable https
+process.env.DB_SYNC = true;
 
 async.waterfall([
 

@@ -49,12 +49,35 @@ exports.akamai_token_v2_generator = function(req,res) {
     };
 
     var token = "?" + new akamai_token_generator.default(config).generateToken();
-
     var theresponse = new responses.OK();
     theresponse.extra_data = token;
-
     res.send(theresponse);
 };
+
+exports.catchup_akamai_token_v2_generator = function(req,res) {
+    var config = {
+        algorithm : 'SHA256',
+        acl : '*',
+        window : req.app.locals.streamtokens.AKAMAI.WINDOW,
+        key : req.app.locals.streamtokens.AKAMAI.TOKEN_KEY,
+        //ip: getClientIp(req),
+        ip: req.ip.replace('::ffff:', ''),
+        startTime:0,
+        url:'',
+        session:'',
+        data:'bbbbb',
+        salt: req.app.locals.streamtokens.AKAMAI.SALT,
+        delimeter:'~',
+        escape_early:false,
+        name:'token'
+    };
+
+    var token = "?" + new akamai_token_generator.default(config).generateToken();
+    var theresponse = new responses.OK();
+    theresponse.extra_data = token;
+    res.send(theresponse);
+};
+
 
 
 exports.akamai_token_v2_generator_tibo_mobile = function(req,res) {

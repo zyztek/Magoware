@@ -6,6 +6,12 @@ export default function (nga, admin) {
 			.title('<h4>Products & Services <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
 			.batchActions([])
 			.fields([
+				nga.field('id', 'string')
+						.isDetailLink(true)
+						.label('ID'),
+				nga.field('product_id', 'string')
+						.isDetailLink(true)
+						.label('Product ID'),
 				nga.field('name', 'string')
 						.isDetailLink(true)
 						.label('Name'),
@@ -32,6 +38,10 @@ export default function (nga, admin) {
 			}])
 			.title('<h4>Products & Services <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Product</h4>')
 			.fields([
+				nga.field('product_id', 'string')
+						.attributes({ placeholder: 'Name' })
+						.validation({ required: true })
+						.label('Product ID'),
 				nga.field('name', 'string')
 						.attributes({ placeholder: 'Name' })
 						.validation({ required: true })

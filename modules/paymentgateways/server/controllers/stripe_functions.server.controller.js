@@ -8,7 +8,8 @@ var path = require('path'),
     subscription_functions = require(path.resolve('./custom_functions/sales.js')),
     customer_functions = require(path.resolve('./custom_functions/customer_functions.js')),
     DBCombos = db.combo,
-    DBModel = db.payment_transactions;
+    DBpayment_transactions = db.payment_transactions,
+    async = require('async');
 
 /*
  * @api {get} /apiv2/payments/stripe/getkey Get Stripe Token Key
@@ -21,7 +22,6 @@ exports.stripe_get_key = function(req,res) {
     thisresponse.response_object = [{
         stripekey:req.app.locals.paymenttokens.STRIPE.API_KEY
     }]
-    console.log(req.app.locals);
     res.send(thisresponse);
 };
 
@@ -44,26 +44,22 @@ exports.stripe_get_key = function(req,res) {
  *
  */
 
-exports.stripe_charge = function(req,res) {
+//stripe one off charge
+exports.stripe_one_off_charge = function(req,res) {
     var thisresponse = new response.OK();
     var sale_or_refund = 1;
 
-    if(!req.body.username || !req.body.product_id) {
+
+    if((!req.body.username && !req.body.email) || !req.body.product_id) {
         thisresponse.extra_data = "Missing username or product ID.";
-        res.status(400).send("Missing username or product ID.");
+        res.status(400).send("Missing email or product ID.");
         return null;
     }
 
-    var myobj  = {
-        date : Date.now(),
-        payment_provider : 'stripe',
-        customer_username: req.body.username,
-        product_id: req.body.product_id,
-        transaction_token: req.body.stripetoken
-    };
+    if(!req.body.username) req.body.username = req.body.email;
 
     var stripeobj = {
-        amount: 1000,
+        amount: 1,
         currency: "usd",
         //description: "Example charge",
         //statement_descriptor: "Descriptor 22char",
@@ -72,110 +68,272 @@ exports.stripe_charge = function(req,res) {
     };
 
     DBCombos.findOne({
-        where: {id:req.body.product_id}
+        where: {product_id:req.body.product_id}
     }).then(function (result) {
 
         if(!result) {
             thisresponse.error_code = 400;
-            thisresponse.extra_data = "Product not found";
+            thisresponse.extra_data = "Plan not found on database";
             res.send(thisresponse);
         } else {
-            myobj.amount = stripeobj.amount = result.dataValues.value;
+            stripeobj.amount = result.dataValues.value;
 
-            customer_functions.create_login_data(req,res,req.body.username).then(function(value){
-                if(value.status) {
-                    //user found or created. Start payment process
-                    stripe.charges.create(stripeobj, function(err, charge) {
-                        if(err) {
-                            //payment failed
-                            myobj.transaction_id = err.requestId;
-                            myobj.message = err.type;
-                            myobj.payment_success = false;
-                            myobj.refunds_info = err.message;
-                            myobj.full_log = JSON.stringify(err);
-                            thisresponse.status_code = err.statusCode;
-                            thisresponse.error_code = err.statusCode;
-                            thisresponse.error_description = err.message;
-                            thisresponse.extra_data = err.message;
-                            DBModel.create(myobj); //insert record
-                            res.send(thisresponse);
-                        }
-                        else {
-                            //payment successful
-                            myobj.transaction_id = charge.id;
-                            myobj.message = charge.outcome.seller_message;
-                            myobj.payment_status = charge.outcome.type;
-                            myobj.payment_success = true;
-                            myobj.refunds_info = charge.refunds.url;
-                            myobj.full_log = JSON.stringify(charge);
-                            DBModel.create(myobj); //insert payment log into database
-                            thisresponse.extra_data = charge.outcome.seller_message;
-                            res.send(thisresponse);
-                        }
-                    });
+            stripe.charges.create(stripeobj, function(err, charge) {
+                if(err) {
+                    //payment failed
+                    thisresponse.status_code = err.statusCode;
+                    thisresponse.error_code = err.statusCode;
+                    thisresponse.error_description = err.message;
+                    thisresponse.extra_data = err.message;
+                    thisresponse.response_object = err;
+                    res.send(thisresponse);
                 }
                 else {
-                    thisresponse.error_code = 400;
-                    thisresponse.extra_data = value.message; //"There was an error creating username. ";
+                    //payment successful
+                    thisresponse.response_object = charge;
+                    thisresponse.extra_data = charge.outcome.seller_message;
                     res.send(thisresponse);
                 }
             });
             return null;
         }
     }).catch(function(error) {
-        console.log('some error',error);
+        console.log(error);
     });
 };
+
+//stripe subscription charge
+exports.stripe_subscription_charge = function(req,res) {
+    var thisresponse = new response.OK();
+    var stripe = require("stripe")(req.app.locals.paymenttokens.STRIPE.API_KEY);
+    var sale_or_refund = 1;
+
+    if((!req.body.username && !req.body.email) || !req.body.product_id) {
+        thisresponse.extra_data = "Missing username or product ID.";
+        res.status(400).send("Missing email or product ID.");
+        return null;
+    }
+
+    if(!req.body.username) req.body.username = req.body.email;
+
+
+    DBCombos.findOne({
+        where: {procut_id:req.body.product_id}
+    }).then(function (result) {
+
+        if(!result) {
+            thisresponse.error_code = 400;
+            thisresponse.extra_data = "Subscription plan not found on database";
+            res.send(thisresponse);
+        } else {
+
+            stripe.customers.create({
+                    email: req.body.email,
+                    source: req.body.stripetoken,
+                    metadata: {firstname: req.body.firstname, lastname: req.body.lastname, email:req.body.email},
+                },
+                function(err, customer) {
+                    if (err) {
+                        thisresponse.error_description = err.message;
+                        thisresponse.extra_data = err.type;
+                        thisresponse.response_object = err;
+                        res.send(thisresponse);
+                    }
+                    else {
+                        stripe.subscriptions.create({
+                                customer: customer.id,
+                                items: [
+                                    {
+                                        plan: req.body.product_id
+                                    }
+                                ],
+                                metadata: {
+                                    firstname: req.body.firstname,
+                                    lastname: req.body.lastname,
+                                    product_id: req.body.product_id,
+                                    username: req.body.username
+                                }
+                            }, function (err, subscription) {
+                                if (subscription) {
+                                    thisresponse.extra_data = subscription.id;
+                                    thisresponse.response_object = subscription;
+                                    res.send(thisresponse);
+                                }
+                                else {
+                                    thisresponse.response_object = err;
+                                    thisresponse.status_code = err.statusCode;
+                                    thisresponse.error_code = err.statusCode;
+                                    thisresponse.error_description = err.message;
+                                    thisresponse.extra_data = err.message;
+                                    res.send(thisresponse);
+                                }
+                            }
+                        );
+                    }
+                }
+            );
+            return null;
+        }
+    }).catch(function(error) {
+        console.log('some error',error);
+    });
+
+};
+
 
 //incoming webhook from stripe
 exports.stripe_add_subscription = function(req,res) {
 
-    req.body.username = req.body.data.object.metadata.username;
-    req.body.product_id = req.body.data.object.metadata.product_id;
+    var stripe = require("stripe")(req.app.locals.paymenttokens.STRIPE.API_KEY);
     var transaction_id = req.body.data.object.id;
+    var stripeinvoiceid = req.body.data.object.invoice; //
     var sale_or_refund = 1; //sale
+    var transaction_object = {};
+    transaction_object.transaction_id = req.body.id;
+    transaction_object.transaction_type = req.body.type;
+    transaction_object.transaction_token = req.body.data.object.source.id;
+    transaction_object.refunds_info = req.body.data.object.refunds.url;
+    transaction_object.message = req.body.data.object.outcome.seller_message;
+    transaction_object.payment_provider = 'stripe';
+    transaction_object.date = Date.now();
+    transaction_object.full_log = JSON.stringify(req.body);
+    transaction_object.amount = req.body.data.object.amount;
+    transaction_object.payment_success = true;
 
-    subscription_functions.add_subscription_transaction(req,res,sale_or_refund,transaction_id).then(function(value) {
-        if(value.status) {
-            //thisresponse.extra_data = value.message;
-            res.send(value);
+    async.waterfall([
+        function(callback) {
+            //if invoice available then it is a subscription
+            if (stripeinvoiceid) {
+                stripe.invoices.retrieve(
+                    stripeinvoiceid,
+                    function (err, invoice) {
+                        if (invoice) {
+                            if(!invoice.lines.data[0].metadata.username) {
+                                stripe.customers.retrieve(
+                                    invoice.customer,
+                                    function (err, customer) {
+                                        if (customer) {
+                                            req.body.username = customer.email;
+                                            req.body.product_id = invoice.lines.data[0].plan.id;
+                                            callback(null,{status:true});
+                                        }
+                                        else {
+                                            callback(null,{status:false, message:"customer not found"});
+                                        }
+                                    }
+                                );
+                            }
+                            else {
+                                req.body.username = invoice.lines.data[0].metadata.username;
+                                req.body.product_id = invoice.lines.data[0].plan.id;
+                                callback(null,{status:true});
+                            }
+                        }
+                        else {
+                            callback(null,{status:false, message:"invoice not found"});
+                        }
+                    }
+                );
+            }
+            //else it is a one off charge
+            else {
+                req.body.username = req.body.data.object.metadata.username;
+                req.body.product_id = req.body.data.object.metadata.product_id;
+                callback({status:true},callback);
+            }
+        },
+        //create or find login account
+        function (result,callback) {
+            if(result.status) {
+                customer_functions.create_login_data(req, res, req.body.username).then(function (value) {
+                    callback(null, value);
+                })
+            }
+            else {
+                callback(null, result);
+            }
+
         }
-        else {
-            //thisresponse.extra_data = value.message;
-            //thisresponse.status_code = 400;
-            res.status(400).send(value);
+
+    ], function (err, result) {
+        console.log(err,result);
+        if(result.status) {
+            subscription_functions.add_subscription_transaction(req, res, sale_or_refund, transaction_id).then(function(result) {
+                if (result.status) {
+                    res.send(result);
+
+                    //enter record into database regardless of results
+                    transaction_object.customer_username = req.body.username;
+                    transaction_object.product_id = req.body.product_id;
+                    DBpayment_transactions.upsert(transaction_object)
+                        .then(function (result) {
+                            //
+                        }).catch(function (err) {
+                        console.error(err);
+                    });
+                }
+                else {
+                    res.status(300).send(result);
+                }
+            });
         }
+        else{
+            res.status(300).send(result);
+        }
+
+
     });
 };
 
-//incoming webhook from stripe
+//incoming refund webhook from stripe
 exports.stripe_refund = function(req,res) {
-    const endpointSecret = "whsec_3j1DXYo5wvw5DsCDnTZZKQqOWhTd4Koi";
-    var sig = req.headers["stripe-signature"];
     var sale_or_refund = -1;
-    var thisresponse = new response.OK();
     var transaction_id = req.body.data.object.id;
+
+    var transaction_object = {};
+    transaction_object.transaction_id = req.body.id;
+    transaction_object.transaction_type = req.body.type;
+    transaction_object.transaction_token = req.body.data.object.source.id;
+    transaction_object.refunds_info = req.body.data.object.refunds.url;
+    transaction_object.message = req.body.data.object.outcome.seller_message;
+    transaction_object.payment_provider = 'stripe';
+    transaction_object.date = Date.now();
+    transaction_object.full_log = JSON.stringify(req.body);
+    transaction_object.amount = req.body.data.object.amount_refunded;
+    transaction_object.payment_success = true;
+    transaction_object.customer_username = req.body.data.object.metadata.username;
+    transaction_object.product_id = req.body.data.object.metadata.product_id;
 
     db.salesreport.findOne({
         where: {transaction_id: transaction_id}
     }).then(function(salesrecord) {
         if(!salesrecord) {
-            res.json({received: false})
+            res.status(300).json({received: false})
         }
         else {
-            req.body.product_id = salesrecord.combo_id;
+            req.body.product_id = req.body.data.object.metadata.product_id;
             req.body.login_data_id = salesrecord.login_data_id;
 
-            subscription_functions.add_subscription_transaction(req,res,sale_or_refund,transaction_id).then(function(value) {
-                if(value.status) {
-                    res.json({received: true});
+            subscription_functions.add_subscription_transaction(req,res,sale_or_refund,transaction_id).then(function(result) {
+                if(result.status) {
+                    res.status(200).send(result)
                 }
                 else {
-                    res.json({received: false});
+                    res.status(300).send(result)
                 }
             });
         }
     });
+
+    //enter record into database regardless of results
+    DBpayment_transactions.upsert(transaction_object)
+        .then(function (result) {
+            //console.log('*************** refund result :',result);
+        }).catch(function (err) {
+        // That's what really happens
+        console.error(err);
+    });
+
 };
 
 
@@ -198,7 +356,7 @@ exports.render_payment_form = function(req,res) {
     });
 };
 
-
+// not in use yet
 exports.stripe_order_charge = function (req,res) {
     var thisresponse = new response.OK();
     var sale_or_refund = 1;
@@ -231,16 +389,14 @@ exports.stripe_order_charge = function (req,res) {
     stripe.orders.create(
         stripeobject
         , function(err, order) {
-
-            //console.log(order,err);
             if(order) {
                 stripe.orders.pay(order.id, {
                     source: req.body.stripetoken
                 }, function(err, orderstatus) {
                     if(orderstatus)
-                        res.send(orderstatus)
+                        res.send(orderstatus);
                     else
-                        res.send(err)
+                        res.send(err);
                 });
             }
             else {
