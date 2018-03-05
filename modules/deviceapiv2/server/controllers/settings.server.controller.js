@@ -214,14 +214,14 @@ exports.settings = function(req, res) {
             var allowed_content = (login_data.show_adult === true) ? [0, 1] : [0];
 
             if(req.body.activity === 'vod'){
-                models.vod.count({
+                models.vod.findAll({
+                    attributes: ['id'],
                     include: [
-                        {model: models.vod_stream, required: true, attributes: ['url', 'encryption']},
+                        {model: models.vod_stream, required: true, attributes: ['url', 'encryption', 'token', 'stream_format', 'token_url']},
                         {model: models.vod_category, required: true, attributes: [], where:{password:{in: allowed_content}, isavailable: true}}
-                    ],
-                    where: {pin_protected:{in: allowed_content}, isavailable: true}
+                    ], where: {pin_protected:{in: allowed_content}, isavailable: true}
                 }).then(function (record_count) {
-                    callback(null, login_data, daysleft, refresh, available_upgrade, offset, record_count); //return nr of vod records
+                    callback(null, login_data, daysleft, refresh, available_upgrade, offset, record_count.length); //return nr of vod records
                     return null;
                 }).catch(function(error) {
                     callback(null, login_data, daysleft, refresh, available_upgrade, offset, 1000); //return nr of vod records
