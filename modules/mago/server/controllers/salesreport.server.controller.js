@@ -415,8 +415,8 @@ exports.sales_by_month = function(req, res) {
 
     if(query._orderBy) final_where.order = query._orderBy + ' ' + query._orderDir; //sort by specified field and specified order
 
-    final_where.attributes = ['id', 'saledate', [sequelize.fn('count', sequelize.col('saledate')), 'count']];
-    final_where.group = [sequelize.fn('DATE_FORMAT', sequelize.col('saledate'), "%Y-%m-01")]; //group by month/year of sale (excluding day and time information)
+    final_where.attributes = ['id', [sequelize.fn('DATE_FORMAT', sequelize.col('saledate'), "%Y-%m"), 'saledate'], [sequelize.fn('count', sequelize.col('saledate')), 'count']];
+    final_where.group = [sequelize.fn('DATE_FORMAT', sequelize.col('saledate'), "%Y-%m")]; //group by month/year of sale (excluding day and time information)
 
     final_where.include = [{model: db.combo, required: true, attributes: [[sequelize.fn('sum', sequelize.col('value')), 'total_value']]}];
 
@@ -435,45 +435,54 @@ exports.sales_by_month = function(req, res) {
 
 };
 
+/**
+ * @api {get} /api/sales_monthly_expiration Sales - Subscription expiration by month
+ * @apiVersion 0.2.0
+ * @apiName Sales - Subscription expiration by month
+ * @apiGroup Backoffice
+ * @apiHeader {String} authorization Token string acquired from login api.
+ * @apiParam {String} username  Optional field username.
+ * @apiParam {String} startsaledate  Optional field startsaledate.
+ * @apiParam {String} endsaledate  Optional field endsaledate.
+ * @apiParam {String} _start  Optional field _start.
+ * @apiParam {String} _end  Optional field _end.
+ * @apiParam {String} _orderDir  Optional field _orderBy.
+ *
+ * @apiSuccess (200) {String} message Full list of number of subscriptions ending each month (ascending order)
+ * @apiError (40x) {String} message Error message.
+ */
 exports.sales_monthly_expiration = function(req, res) {
-    //todo: vetem activity true???
+    var expiration_frame = "WHERE `end_date` > NOW() ";
+    var limit = "LIMIT "+req.query._start+", "+req.query._end+" ";
+    var order = (req.query._orderDir) ? req.query._orderDir : "ASC";
 
-    //todo: filter per nje user te caktuar?
+    var account_filter = (req.query.username) ? "INNER JOIN login_data on `subscription`.`login_id` = `login_data`.`id` AND `login_data`.`username` LIKE '%"+req.query.username+"%' " : "";
+    if (req.query.startsaledate) expiration_frame = expiration_frame+"AND `end_date` > DATE_FORMAT('"+req.query.startsaledate+"', '%Y-%m-01 00:00:00') ";
+    if (req.query.endsaledate) expiration_frame = expiration_frame+"AND `end_date` < DATE_FORMAT('"+req.query.endsaledate+"', '%Y-%m-01 00:00:00') ";
 
-    console.log("sales_monthly_expiration")
-    var qwhere = {},
-        final_where = {},
-        query = req.query;
-    final_where.where = qwhere; //start building where
+    var thequery = "SELECT subscription_expirations.id, count(subscription_expirations.login_id) as count, DATE_FORMAT(subscription_expirations.end_date, '%Y-%m')as enddate "+
+        "FROM ( "+
+        "SELECT `subscription`.`id`, `subscription`.`login_id`, max(`subscription`.`end_date`) AS `end_date` "+
+        "FROM `subscription` AS `subscription` "+
+        expiration_frame+
+        account_filter+
+        "GROUP BY `login_id` "+
+        ") as subscription_expirations "+
+        "GROUP BY enddate "+
+        "ORDER BY enddate "+order+" " +
+        limit+";";
 
-    var client_filter = (req.query.username) ? '%'+req.query.username+'%' : '%%';
-
-    var start = (req.query.startsaledate) ? (req.query.startsaledate+' 00:00:00') : sequelize.literal('CURDATE()');
-    if(req.query.next) var end = sequelize.literal('CURDATE() + INTERVAL '+req.query.next+' DAY');
-    else if(req.query.endsaledate) var end = (req.query.endsaledate+' 00:00:00');
-
-    final_where.where = (end) ? {end_date: {between: [start, end]}} : {end_date: {gte: start}};
-
-    if(parseInt(query._start)) final_where.offset = parseInt(query._start);
-    if(parseInt(query._end)) final_where.limit = parseInt(query._end)-parseInt(query._start);
-
-    final_where.attributes = ['id', 'login_id', [sequelize.fn('count', sequelize.col('end_date')), 'count'], [sequelize.fn('max', sequelize.col('end_date')), 'end_date']];
-    final_where.include = [{model: db.login_data, required: true, attributes: ['username'], where: {username: {like: client_filter}}}]
-    //final_where.group = ['login_id'];
-    final_where.group = [sequelize.fn('DATE_FORMAT', sequelize.col('end_date'), "%Y-%m-01")]; //group by month/year of sale (excluding day and time information)
-    final_where.order = [['end_date', 'DESC']];
-
-    db.subscription.findAndCountAll(
-        final_where
-    ).then(function(results) {
-        if (!results) {
+    sequelizes.sequelize.query(
+        thequery
+    ).then(function(results){
+        if (!results || !results[0]) {
             return res.status(404).send({ message: 'No data found' });
         } else {
-            res.setHeader("X-Total-Count", results.count.length);
-            res.json(results.rows);
+            res.setHeader("X-Total-Count", results[0].length);
+            res.json(results[0]);
         }
-    }).catch(function(err) {
-        res.jsonp(err);
+    }).catch(function(error){
+        res.jsonp(error);
     });
 
 };

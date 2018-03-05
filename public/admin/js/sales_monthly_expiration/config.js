@@ -4,7 +4,7 @@ export default function (nga, admin) {
         .title('<h4>Subscription expirations by month<i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
         .batchActions([])
         .fields([
-            nga.field('end_date', 'date')
+            nga.field('enddate', 'date')
                 .cssClasses('hidden-xs')
                 .label('Month/year'),
             nga.field('count', 'number')
