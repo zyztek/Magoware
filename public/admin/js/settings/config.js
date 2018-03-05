@@ -198,6 +198,11 @@ export default function (nga, admin) {
 				nga.field('updatedAt', 'datetime')
 						.editable(false)
 						.label('Last Updated'),
+
+				nga.field('akamai_token_key', 'string')
+						.label('Akamai  token key'),
+				nga.field('flussonic_token_key', 'string')
+						.label('Flussonic token key'),
 			])
 
 	settings.editionView()

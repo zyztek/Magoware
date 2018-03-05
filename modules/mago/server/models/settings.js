@@ -129,6 +129,16 @@ module.exports = function(sequelize, DataTypes) {
         },
         applecertificate:{
             type: DataTypes.STRING,
+        },
+        akamai_token_key:{
+            type: DataTypes.STRING,
+            defaultValue: "akamai_token_key",
+            allowNull: false
+        },
+        flussonic_token_key:{
+            type: DataTypes.STRING,
+            defaultValue: "flussonic_token_key",
+            allowNull: false
         }
     }, {
         tableName: 'settings',

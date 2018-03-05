@@ -115,7 +115,9 @@ db.connect = function(database, username, password, options) {
                                     log_event_interval:300,
                                     vodlastchange: Date.now(),
                                     livetvlastchange: Date.now(),
-                                    menulastchange: Date.now()
+                                    menulastchange: Date.now(),
+                                    akamai_token_key: 'akamai_token_key',
+                                    flussonic_token_key: 'flussonic_token_key'
                                 }
                             }).then(function(settins) {
                                 winston.info('Settings created successfully.');
