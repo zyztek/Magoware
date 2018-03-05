@@ -49,7 +49,7 @@ function send_notification(event_time, firebase_key, login_data_id, channel_numb
                         else if(devices[i].appid === 2 && devices[i].app_version >= '1.1.2.2'){
                             var message = new push_msg.SCHEDULE_PUSH(epg_program.title, epg_program.long_description, '2', "scheduling", program_id.toString(), channel_number.toString(), event_time.toString());
                         }
-                        else if(devices[i].appid === 3 && devices[i].app_version >= '1.3957040')
+                        else if(parseInt(devices[i].appid) === parseInt('3') && parseInt(devices[i].app_version) >= parseInt('1.3957040'))
                             var message = new push_msg.SCHEDULE_PUSH(epg_program.title, epg_program.long_description, '2', "scheduling", program_id.toString(), channel_number.toString(), event_time.toString());
                         else if(devices[i].appid === 4 && devices[i].app_version >= '6.1.3.0')
                             var message = new push_msg.SCHEDULE_PUSH(epg_program.title, epg_program.long_description, '2', "scheduling", program_id.toString(), channel_number.toString(), event_time.toString());
@@ -143,7 +143,8 @@ function send_action(action, login_id, app_ids, firebase_key){
             for(var i=0; i<result.length; i++){
                 if(result[i].appid === 1 && result[i].app_version >= '2.2.2') var message = new push_msg.ACTION_PUSH('Action', "Your subscription has ended", '5', "termination");
                 else if(result[i].appid === 2 && result[i].app_version >= '1.1.2.2') var message = new push_msg.ACTION_PUSH('Action', "Your subscription has ended", '5', "termination");
-                else if(result[i].appid === 3 && result[i].app_version >= '1.3957040') var message = new push_msg.ACTION_PUSH('Action', "Your subscription has ended", '5', "termination");
+                else if(parseInt(devices[i].appid) === parseInt('3') && parseInt(devices[i].app_version) >= parseInt('1.3957040'))
+                    var message = new push_msg.ACTION_PUSH('Action', "Your subscription has ended", '5', "termination");
                 else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0') var message = new push_msg.ACTION_PUSH('Action', "Your subscription has ended", '5', "termination");
                 else var message = {"action": "termination", "parameter1": "", "parameter2": "", "parameter3": ""};
                 push_msg.send_notification(result.googleappid, firebase_key, result.username, message, 5, false, false, null);

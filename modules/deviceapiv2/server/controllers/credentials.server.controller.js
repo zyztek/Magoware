@@ -226,7 +226,8 @@ exports.lock_account = function lock_account(login_id, username) {
                 for(var i=0; i<result.length; i++){
                     if(result[i].appid === 1 && result[i].app_version >= '2.2.2') var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
                     else if(result[i].appid === 2 && result[i].app_version >= '1.1.2.2') var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
-                    else if(result[i].appid === 3 && result[i].app_version >= '1.3957040') var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
+                    else if(parseInt(devices[i].appid) === parseInt('3') && parseInt(devices[i].app_version) >= parseInt('1.3957040'))
+                        var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
                     else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0') var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
                     else var message = {"action": "lock_account", "parameter1": "", "parameter2": "", "parameter3": ""};
                     push_msg.send_notification(result[i].googleappid, setting.firebase_key, username, message, 5, false, true, function(result){});
