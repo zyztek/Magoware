@@ -4,7 +4,7 @@ export default function (nga, admin) {
     var epgImport = admin.getEntity('epgimport');
     epgImport.listView()
         .title('<h4>Epg Data <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
-        .actions(['batch', 'create'])
+        .actions(['create'])
         .fields([
             nga.field('channel_number')
                 .cssClasses('hidden-xs')
@@ -34,15 +34,13 @@ export default function (nga, admin) {
                 .cssClasses('hidden-xs')
                 .label('Timezone'),
         ])
+        .batchActions([])
         .filters([
             nga.field('q')
                 .label('')
                 .template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>')
                 .pinned(true)])
-        .listActions(['edit'])
-        .exportFields([
-            epgImport.listView().fields(),
-        ]);
+    ;
 
 
     epgImport.creationView()

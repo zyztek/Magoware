@@ -216,6 +216,12 @@ export default function (nga, admin) {
                 .title('Commands')
                 .icon('<span class="fa fa-terminal fa-fw"></span>')
             )
+            .addChild(nga.menu(admin.getEntity('ads'))
+                .title('Ads')
+                .icon('<span class="fa fa-buysellads fa-fw"></span>')
+            )
+
+
         )
 
         .addChild(nga.menu()

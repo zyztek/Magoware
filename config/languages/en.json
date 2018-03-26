@@ -24,6 +24,8 @@
         "REGISTRATION_ERROR_DESCRIPTION": "REGISTRATION_FAILED",
         "USERNAME_TAKEN": "Username already exists",
         "EMAIL_ALREADY_EXISTS": "Email already exists",
+        "EMAIL_NOT_CONFIRMED": "EMAIL_NOT_CONFIRMED",
+        "EMAIL_NOT_CONFIRMED_DESC": "Please, confirm the email associated to this account and try again",
         "BAD_TOKEN_DESCRIPTION": "BAD_TOKEN",
         "PLAINTEXT_TOKEN": "Plain token not allowed",
         "INVALID_TOKEN": "Token could not be decrypted",
@@ -47,7 +49,9 @@
         "INVALID_INPUT": "Invalid input",
         "ACCOUNT_NOT_CREATED": "Could not create account",
         "ACCOUNT_CREATED": "Account confirmed, you can now login",
-        "ERROR_DESCRIPTION": "Error processing request",
-        "UNKNOWN_STREAM_FORMAT": "The requested catchup stream cannot be served"
+        "REQUEST_FAILED": "REQUEST_FAILED",
+        "REQUEST_FAILED_DESC": "Error processing request",
+        "UNKNOWN_STREAM_FORMAT": "The requested catchup stream cannot be served",
+        "DEVICE_NOT_FOUND": "Unable to find any device with the required specifications"
     }
 }

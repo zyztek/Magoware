@@ -464,8 +464,8 @@ exports.sales_monthly_expiration = function(req, res) {
         "FROM ( "+
         "SELECT `subscription`.`id`, `subscription`.`login_id`, max(`subscription`.`end_date`) AS `end_date` "+
         "FROM `subscription` AS `subscription` "+
-        expiration_frame+
         account_filter+
+        expiration_frame+
         "GROUP BY `login_id` "+
         ") as subscription_expirations "+
         "GROUP BY enddate "+

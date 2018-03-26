@@ -1392,7 +1392,6 @@ exports.program_info = function(req, res) {
  *   }
  */
 exports.schedule = function(req, res) {
-    //todo: dynamic multi-language  response object for success cases
     models.epg_data.findOne({
         attributes: ['id', 'channel_number', 'program_start'],
         where: {id: req.body.program_id}

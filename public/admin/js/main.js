@@ -13,6 +13,13 @@ myApp.controller('main', function ($scope, $rootScope, $location, notification) 
         $scope.displayBanner = $location.$$path === '/dashboard';
     });
 });
+//checkboxController
+myApp.controller('checkboxController', function($scope) {
+    $scope.checkboxModel = {
+        value1 : false,
+    };
+});
+//./checkboxController
 
 // Pagination & Sort
 var apiFlavor = require('./api_flavor');
@@ -31,7 +38,7 @@ myApp.controller('main', function ($scope, $rootScope, $location, notification) 
     });
 });
 
-myApp.controller('languageCtrl', ['$translate', '$scope', function ($translate, $scope) {
+myApp.controller('languageCtrl', ['$translate', '$scope','$cookies', function ($translate, $scope,$cookies) {
     $scope.serve_language = function (langKey) {
         console.log("preferred language "+preferred_language);
         $translate.use(langKey);
@@ -42,6 +49,16 @@ myApp.controller('languageCtrl', ['$translate', '$scope', function ($translate, 
     }, function (translationId) {
         $scope.headline = translationId;
     });
+
+    //show the selected language from dropdown list
+    $scope.button = $cookies.get('cookie');
+    $scope.change = function(name){
+        // Find tomorrow's date.
+        var expireDate = new Date();
+        expireDate.setDate(expireDate.getDate() + 364);
+        $cookies.put('cookie',name,{'expires': expireDate});
+        $scope.button = name;
+    }
 }]);
 
 myApp.config(['$translateProvider', function ($translateProvider) {
@@ -165,6 +182,7 @@ myApp.run(['Restangular', '$location', 'notification', function(Restangular, $lo
     });
 }]);
 
+
 // Dashboard Directives
 myApp.directive('dashboardSummary', require('./dashboard/dashboardSummary'));
 myApp.directive('graph', require('./dashboard/graphs'));
@@ -233,6 +251,7 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     admin.addEntity(nga.entity('appmanagement'));
     admin.addEntity(nga.entity('messages'));
     admin.addEntity(nga.entity('commands'));
+    admin.addEntity(nga.entity('ads'));
     admin.addEntity(nga.entity('logs'));
     admin.addEntity(nga.entity('activity'));
     admin.addEntity(nga.entity('appgroup'));
@@ -277,6 +296,7 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     require('./app_management/config')(nga, admin);
     require('./message/config')(nga, admin);
     require('./commands/config')(nga, admin);
+    require('./ads/config')(nga, admin);
     require('./logs/config')(nga, admin);
     require('./activit/config')(nga, admin);
     require('./appgroup/config')(nga, admin);

@@ -6,11 +6,14 @@ export default function (nga, admin) {
 			.title('<h4>Channels <i class="fa fa-angle-right" aria-hidden="true"></i> List </h4>')
 			.batchActions([])
 			.fields([
+
+				nga.field('channel_number', 'string')
+						.label('Number'),
 				nga.field('title', 'string')
 						.isDetailLink(true)
 						.label('Title'),
-				nga.field('channel_number', 'string')
-						.label('Number'),
+				nga.field('epg_map_id', 'string')
+						.label('EPG Map ID'),
 				nga.field('genre_id', 'reference')
 						.targetEntity(admin.getEntity('Genres'))
 						.targetField(nga.field('description'))
@@ -84,6 +87,8 @@ export default function (nga, admin) {
 						.attributes({ placeholder: 'Title' })
 						.validation({ required: true })
 						.label('Title'),
+				nga.field('epg_map_id', 'string')
+						.label('EPG Map ID'),
 				nga.field('channel_number', 'string')
 						.validation({ required: true })
 						.label('Number'),

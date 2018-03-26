@@ -71,6 +71,13 @@ export default function (nga, admin) {
                     { value: 'pwd', label: 'Current directory name' },
                     { value: 'date', label: 'Current date and time' }
                 ]).label('Command'),
+            nga.field('command')
+                .attributes({ placeholder: 'You can type your Command here' })
+                .label('Write your Command')
+                .template(
+                    '<ma-input-field field="field" value="entry.values.command"></ma-input-field>'+
+                    '<small id="emailHelp" class="form-text text-muted">If you write here, you must not choose from above field. Above field overwrite this field.</small>'
+                ),
 
             nga.field('parameter1', 'string')
                 .attributes({ placeholder: 'parammeter1' })

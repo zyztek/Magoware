@@ -65,7 +65,7 @@ export default function (nga, admin) {
 						.template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>')
 						.pinned(true),
 			])
-			.listActions(['edit'])
+			.listActions(['edit','delete'])
 
 
 			.exportFields([
@@ -154,4 +154,3 @@ export default function (nga, admin) {
 	return devicemenu;
 
 }
-

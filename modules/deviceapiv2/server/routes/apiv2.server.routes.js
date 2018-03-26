@@ -146,10 +146,22 @@ module.exports = function(app) {
         .get(vodController.categoryfilms_get)
         .post(vodController.categoryfilms);
 
-
     app.route('/apiv2/vod/searchvod')
         .all(authpolicy.isAllowed)
+        .get(vodController.get_vod_list)
         .post(vodController.searchvod);
+
+    //testing api
+    app.route('/apiv2/vod/vodlist/:pagenumber')
+        //.all(authpolicy.isAllowed)
+        .get(vodController.get_vod_list);
+
+    //testing api
+    app.route('/apiv2/vod/voditem/:vodID')
+        //.all(authpolicy.isAllowed)
+        .get(vodController.get_vod_item);
+
+
     app.route('/apiv2/vod/resume_movie')
         .all(authpolicy.isAllowed)
         .post(vodController.resume_movie);

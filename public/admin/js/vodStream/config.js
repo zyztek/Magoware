@@ -79,14 +79,16 @@ export default function (nga, admin) {
 						.validation({ required: true })
 						.label('Token'),
 				nga.field('token_url', 'string')
+						.defaultValue('Token Url')
 						.attributes({ placeholder: 'Token Url' })
-						.validation({ required: true })
+						.validation({ required: false })
 						.label('Token Url'),
 				nga.field('encryption', 'boolean')
 						.validation({ required: true })
 						.label('Encryption'),
 				nga.field('encryption_url', 'string')
-						.validation({ required: true })
+						.defaultValue('Encryption url')
+						.validation({ required: false })
 						.label('Encryption url'),
 				nga.field('template')
 						.label('')

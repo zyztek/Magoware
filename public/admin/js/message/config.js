@@ -33,9 +33,15 @@ export default function (nga, admin) {
 
 	message.creationView()
 			.title('<h4>Messages <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Messages</h4>')
+			.actions(['list'])
+			.onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
+				// redirect to the list view
+				$state.go($state.current, {}, {reload : true})
+						.then($state.go($state.get('list'), { entity: entity.name() })); // cancel the default action (redirect to the edition view)
+			}])
 			.fields([
 				nga.field('type', 'choice')
-						.choices(function (entry) {
+						.choices(function(entry) {
 							var types = [
 								{ value: 'one', label: 'One User' },
 								{ value: 'all', label: 'All User' }
@@ -102,6 +108,9 @@ export default function (nga, admin) {
 						.attributes({ placeholder: 'Message' })
 						.validation({ required: true })
 						.label('Messages'),
+				nga.field('template')
+						.label('')
+						.template(edit_button),
 			]);
 
 	return message;

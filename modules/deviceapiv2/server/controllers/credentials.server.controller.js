@@ -6,6 +6,7 @@ var path = require('path'),
     push_msg = require(path.resolve('./custom_functions/push_messages')),
     crypto = require('crypto'),
     models = db.models;
+var async = require("async");
 
 /**
  * @api {post} /apiv2/credentials/login /apiv2/credentials/login
@@ -175,6 +176,50 @@ exports.logout = function(req, res) {
     });
 };
 
+/**
+ * @api {post} /apiv2/credentials/logout_user /apiv2/credentials/logout_user
+ * @apiVersion 0.2.0
+ * @apiName LogoutUser
+ * @apiGroup DeviceAPI
+ * @apiParam {String} auth Encrypted authentication token string.
+ * @apiDescription Logs user out of devices of the same group as this. (Updates device_active flag to false, sends push notification to log user out)
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status_code": 200,
+ *       "error_code": 1,
+ *       "timestamp": 1,
+ *       "error_description": "OK",
+ *       "extra_data": "LOGOUT_OTHER_DEVICES",
+ *       "response_object": []
+ *      }
+ * @apiErrorExample Error-Response:
+ *     {
+ *       "status_code": 704,
+ *       "error_code": -1,
+ *       "timestamp": 1,
+ *       "error_description": "REQUEST_FAILED",
+ *       "extra_data": "Error processing request",
+ *       "response_object": []
+ *     }
+ * @apiErrorExample Error-Response:
+ *     {
+ *       "status_code": 704,
+ *       "error_code": -1,
+ *       "timestamp": 1,
+ *       "error_description": "REQUEST_FAILED",
+ *       "extra_data": "Unable to find any device with the required specifications",
+ *       "response_object": []
+ *     }
+ * @apiErrorExample Error-Response:
+ *     {
+ *       "status_code": 704,
+ *       "error_code": -1,
+ *       "timestamp": 1,
+ *       "error_description": "DATABASE_ERROR",
+ *       "extra_data": "Error connecting to database",
+ *       "response_object": []
+ *     }
+ */
 exports.logout_user = function(req, res) {
     var appids = []; //will store appids of devices of the same type
 
@@ -188,20 +233,33 @@ exports.logout_user = function(req, res) {
             attributes: ['app_id'],
             where: {app_group_id: result.app_group_id}
         }).then(function (result) {
-            for(var i = 0; i<result.length; i++){
-                appids.push(result[i].app_id);
-            }
-            //log this user out of devices of this type
-            models.devices.update(
-                {
-                    device_active: false
-                },
-                {
-                    where: { username : req.auth_obj.username, appid : {in: appids}}
-                }).then(function (result) {
-                response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'LOGOUT_OTHER_DEVICES', 'no-store');
-            }).catch(function(error) {
-                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+            for(var i = 0; i<result.length; i++) appids.push(result[i].app_id); //appids stored into variable appids[]
+            //find devices of same group where user is logged in
+            models.devices.findAll({
+                attributes: ['googleappid'],
+                where: {username : req.auth_obj.username, device_active: true, appid : {in: appids}}
+            }).then(function(devices){
+                //log this user out of the devices of this group
+                async.forEach(devices, function(device, callback){
+                    //update device status
+                    models.devices.update(
+                        {device_active: false}, {where: { googleappid: device.googleappid}}
+                    ).then(function (result) {
+                        //send push message to log devices out
+                        var message = new push_msg.ACTION_PUSH('Action', "You have been logged in another device", '5', "lock_account");
+                        push_msg.send_notification(device.googleappid, req.app.locals.settings.firebase_key, '', message, 5, false, true, function(result){});
+                        callback(null);
+                        return null;
+                    }).catch(function(error) {
+                        //error is ignored, to be tested
+                    });
+                }, function(error){
+                    if(!error) response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'LOGOUT_OTHER_DEVICES', 'no-store');
+                    else response.send_res(req, res, [], 704, -1, 'REQUEST_FAILED', 'REQUEST_FAILED_DESC', 'no-store');
+                });
+            }).catch(function(error){
+                if (error) console.log(error)
+                response.send_res(req, res, [], 704, -1, 'REQUEST_FAILED', 'DEVICE_NOT_FOUND', 'no-store');
             });
             return null;
         }).catch(function(error) {

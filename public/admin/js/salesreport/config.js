@@ -20,6 +20,10 @@ export default function (nga, admin) {
 						.targetField(nga.field('username'))
 						.label('Account Username'),
 
+				nga.field('transaction_id', 'string')
+						.label('Transaction ID')
+						.editable(false),
+
 
 				nga.field('saledate', 'date')
 						.cssClasses('hidden-xs')
@@ -28,13 +32,13 @@ export default function (nga, admin) {
 						.label('Products'),
 				nga.field('active', 'boolean')
 						.label('Active sale'),
-				nga.field('cancelation_date', 'date')
+				nga.field('cancellationdate', 'date')
 						.cssClasses('hidden-xs')
 						.label('Cancelation Date'),
-				nga.field('cancelation_user', 'text')
+				nga.field('cancellation_user_id', 'text')
 						.cssClasses('hidden-xs')
 						.label('Cancelation User'),
-				nga.field('cancelation_reason', 'text')
+				nga.field('cancellation_reason', 'text')
 						.cssClasses('hidden-xs')
 						.label('Cancelation Reason'),
 
@@ -80,7 +84,7 @@ export default function (nga, admin) {
 				nga.field('transaction_id', 'string')
 						.label('Transaction ID')
 						.editable(false),
-				nga.field('cancelation_reason', 'string')
+				nga.field('cancellation_reason', 'string')
 						.label('Cancelation Reason')
 						.editable(true)
 						.validation({ required: true}),

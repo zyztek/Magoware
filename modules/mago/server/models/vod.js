@@ -42,7 +42,7 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false
         },
         rate: {
-            type: DataTypes.DOUBLE,
+            type: DataTypes.INTEGER,
             allowNull: false
         },
         duration: {

@@ -1,21 +1,24 @@
 'use strict'
 var path = require('path'),
     response = require(path.resolve("./config/responses.js")),
-
-    stripe = require('stripe')('sk_test_Z4OH3P3t6XXwInfSUAnk2t0y'),
-
     db = require(path.resolve('./config/lib/sequelize')).models,
     subscription_functions = require(path.resolve('./custom_functions/sales.js')),
     customer_functions = require(path.resolve('./custom_functions/customer_functions.js')),
     DBCombos = db.combo,
     DBpayment_transactions = db.payment_transactions,
-    async = require('async');
+    async = require('async'),
+    whiteilst_IPs =['54.187.174.169',
+        '54.187.205.235',
+        '54.187.216.72',
+        '54.241.31.99',
+        '54.241.31.102',
+        '54.241.34.107'];
 
 /*
  * @api {get} /apiv2/payments/stripe/getkey Get Stripe Token Key
  * @apiVersion 0.2.0
  * @apiName Get Stripe Key
- * @apiGroup Device API
+ * @apiGroup DeviceAPI
  */
 exports.stripe_get_key = function(req,res) {
     var thisresponse = new response.OK();
@@ -31,7 +34,7 @@ exports.stripe_get_key = function(req,res) {
  * @api {post} /apiv2/payments/stripe/charge Proccess Payment on Stripe
  * @apiVersion 0.2.0
  * @apiName Process Stripe Payment
- * @apiGroup Device API
+ * @apiGroup DeviceAPI
  * @apiParam {String} auth AUTH Token.
  * @apiParam {Number} product_id  Mandatory field product_id.
  * @apiParam {String} username  Mandatory field user_id.
@@ -358,6 +361,7 @@ exports.render_payment_form = function(req,res) {
 
 // not in use yet
 exports.stripe_order_charge = function (req,res) {
+    var stripe = require('stripe')('sk_test_Z4OH3P3t6XXwInfSUAnk2t0y');
     var thisresponse = new response.OK();
     var sale_or_refund = 1;
 

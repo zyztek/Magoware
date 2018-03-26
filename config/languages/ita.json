@@ -24,6 +24,8 @@
     "REGISTRATION_ERROR_DESCRIPTION": "REGISTRAZIONE_FALLITA",
     "USERNAME_TAKEN": "Il nome utente esiste già",
     "EMAIL_ALREADY_EXISTS": "Email già esistente",
+    "EMAIL_NOT_CONFIRMED": "EMAIL_NON_CONFERMATO",
+    "EMAIL_NOT_CONFIRMED_DESC": "Per favore, conferma l'e-mail associata a questo account e riprovate",
     "BAD_TOKEN_DESCRIPTION": "BAD_TOKEN",
     "PLAINTEXT_TOKEN": "È consentito solo il token crittografato",
     "INVALID_TOKEN": "Il token non è stato decriptato",
@@ -47,7 +49,9 @@
     "INVALID_INPUT": "Inserimento non valido",
     "ACCOUNT_NOT_CREATED": "Impossibile creare account",
     "ACCOUNT_CREATED": "Account confermato, è ora possibile accedere",
-    "ERROR_DESCRIPTION": "Errore richiesta di elaborazione",
-    "UNKNOWN_STREAM_FORMAT": "Il flusso catchup richiesto non può essere servito"
+    "REQUEST_FAILED": "RICHIESTA_FALLITA",
+    "REQUEST_FAILED_DESC": "Errore durante l'esecuzione della richiesta",
+    "UNKNOWN_STREAM_FORMAT": "Il flusso catchup richiesto non può essere servito",
+    "DEVICE_NOT_FOUND": "Impossibile trovare alcun dispositivo con le specifiche richieste"
   }
 }

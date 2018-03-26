@@ -147,63 +147,82 @@ export default function (nga, admin) {
 				nga.field('key_transition', 'boolean')
 						.validation({ required: true })
 						.label('Key Transition'),
-
-				nga.field('menulastchange', 'datetime')
-						.editable(false)
-						.label('Menu Last Change'),
-				nga.field('updatemenulastchange', 'boolean')
-						.editable(true)
-						.validation({ required: true })
-						.label('Update Menu Timestamp'),
-				nga.field('livetvlastchange', 'datetime')
-						.editable(false)
-						.label('Live TV Last Change'),
-				nga.field('updatelivetvtimestamp', 'boolean')
-						.editable(true)
-						.validation({ required: true })
-						.label('Update Live TV Timestamp'),
-				nga.field('vodlastchange', 'datetime')
-						.editable(false)
-						.label('VOD Last Change'),
-				nga.field('updatevodtimestamp', 'boolean')
-						.editable(true)
-						.validation({ required: true })
-						.label('Update VOD Timestamp'),
-
-
-				nga.field('googlegcmapi')
-						.template('<div class="form-group">'+
-								'<ma-input-field field="field" value="entry.values.googlegcmapi"></ma-input-field>'+
-								'<small id="emailHelp" class="form-text text-muted">Google GCM API code for push messages to android devices.</small>'+
-								'</div>')
-						.label('googlegcmapi'),
-				nga.field('applekeyid')
-						.template('<div class="form-group">'+
-								'<ma-input-field field="field" value="entry.values.applekeyid"></ma-input-field>'+
-								'<small id="emailHelp" class="form-text text-muted">Apple key id for push messages to apple devices.</small>'+
-								'</div>')
-						.label('applekeyid'),
-				nga.field('appleteamid')
-						.template('<div class="form-group">'+
-								'<ma-input-field field="field" value="entry.values.appleteamid"></ma-input-field>'+
-								'<small id="emailHelp" class="form-text text-muted">Apple team id for push messages to apple devices.</small>'+
-								'</div>')
-						.label('appleteamid'),
-				nga.field('applecertificate', 'text')
-						.template('<div class="form-group">'+
-								'<ma-text-field field="field" value="entry.values.applecertificate"></ma-text-field>'+
-								'<small id="emailHelp" class="form-text text-muted">Apple team id for push messages to apple devices.</small>'+
-								'</div>')
-						.label('applecertificate'),
-				nga.field('updatedAt', 'datetime')
-						.editable(false)
-						.label('Last Updated'),
-
 				nga.field('akamai_token_key', 'string')
 						.label('Akamai  token key'),
 				nga.field('flussonic_token_key', 'string')
 						.label('Flussonic token key'),
-			])
+				nga.field('allow_guest_login','boolean')
+						.label('')
+						.template('<form ng-app="myApp" ng-controller="checkboxController">'+
+								'<div class="form-check">'+
+								'<label class="toggle">'+
+								'<input type="checkbox" name="toggle" ng-model="checkboxModel.value1"'+
+								'ng-true-value="true" ng-false-value="false"> <span class="label-text">Allow Guest Login</span>'+
+								'</label>'+
+								'</div>'+
+								'</form>'),
+				nga.field('template')
+						.label('')
+						.template(edit_button),
+
+				//HIDDEN FROM UI
+				nga.field('updatedAt', 'datetime')
+						.cssClasses('hidden')
+						.editable(false)
+						.label(''),
+				nga.field('menulastchange', 'datetime')
+						.cssClasses('hidden')
+						.editable(false)
+						.label(''),
+				nga.field('updatemenulastchange', 'boolean')
+						.cssClasses('hidden')
+						.editable(true)
+						.validation({ required: false })
+						.label(''),
+				nga.field('livetvlastchange', 'datetime')
+						.cssClasses('hidden')
+						.editable(false)
+						.label(''),
+				nga.field('updatelivetvtimestamp', 'boolean')
+						.cssClasses('hidden')
+						.editable(true)
+						.validation({ required: false })
+						.label(''),
+				nga.field('vodlastchange', 'datetime')
+						.cssClasses('hidden')
+						.editable(false)
+						.label(''),
+				nga.field('updatevodtimestamp', 'boolean')
+						.cssClasses('hidden')
+						.editable(true)
+						.validation({ required: false })
+						.label(''),
+				nga.field('googlegcmapi')
+						.template('<div class="form-group" style="display: none;">'+
+								'<ma-input-field field="field" value="entry.values.googlegcmapi"></ma-input-field>'+
+								'<small id="emailHelp" class="form-text text-muted">Google GCM API code for push messages to android devices.</small>'+
+								'</div>')
+						.label(''),
+				nga.field('applekeyid')
+						.template('<div class="form-group" style="display: none;">'+
+								'<ma-input-field field="field" value="entry.values.applekeyid"></ma-input-field>'+
+								'<small id="emailHelp" class="form-text text-muted">Apple key id for push messages to apple devices.</small>'+
+								'</div>')
+						.label(''),
+				nga.field('appleteamid')
+						.template('<div class="form-group" style="display: none;">'+
+								'<ma-input-field field="field" value="entry.values.appleteamid"></ma-input-field>'+
+								'<small id="emailHelp" class="form-text text-muted">Apple team id for push messages to apple devices.</small>'+
+								'</div>')
+						.label(''),
+				nga.field('applecertificate', 'text')
+						.template('<div class="form-group" style="display: none;">'+
+								'<ma-text-field field="field" value="entry.values.applecertificate"></ma-text-field>'+
+								'<small id="emailHelp" class="form-text text-muted">Apple team id for push messages to apple devices.</small>'+
+								'</div>')
+						.label(''),
+				//./HIDDEN FROM UI
+			]);
 
 	settings.editionView()
 			.title('<h4><i class="fa fa-angle-right" aria-hidden="true"></i> Company Settings</h4>')
@@ -217,10 +236,7 @@ export default function (nga, admin) {
 			}])
 			.fields([
 				settings.listView().fields(),
-				nga.field('template')
-						.label('')
-						.template(edit_button),
-			])
+			]);
 
 	return settings;
 

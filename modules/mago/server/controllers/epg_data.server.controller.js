@@ -345,15 +345,15 @@ function import_xml_standard(req, res, current_time){
                                                         db.epg_data.create({
                                                             channels_id: result.id,
                                                             channel_number: result.channel_number,
-                                                            title: (program_title) ? program_title : " ",
-                                                            short_name: (program_title) ? program_title : " ",
-                                                            short_description: (program_desc) ? program_desc : " ",
+                                                            title: (program_title) ? program_title : "Program title",
+                                                            short_name: (program_title) ? program_title : "Program name",
+                                                            short_description: (program_desc) ? program_desc : "Program description",
                                                             program_start: moment(stringtodate(program.$.start)).subtract(req.body.timezone, 'hour'),
                                                             program_end: moment(stringtodate(program.$.stop)).subtract(req.body.timezone, 'hour'),
-                                                            long_description: (program_desc) ? program_desc : " ",
+                                                            long_description: (program_desc) ? program_desc : "Program summary",
                                                             duration_seconds: datetimediff_seconds(stringtodate(program.$.start), stringtodate(program.$.stop)) //is in seconds
                                                         }).then(function (result) {
-                                                            //on each write, do nothing. we wait for the saving proccess to finish
+                                                            //on each write, do nothing. we wait for the saving process to finish
                                                         }).catch(function(error) {
                                                             //error while saving records
                                                         });
@@ -449,12 +449,12 @@ function import_csv(req, res, current_time){
                     DBModel.create({
                         channels_id: data.channel_id,
                         channel_number: data.channel_number,
-                        title: data.title,
-                        short_name: data.short_name,
-                        short_description: data.short_description,
+                        title: (data.title) ? data.title : "Program title",
+                        short_name: (data.short_name) ? data.short_name : "Program name",
+                        short_description: (data.short_description) ? data.short_description : "Program description",
                         program_start: moment(data.program_start, 'MM/DD/YYYY HH:mm:ss').subtract(req.body.timezone, 'hour'),
                         program_end: moment(data.program_end, 'MM/DD/YYYY HH:mm:ss').subtract(req.body.timezone, 'hour'),
-                        long_description: data.long_description,
+                        long_description: (data.long_description) ? data.long_description : "Program summary",
                         duration_seconds: data.duration
                     }).then(function (result) {
                     }).catch(function(error) {
@@ -500,7 +500,7 @@ function import_xml_dga(req, res, current_time){
             // iterate over each channel
             all_programs.forEach(function(channels){
                 var channel_name = channels.$.name;
-                var filtered_channel_number = (req.body.channel_number) ? req.body.channel_number : {gte: -1}; //channel from epg file that is being proccessed, if allowed by channel_number input
+                var filtered_channel_number = (req.body.channel_number) ? req.body.channel_number : {gte: -1}; //channel from epg file that is being processed, if allowed by channel_number input
                 //find channel id and number for this channel
                 db.channels.findOne({
                     attributes: ['channel_number', 'id'],
@@ -518,12 +518,12 @@ function import_xml_dga(req, res, current_time){
                                     db.epg_data.create({
                                         channels_id: channel_data.id,
                                         channel_number: channel_data.channel_number,
-                                        title: events.short_event_descriptor[0].$.name,
-                                        short_name: events.short_event_descriptor[0].$.name,
-                                        short_description: events.short_event_descriptor[0]._,
+                                        title: (events.short_event_descriptor[0].$.name) ? events.short_event_descriptor[0].$.name : "Program title",
+                                        short_name: (events.short_event_descriptor[0].$.name) ? events.short_event_descriptor[0].$.name : "Program name",
+                                        short_description: (events.short_event_descriptor[0]._) ? events.short_event_descriptor[0]._ : "Program description",
                                         program_start: moment(events.$.start_time).subtract(req.body.timezone, 'hour'),
                                         program_end: moment.unix(parseInt(moment(events.$.start_time).format('X')) + parseInt(events.$.duration) - req.body.timezone*3600  ).format('YYYY-MM-DD HH:mm:ss'),
-                                        long_description: events.extended_event_descriptor[0].text[0],
+                                        long_description: (events.extended_event_descriptor[0].text[0]) ? events.extended_event_descriptor[0].text[0] : "Program summary",
                                         duration_seconds: events.$.duration //is in seconds
                                     }).catch(function(error) {
                                         import_log.push({"error": "Failed to create epg record", "error_logs": error});

@@ -129,23 +129,24 @@ function SCHEDULE_PUSH(title, body, type, event, program_id, channel_number, eve
     };
 }
 
-function CUSTOM_TOAST_PUSH(title, body, type, imageGif, xOffset, yOffset, duration, link_url) {
+function CUSTOM_TOAST_PUSH(title, message, type, imageGif, xOffset, yOffset, duration, link_url, activity) {
     return {
         data: {
             title   : title,
-            body    : body,
+            body    : message,
             type    : type,
             values  : {
                 imageGif : imageGif,
                 xOffset  : xOffset,
                 yOffset  : yOffset,
                 duration : duration,
-                link_url : link_url
+                link_url : link_url,
+                activity : activity
             }
         },
         notification: {
             title   : title,
-            body    : body
+            body    : message
         }
     };
 }

@@ -99,8 +99,11 @@ export default function (nga, admin) {
 						.validation({ required: true })
 						.label('Director'),
 				nga.field('rate', 'number')
-						.attributes({ placeholder: 'Rate' })
-						.validation({ required: true })
+						.attributes({ placeholder: 'Must be greater than 0, smaller or equal to 10' })
+						.validation({ required: true, validator: function(value){
+							if(value<=0) throw  new Error ('Rate must be greater than 0');
+							if(value>10) throw  new Error ('Rate cannot be greater than 10');
+						}})
 						.label('Rate'),
 				nga.field('clicks', 'number')
 						.attributes({ placeholder: 'Clicks' })

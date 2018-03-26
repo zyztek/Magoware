@@ -54,13 +54,6 @@ function graph(Restangular) {
 			];
 			// Model Test
 
-			Restangular.one('dashboard/chart/salesreport_2').get()
-					.then(function successCallback(response) {
-						$scope.data = {"items":response.data.results};
-					},function errorCallback(response) {
-					});
-
-
 
 		},
 		template: grap

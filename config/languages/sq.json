@@ -24,6 +24,8 @@
     "REGISTRATION_ERROR_DESCRIPTION": "REGJISTRIMI_DËSHTOI",
     "USERNAME_TAKEN": "Emri i përdoruesit tashmë ekziston",
     "EMAIL_ALREADY_EXISTS": "Ky e-mail tashmë është i regjistruar",
+    "EMAIL_NOT_CONFIRMED": "EMAIL_JO_I_KONFIRMUAR",
+    "EMAIL_NOT_CONFIRMED_DESC": "Ju lutem, verifikoni adresën e emailit dhe provoni përsëri",
     "BAD_TOKEN_DESCRIPTION": "TOKEN_I_PAVLEFSHËM",
     "PLAINTEXT_TOKEN": "Nuk lejohet token i hapur",
     "INVALID_TOKEN": "Token  nuk mund të  deshifrohet",
@@ -47,7 +49,9 @@
     "INVALID_INPUT": "Input i pavlefshëm",
     "ACCOUNT_NOT_CREATED": "Llogaria nuk u krijua",
     "ACCOUNT_CREATED": "Llogaria e konfirmuar, tani mund të identifikohesh",
-    "ERROR_DESCRIPTION": "Gabim gjatë përpunimit të kërkesës",
-    "UNKNOWN_STREAM_FORMAT": "Nuk mund të shërbehet stream i kërkuar"
+    "REQUEST_FAILED": "KËRKESË_DËSHTOI",
+    "REQUEST_FAILED_DESC": "Gabim gjatë ekzekutimit të kërkesës",
+    "UNKNOWN_STREAM_FORMAT": "Nuk mund të shërbehet stream i kërkuar",
+    "DEVICE_NOT_FOUND": "Nuk mund të gjehej asnje pajisje me specifikat e kërkuara"
   }
 }

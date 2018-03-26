@@ -51,7 +51,7 @@ exports.list_get = function(req, res) {
                         raw_obj.largeimage = req.app.locals.settings.assets_url+obj.image_url;
                         raw_obj.categoryid = String(obj.category_id);
                         raw_obj.dataaded = obj.createdAt.getTime();
-                        raw_obj.rate = String(obj.rate);
+                        raw_obj.rate = (raw_obj.rate > 0 && raw_obj.rate <=10) ? String(obj.rate) : "5"; // rate should be in the interval ]0:10]
                         raw_obj.year = String(obj.year);
                         raw_obj.token = (obj[k][j].token) ? "1" : "0";
                         raw_obj.TokenUrl = (obj[k][j].token_url) ? obj[k][j].token_url : "";
@@ -62,14 +62,11 @@ exports.list_get = function(req, res) {
             });
             raw_result.push(raw_obj);
         });
-
         response.send_res_get(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
-
     }).catch(function(error) {
         //res.send(error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
-
 };
 
 //RETURNS LIST OF VOD PROGRAMS
@@ -116,7 +113,7 @@ exports.list = function(req, res) {
                         raw_obj.largeimage = req.app.locals.settings.assets_url+obj.image_url;
                         raw_obj.categoryid = String(obj.category_id);
                         raw_obj.dataaded = obj.createdAt.getTime();
-                        raw_obj.rate = String(obj.rate);
+                        raw_obj.rate = (raw_obj.rate > 0 && raw_obj.rate <=10) ? String(obj.rate) : "5"; // rate should be in the interval ]0:10]
                         raw_obj.year = String(obj.year);
                         raw_obj.token = (obj[k][j].token) ? "1" : "0";
                         raw_obj.TokenUrl = (obj[k][j].token_url) ? obj[k][j].token_url : "";
@@ -175,7 +172,7 @@ exports.categories = function(req, res) {
  * @apiDescription Returns full list of categories
  */
 exports.categories_get = function(req, res) {
-    var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+    var allowed_content = [0,1]; //(req.thisuser.show_adult === true) ? [0, 1] : [0];
 
     models.vod_category.findAll({
         attributes: [ 'id', 'name', 'password', 'sorting', [db.sequelize.fn("concat", req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'IconUrl'],
@@ -419,8 +416,6 @@ exports.mostrated_get = function(req, res) {
 
 };
 
-
-
 exports.related = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
     var now = Date.now();
@@ -537,6 +532,122 @@ exports.categoryfilms_get = function(req, res) {
 
 };
 
+//get single vod item data
+exports.get_vod_item = function(req, res) {
+
+    var vodID = req.params.vodID;
+
+    models.vod.find({
+        where: {
+            id: vodID
+        },
+        include: [{model: models.vod_category}, {model: models.package},{model: models.vod_subtitles},{model: models.vod_stream}]
+    }).then(function(result) {
+        if (!result) {
+            //return res.status(404).send({
+            //    message: 'No data with that identifier has been found'
+            //});
+            res.send('error');
+        } else {
+            //req.vod = result;
+            //next();
+            //return null;
+            res.send(result);
+        }
+    }).catch(function(err) {
+        console.log(err);
+    });
+
+};
+
+exports.get_vod_list = function(req, res) {
+    var qwhere = {},
+        final_where = {},
+        query = req.query;
+
+    console.log('query = ',query,req.params,req.app.locals.settings);
+
+    var qlimit = (query.limit) ? parseInt(query.limit) : req.app.locals.settings.vod_subset_nr;
+
+    if(query.q) {
+        qwhere.$or = {};
+        qwhere.$or.title = {};
+        qwhere.$or.title.$like = '%'+query.q+'%';
+        qwhere.$or.description = {};
+        qwhere.$or.description.$like = '%'+query.q+'%';
+        qwhere.$or.director = {};
+        qwhere.$or.director.$like = '%'+query.q+'%';
+    }
+    if(query.category) qwhere.category_id = query.category;
+
+
+    //filter films added in the following time interval
+    if(query.added_before && query.added_after) qwhere.createdAt = {lt: query.added_before, gt: query.added_after};
+    else if(query.added_before) qwhere.createdAt = {lt: query.added_before};
+    else if(query.added_after) qwhere.createdAt = {gt: query.added_after};
+    //filter films updated in the following time interval
+    if(query.updated_before && query.updated_after) qwhere.createdAt = {lt: query.updated_before, gt: query.updated_after};
+    else if(query.updated_before) qwhere.createdAt = {lt: query.updated_before};
+    else if(query.updated_after) qwhere.createdAt = {gt: query.updated_after};
+
+    //start building where
+    final_where.where = qwhere;
+
+    final_where.offset = (!req.params.pagenumber || req.params.pagenumber === '-1') ? 0 : ((parseInt(req.params.pagenumber)-1)*qlimit); //for older versions of vod, start query at first record
+    final_where.limit = (query.limit) ? parseInt(query.limit): qlimit;
+
+    //if(parseInt(query._end) !== -1){
+    //    if(parseInt(query._start)) final_where.offset = parseInt(query._start);
+    //    if(parseInt(query._end)) final_where.limit = parseInt(query._end)-parseInt(query._start);
+    //}
+
+    if(query._orderBy) final_where.order = query._orderBy + ' ' + query._orderDir;
+    final_where.include = [models.vod_category, models.package];
+    //end build final where
+
+    console.log(final_where);
+
+    models.vod.findAndCountAll(
+        final_where
+    ).then(function(results) {
+        var raw_result = [];
+        //flatten nested json array
+        results.rows.forEach(function(obj){
+            var raw_obj = {};
+
+            Object.keys(obj.toJSON()).forEach(function(k) {
+                if (typeof obj[k] == 'object') {
+                    Object.keys(obj[k]).forEach(function(j) {
+                        raw_obj.id = String(obj.id);
+                        raw_obj.title = obj.title;
+                        raw_obj.pin_protected = (obj.pin_protected === true) ? 1 : 0;
+                        raw_obj.duration = obj.duration;
+                        raw_obj.stream_format = obj[k][j].stream_format;
+                        raw_obj.url = obj[k][j].url;
+                        raw_obj.description = obj.description + ' Director: ' + obj.director + ' Starring: ' + obj.starring;
+                        raw_obj.icon = req.app.locals.settings.assets_url+obj.icon_url;
+                        raw_obj.largeimage = req.app.locals.settings.assets_url+obj.image_url;
+                        raw_obj.categoryid = String(obj.category_id);
+                        raw_obj.dataaded = obj.createdAt.getTime();
+                        raw_obj.rate = (raw_obj.rate > 0 && raw_obj.rate <=10) ? String(obj.rate) : "5"; // rate should be in the interval ]0:10]
+                        raw_obj.year = String(obj.year);
+                        raw_obj.token = (obj[k][j].token) ? "1" : "0";
+                        raw_obj.TokenUrl = (obj[k][j].token_url) ? obj[k][j].token_url : "";
+                        raw_obj.encryption = (obj[k][j].encryption) ? "1" : "0";
+                        raw_obj.encryption_url = (obj[k][j].encryption_url) ? obj[k][j].encryption_url : "";
+                    });
+                }
+            });
+            raw_result.push(raw_obj);
+        });
+
+        res.setHeader("X-Total-Count", results.count);
+        response.send_res_get(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
+
+    }).catch(function(err) {
+        res.jsonp(err);
+    });
+};
 
 exports.searchvod = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];

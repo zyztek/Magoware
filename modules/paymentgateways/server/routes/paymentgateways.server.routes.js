@@ -6,6 +6,7 @@ var path = require('path'),
     config = require(path.resolve('./config/config')),
     deviceauthpolicy = require(path.resolve('./modules/deviceapiv2/server/auth/apiv2.server.auth.js')),
     backendwuthpolicy = require(path.resolve('./modules/mago/server/policies/mago.server.policy.js')),
+    paymentGatewaysPolicy = require(path.resolve('./modules/paymentgateways/server/whitelist/paymentgateways.server.whitelist.js')),
     stripeFunctions = require(path.resolve('./modules/paymentgateways/server/controllers/stripe_functions.server.controller.js'));
 
 
@@ -31,15 +32,14 @@ module.exports = function(app) {
         .post(stripeFunctions.stripe_order_charge);
 
     app.route('/apiv2/payments/stripe/addsubscription')
-        //.all(authpolicy.isAllowed)
+        .all(paymentGatewaysPolicy.stripe_isAllowed)
         .post(stripeFunctions.stripe_add_subscription);
 
     app.route('/apiv2/payments/stripe/refund')
-        //.all(authpolicy.isAllowed)
+        .all(paymentGatewaysPolicy.stripe_isAllowed)
         .post(stripeFunctions.stripe_refund);
 
     app.route('/apiv2/payments/stripe/form')
         //.all(authpolicy.isAllowed)
         .all(stripeFunctions.render_payment_form);
-
 };

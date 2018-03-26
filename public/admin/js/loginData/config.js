@@ -67,20 +67,25 @@ export default function (nga, admin) {
         .fields([
             nga.field('customer_id', 'reference')
                 .targetEntity(admin.getEntity('CustomerData'))
-                .targetField(nga.field('firstnmae', 'template')
+                .targetField(nga.field('firstname')
                         .map((v, e) => e.firstname + ' ' + e.lastname))
+        .remoteComplete(true, {
+            refreshDelay: 300,
+            // populate choices from the response of GET
+            searchQuery: function(search) { return { q: search }; }
+        })
+        .perPage(5) // limit the number of results to 5
         .attributes({ placeholder: 'Select Customer' })
         .label('Customer')
-        .perPage(-1)
         .validation({ required: true}),
         nga.field('username', 'string')
-            .attributes({ placeholder: 'Username' })
+            .attributes({ placeholder: 'Number,lowercase letter, and at least 2 or more characters'})
             .label('Username')
-            .validation({ required: true }),
+            .validation({ required: true, pattern: '^[a-z\\d]{2,}$' }),
         nga.field('password', 'password')
-            .attributes({ placeholder: 'Password' })
+            .attributes({ placeholder: '4 or more characters' , title: '4 or more characters' })
             .label('Password')
-            .validation({ required: true }),
+            .validation({ required: true, pattern: '.{4,}' }),
         nga.field('channel_stream_source_id', 'reference')
             .targetEntity(admin.getEntity('ChannelStreamSources'))
             .targetField(nga.field('stream_source'))
@@ -96,8 +101,8 @@ export default function (nga, admin) {
             .perPage(-1)
             .validation({ required: true}),
         nga.field('pin', 'string')
-            .attributes({ placeholder: 'Pin' })
-            .validation({ required: true })
+            .attributes({ placeholder: 'Must contain 4 numbers' , title: 'Must contain 4 numbers' })
+            .validation({ required: true , pattern:'(?=.*\\d)[0-9]{4}' })
             .label('Pin'),
         nga.field('activity_timeout', 'string')
             .attributes({ placeholder: 'Activity time out' })
@@ -165,14 +170,14 @@ export default function (nga, admin) {
         .fields([
             nga.field('customer_id', 'reference')
                 .targetEntity(admin.getEntity('CustomerData'))
-                .targetField(nga.field('firstnmae', 'template')
+                .targetField(nga.field('firstname', 'template')
                         .map((v, e) => e.firstname + ' ' + e.lastname))
         .attributes({ placeholder: 'Select Customer' })
         .label('Customer')
         .perPage(1000)
         .validation({ required: true}),
         nga.field('username', 'string')
-            .attributes({ placeholder: 'Username' })
+            .attributes({ placeholder: 'Username', readOnly: true })
             .label('Username')
             .validation({ required: true }),
         nga.field('password', 'password')
@@ -231,20 +236,6 @@ export default function (nga, admin) {
             .attributes({ placeholder: 'Select Timezone' })
             .validation({ required: true })
             .label('Timezone'),
-        nga.field('livetvlastchange', 'datetime')
-            .editable(false)
-            .label('Live TV Last Change'),
-        nga.field('updatelivetvtimestamp', 'boolean')
-            .editable(true)
-            .validation({ required: true })
-            .label('Update Live TV Data'),
-        nga.field('vodlastchange', 'datetime')
-            .editable(false)
-            .label('VOD Last Change'),
-        nga.field('updatevodtimestamp', 'boolean')
-            .editable(true)
-            .validation({ required: true })
-            .label('Update VOD data'),
         nga.field('get_messages', 'boolean')
             .attributes({ placeholder: 'Auto Timezone' })
             .validation({ required: true})
@@ -267,6 +258,27 @@ export default function (nga, admin) {
         nga.field('template')
             .label('')
             .template(edit_button),
+        nga.field('livetvlastchange', 'datetime')
+            .cssClasses('hidden')
+            .editable(false)
+            .label(''),
+        nga.field('updatelivetvtimestamp', 'boolean')
+            .cssClasses('hidden')
+            .editable(true)
+            .validation({ required: false })
+            .label(''),
+        nga.field('vodlastchange', 'datetime')
+            .cssClasses('hidden')
+            .editable(false)
+            .label(''),
+        nga.field('updatevodtimestamp', 'boolean')
+            .cssClasses('hidden')
+            .editable(true)
+            .validation({ required: false })
+            .label(''),
+
+
+
         nga.field('Subscriptions', 'referenced_list')
             .label('Subscription')
             .targetEntity(admin.getEntity('Subscriptions'))
@@ -316,6 +328,7 @@ export default function (nga, admin) {
                     })
                     .label('End Date'),
             ]),
+
         nga.field('')
             .label('')
             .template('<ma-create-button entity-name="Subscriptions" class="pull-right" label="ADD SUBSCRIPTION" default-values="{ login_id: entry.values.id }"></ma-create-button>'),

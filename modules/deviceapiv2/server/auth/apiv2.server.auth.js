@@ -24,7 +24,9 @@ function auth_encrytp(plainText, key) {
 
 function auth_decrypt(encryptedText, key) {
     var C = CryptoJS;
-    encryptedText = encryptedText.replace(/(\r\n|\n|\r)/gm, "");
+    //encryptedText = encryptedText.replace(/(\r\n|\n|\r)/gm, "");
+    encryptedText = encryptedText.replace(/\\n|\\r|\n|\r/g, "");
+
     encryptedText = C.enc.Base64.parse(encryptedText);
     key = C.enc.Utf8.parse(key);
     var aes = C.algo.AES.createDecryptor(key, {
@@ -57,7 +59,6 @@ function auth_decrypt1(token_string, key) {
     });
     var decrypted = aes.finalize(test);
     try {
-        //console.log("decrypted", decrypted)
         return C.enc.Utf8.stringify(decrypted);
     }
     catch(err) {
@@ -102,7 +103,6 @@ exports.isAllowed = function(req, res, next) {
     //krijo objektin e auth
 
     if(req.headers.auth){
-        console.log("req headers ")
         if(missing_params(querystring.parse(auth_decrypt1(auth,req.app.locals.settings.new_encryption_key),";","=")) === false){
             var auth_obj = querystring.parse(auth_decrypt1(auth,req.app.locals.settings.new_encryption_key),";","=");
         }
@@ -167,6 +167,9 @@ exports.isAllowed = function(req, res, next) {
                     }
                     else if(authenticationHandler.authenticate(auth_obj.password, result.salt, result.password) === false) {
                         response.send_res(req, res, [], 704, -1, 'WRONG_PASSWORD_DESCRIPTION', 'WRONG_PASSWORD_DATA', 'no-store');
+                    }
+                    else if(result.resetPasswordExpires !== '0'){
+                        response.send_res(req, res, [], 704, -1, 'EMAIL_NOT_CONFIRMED', 'EMAIL_NOT_CONFIRMED_DESC', 'no-store');
                     }
                     else {
                         req.thisuser = result;

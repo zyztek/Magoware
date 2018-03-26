@@ -7,7 +7,7 @@
     <a class="navbar-brand" href="#" ng-click="appController.displayHome()">MAGOWARE - Administration System</a>
 </div>
 
-<ul class="nav navbar-top-links navbar-right hidden-xs">
+<ul class="nav navbar-top-links navbar-right text-center">
     <li uib-dropdown>
         <a uib-dropdown-toggle href="#" aria-expanded="true" ng-controller="username">
             <i class="fa fa-user fa-lg"></i>&nbsp; {{ username }}&nbsp;<i class="fa fa-caret-down"></i>
@@ -20,14 +20,19 @@
     </li>
 </ul>
 
-<ul class="nav navbar-top-links navbar-right hidden-xs">
+<ul class="nav navbar-top-links navbar-right text-center">
     <li uib-dropdown ng-controller="languageCtrl">
-        <a uib-dropdown-toggle href="#" aria-expanded="true">
-            <i class="fa fa-user fa-lg"></i>&nbsp; Language&nbsp;<i class="fa fa-caret-down"></i>
+        <a id="single-button" href="#" aria-expanded="true" uib-dropdown-toggle ng-disabled="disabled">
+            <i class="fa fa-globe fa-lg"></i>&nbsp; Language {{button}}&nbsp;<i class="fa fa-caret-down"></i>
         </a>
-        <ul class="dropdown-menu dropdown-user" role="menu">
-            <li><a ng-click="serve_language('en')"><i class="fa fa-sign-out fa-fw"></i> English</a></li>
-            <li><a ng-click="serve_language('fr')"><i class="fa fa-sign-out fa-fw"></i> French</a></li>
+        <ul class="dropdown-menu dropdown-user" role="menu" aria-labelledby="single-button">
+            <li role="menuitem">
+                <a ng-click="serve_language('en');change('English')"><i class="fa fa-sign-out fa-fw"></i> English</a>
+                <a ng-click="serve_language('fr');change('French')"><i class="fa fa-sign-out fa-fw"></i> French</a>
+            </li>
+
         </ul>
     </li>
 </ul>
+
+

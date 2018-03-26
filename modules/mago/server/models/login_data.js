@@ -79,7 +79,7 @@ module.exports = function(sequelize, DataTypes) {
         },
         resetPasswordExpires: {
             type: DataTypes.STRING(45),
-            defaultValue: ' ',
+            defaultValue: '0',
             allowNull: true
         },
         vodlastchange: {
