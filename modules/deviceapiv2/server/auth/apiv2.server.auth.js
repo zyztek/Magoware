@@ -168,7 +168,7 @@ exports.isAllowed = function(req, res, next) {
                     else if(authenticationHandler.authenticate(auth_obj.password, result.salt, result.password) === false) {
                         response.send_res(req, res, [], 704, -1, 'WRONG_PASSWORD_DESCRIPTION', 'WRONG_PASSWORD_DATA', 'no-store');
                     }
-                    else if(result.resetPasswordExpires !== '0'){
+                    else if(result.resetPasswordExpires.length > 9 && result.resetPasswordExpires !== '0'){
                         response.send_res(req, res, [], 704, -1, 'EMAIL_NOT_CONFIRMED', 'EMAIL_NOT_CONFIRMED_DESC', 'no-store');
                     }
                     else {
