@@ -14,3 +14,4 @@ var paymenttokens = {
 module.exports = function(app, db) {
     app.locals.paymenttokens = paymenttokens;
 };
+
