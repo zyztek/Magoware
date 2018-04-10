@@ -6,7 +6,7 @@ var path = require('path'),
     responses = require(path.resolve("./config/responses.js"));
 
 
-function getClientIp(req) {
+ function getClientIp(req) {
     var ipAddress;
     // The request may be forwarded from local web server.
     var forwardedIpsStr = req.header('x-forwarded-for');
@@ -50,7 +50,7 @@ exports.akamai_token_v2_generator = function(req,res) {
 
     var token = "?" + new akamai_token_generator.default(config).generateToken();
     var theresponse = new responses.OK();
-    theresponse.extra_data = token;
+        theresponse.extra_data = token;
     res.send(theresponse);
 };
 
@@ -120,7 +120,7 @@ exports.flussonic_token_generator =  function(req, res) {
     var token = "?token="+mysha1(tohash)+ "-" + salt + "-" + endtime + "-" + starttime;
 
     var theresponse = new responses.OK();
-    theresponse.extra_data = token;
+        theresponse.extra_data = token;
 
     res.send(theresponse);
 };

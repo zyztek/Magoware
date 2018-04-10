@@ -4,7 +4,7 @@ var path = require('path'),
     responses = require(path.resolve("./config/responses.js"));
 
 
-function getClientIp(req) {
+ function getClientIp(req) {
     var ipAddress;
     // The request may be forwarded from local web server.
     var forwardedIpsStr = req.header('x-forwarded-for');

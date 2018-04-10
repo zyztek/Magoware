@@ -9,11 +9,11 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /*
- This Class Contain Structure of Akamai Exceptions
- param @error Object {
- name String,
- message String
- }
+  This Class Contain Structure of Akamai Exceptions
+  param @error Object {
+   name String,
+   message String
+   }
  */
 var AkamaiException = function () {
     function AkamaiException(error) {
