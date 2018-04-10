@@ -40,10 +40,21 @@ export default function (nga, admin) {
                 .label('')
                 .template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>')
                 .pinned(true)])
-    ;
+        ;
 
 
     epgImport.creationView()
+        .onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
+            // stop the progress bar
+            progression.done();
+            //redirect to another view, another entity
+            $state.go($state.get('list'), {entity: entity.name('EpgData')},{});
+            //need to show list with another entity.name
+            setTimeout(function(){
+                window.location.reload(1);
+            }, 1000);
+            return true;
+        }])
         .title('<h4>Epg Data <i class="fa fa-angle-right" aria-hidden="true"></i> Import EPG</h4>')
         .fields([
             nga.field('channel_number', 'string')

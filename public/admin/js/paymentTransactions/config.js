@@ -67,6 +67,6 @@ export default function (nga, admin) {
                 .label('Full Transaction Log'),
         ]);
 
-    return paymenttransaction;
+   return paymenttransaction;
 
 }

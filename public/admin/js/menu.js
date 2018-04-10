@@ -95,6 +95,11 @@ export default function (nga, admin) {
             .icon('<span class="fa fa-align-justify fa-fw"></span>')
         )
 
+        .addChild(nga.menu(admin.getEntity('SystemMenu'))
+            .title('System Menu')
+            .icon('<span class="fa fa-align-justify fa-fw"></span>')
+            //.link('/SystemMenu/list?search={\"menu\":0}')
+        )
 
 
 
@@ -148,6 +153,7 @@ export default function (nga, admin) {
             .title('EPG').icon('<span class="fa fa-map-o fa-fw"></span>')
             .addChild(nga.menu(admin.getEntity('epgimport'))
                 .title('EPG Import')
+                .link('/epgimport/create')
                 .icon('<span class="fa fa-map-o fa-fw"></span>')
             )
             .addChild(nga.menu(admin.getEntity('EpgData'))
@@ -184,6 +190,7 @@ export default function (nga, admin) {
         .addChild(nga.menu()
             .template('<div class="menu_space">Other</div>')
         )
+
 
         .addChild(nga.menu(admin.getEntity('appmanagement'))
             .title('APP Management')
@@ -227,10 +234,6 @@ export default function (nga, admin) {
         .addChild(nga.menu()
             .title('HELP')
             .icon('<span class="fa fa-question-circle fa-fw"></span>')
-        )
-
-        ;
-
-
+        );
 
 }

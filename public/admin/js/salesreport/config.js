@@ -20,9 +20,9 @@ export default function (nga, admin) {
 						.targetField(nga.field('username'))
 						.label('Account Username'),
 
-				nga.field('transaction_id', 'string')
-						.label('Transaction ID')
-						.editable(false),
+                nga.field('transaction_id', 'string')
+                    .label('Transaction ID')
+                    .editable(false),
 
 
 				nga.field('saledate', 'date')

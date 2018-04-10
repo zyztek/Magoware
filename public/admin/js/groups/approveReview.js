@@ -30,16 +30,16 @@ function approveReview(Restangular, $state, notification) {
                     .then(function successCallback(response) {
                         console.log(scope);
                         notification.log('Updated successfully', { addnCls: 'humane-flatty-success' });
-                    }, function errorCallback(response) {
+                        }, function errorCallback(response) {
                         notification.log('Could not save changes', { addnCls: 'humane-flatty-error' });
                     });
             }
         },
         template:
             `
-<label class="btn btn-default">Read<input type="checkbox" ng-checked="review.values['grouprights.read'] == 1" ng-click="approve('read',review.values['grouprights.read'])" id="default" class="badgebox"><span class="badge">&check;</span></label>
-    <label class="btn btn-default">Edit<input type="checkbox" ng-checked="review.values['grouprights.edit'] == 1" ng-click="approve('edit',review.values['grouprights.edit'])" id="default" class="badgebox"><span class="badge">&check;</span></label>
-    <label class="btn btn-default">Create<input type="checkbox" ng-checked="review.values['grouprights.create'] == 1" ng-click="approve('create',review.values['grouprights.create'])" id="default" class="badgebox"><span class="badge">&check;</span></label>
+                <label class="btn btn-default">Read<input type="checkbox" ng-checked="review.values['grouprights.read'] == 1" ng-click="approve('read',review.values['grouprights.read'])" id="default" class="badgebox"><span class="badge">&check;</span></label>
+                <label class="btn btn-default">Edit<input type="checkbox" ng-checked="review.values['grouprights.edit'] == 1" ng-click="approve('edit',review.values['grouprights.edit'])" id="default" class="badgebox"><span class="badge">&check;</span></label>
+                <label class="btn btn-default">Create<input type="checkbox" ng-checked="review.values['grouprights.create'] == 1" ng-click="approve('create',review.values['grouprights.create'])" id="default" class="badgebox"><span class="badge">&check;</span></label>
             `
 };
 }

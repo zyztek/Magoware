@@ -17,23 +17,23 @@ export default function (nga, admin) {
             nga.field('combo.value', 'string')
                 .label('Product price')
         ]).filters([
-        nga.field('startsaledate', 'date')
-            .attributes({ placeholder: 'From date' })
-            .label('From date'),
-        nga.field('endsaledate', 'date')
-            .attributes({placeholder: 'To date' })
-            .label('To date'),
-        nga.field('active', 'choice')
-            .choices([
-                { value: 'active', label: 'Active sales' },
-                { value: 'cancelled', label: 'Canceled sales' },
-                { value: 'all', label: 'All sales' }
-            ])
-            .attributes({placeholder: 'Sale active' })
-            .label('Sale status'),
-    ]).exportFields([
-        salesreport.listView().fields(),
-    ]);
+            nga.field('startsaledate', 'date')
+                .attributes({ placeholder: 'From date' })
+                .label('From date'),
+            nga.field('endsaledate', 'date')
+                .attributes({placeholder: 'To date' })
+                .label('To date'),
+            nga.field('active', 'choice')
+                .choices([
+                    { value: 'active', label: 'Active sales' },
+                    { value: 'cancelled', label: 'Canceled sales' },
+                    { value: 'all', label: 'All sales' }
+                ])
+                .attributes({placeholder: 'Sale active' })
+                .label('Sale status'),
+        ]).exportFields([
+            salesreport.listView().fields(),
+        ]);
 
     return salesreport;
 

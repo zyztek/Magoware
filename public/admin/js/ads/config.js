@@ -98,7 +98,7 @@ export default function (nga, admin) {
                     '<ma-input-field field="field" value="entry.values.duration"></ma-input-field>'+
                     '<small id="emailHelp" class="form-text text-muted">Ad duration. Default 5000 ms</small>'+
                     '</div>')
-                .label('Duration in ms'),
+            .label('Duration in ms'),
 
             nga.field('delivery_time', 'datetime')
                 .label('Send ad at:'),
