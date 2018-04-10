@@ -60,16 +60,16 @@ exports.create_customer_with_login = function(req,res) {
 exports.list_logins_with_customer = function(req,res) {
 
     db.login_data.findAll({
-            attributes: ['id','username','createdAt'],
-            include: [
-                { model: db.customer_data,
-                    attributes:['firstname','lastname','email','telephone','address','city','country'],
-                    required: true}
-            ],
-            limit: 100,
-            order: 'id desc',
-            raw: true
-        }
+        attributes: ['id','username','createdAt'],
+        include: [
+            { model: db.customer_data,
+                attributes:['firstname','lastname','email','telephone','address','city','country'],
+                required: true}
+        ],
+        limit: 100,
+        order: 'id desc',
+        raw: true
+    }
     ).then(function(results) {
         if (!results) {
             return res.status(404).send({

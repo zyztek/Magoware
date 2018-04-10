@@ -30,7 +30,7 @@ module.exports = function(app) {
 
 
     app.route('/api/update_film/:vodId')
-        //.all(policy.isAllowed) //todo: remove comment, check route rights
+    //.all(policy.isAllowed) //todo: remove comment, check route rights
         .put(vods.update_film);
 
 

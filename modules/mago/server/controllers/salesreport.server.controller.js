@@ -461,16 +461,16 @@ exports.sales_monthly_expiration = function(req, res) {
     if (req.query.endsaledate) expiration_frame = expiration_frame+"AND `end_date` < DATE_FORMAT('"+req.query.endsaledate+"', '%Y-%m-01 00:00:00') ";
 
     var thequery = "SELECT subscription_expirations.id, count(subscription_expirations.login_id) as count, DATE_FORMAT(subscription_expirations.end_date, '%Y-%m')as enddate "+
-        "FROM ( "+
+    "FROM ( "+
         "SELECT `subscription`.`id`, `subscription`.`login_id`, max(`subscription`.`end_date`) AS `end_date` "+
         "FROM `subscription` AS `subscription` "+
         account_filter+
         expiration_frame+
         "GROUP BY `login_id` "+
-        ") as subscription_expirations "+
-        "GROUP BY enddate "+
-        "ORDER BY enddate "+order+" " +
-        limit+";";
+    ") as subscription_expirations "+
+    "GROUP BY enddate "+
+    "ORDER BY enddate "+order+" " +
+    limit+";";
 
     sequelizes.sequelize.query(
         thequery

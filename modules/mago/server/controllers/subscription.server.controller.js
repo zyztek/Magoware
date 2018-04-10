@@ -4,16 +4,16 @@
  * Module dependencies.
  */
 var path = require('path'),
-    errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
-    logHandler = require(path.resolve('./modules/mago/server/controllers/logs.server.controller')),
-    subscriptionFunctions = require(path.resolve('./custom_functions/sales.js')),
+  errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
+  logHandler = require(path.resolve('./modules/mago/server/controllers/logs.server.controller')),
+  subscriptionFunctions = require(path.resolve('./custom_functions/sales.js')),
     crypto = require("crypto"),
-    moment = require('moment'),
-    db = require(path.resolve('./config/lib/sequelize')).models,
-    DBModel = db.subscription,
-    Combo = db.combo,
-    LoginData = db.login_data,
-    SalesData = db.salesreport;
+  moment = require('moment'),
+  db = require(path.resolve('./config/lib/sequelize')).models,
+  DBModel = db.subscription,
+  Combo = db.combo,
+  LoginData = db.login_data,
+  SalesData = db.salesreport;
 
 
 /**

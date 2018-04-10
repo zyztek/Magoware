@@ -20,10 +20,10 @@ module.exports = function(app) {
         .all(policy.isAllowed)
         .post(combos.create);
 
-    app.route('/api/combos/:comboId')
+	app.route('/api/combos/:comboId')
         .get(combos.read);
 
-    app.route('/api/combos/:comboId')
+	app.route('/api/combos/:comboId')
         .all(policy.isAllowed)
         .put(combos.update)
         .delete(combos.delete);

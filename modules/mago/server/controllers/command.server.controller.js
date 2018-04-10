@@ -8,27 +8,27 @@ var path = require('path'),
     DBDevices = db.devices;
 
 /*
- function save_messages(obj, messagein, ttl, action, callback){
- console.log("at save message")
+function save_messages(obj, messagein, ttl, action, callback){
+    console.log("at save message")
 
- DBModel.create({
- username: obj.username,
- googleappid: obj.googleappid,
- title: messagein,
- message: messagein,
- action: action
- }).then(function(result) {
- if (!result) {
- console.log('Fail to create data')
- } else {
- console.log('Messages saved')
- }
- }).catch(function(err) {
+    DBModel.create({
+        username: obj.username,
+        googleappid: obj.googleappid,
+        title: messagein,
+        message: messagein,
+        action: action
+    }).then(function(result) {
+        if (!result) {
+            console.log('Fail to create data')
+        } else {
+            console.log('Messages saved')
+        }
+    }).catch(function(err) {
 
- });
+    });
 
- }
- */
+}
+*/
 
 /**
  * Create

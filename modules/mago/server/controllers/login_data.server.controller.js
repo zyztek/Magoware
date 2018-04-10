@@ -4,11 +4,11 @@
  * Module dependencies.
  */
 var path = require('path'),
-    errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
+  errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     logHandler = require(path.resolve('./modules/mago/server/controllers/logs.server.controller')),
     authenticationHandler = require(path.resolve('./modules/deviceapiv2/server/controllers/authentication.server.controller')),
-    db = require(path.resolve('./config/lib/sequelize')).models,
-    DBModel = db.login_data;
+  db = require(path.resolve('./config/lib/sequelize')).models,
+  DBModel = db.login_data;
 
 /**
  * @api {post} /api/logindata Create User account
@@ -39,20 +39,20 @@ var path = require('path'),
 exports.create = function(req, res) {
 
   var newData = req.body;
-  newData.salt = authenticationHandler.makesalt();
-  logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
-  newData['updatedate'] = new Date();
-  DBModel.create(newData).then(function(result) {
-    if (!result) {
-      return res.status(400).send({message: 'fail create data'});
-    } else {
-      return res.jsonp(result);
-    }
-  }).catch(function(err) {
-    return res.status(400).send({
-      message: errorHandler.getErrorMessage(err)
+    newData.salt = authenticationHandler.makesalt();
+    logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
+    newData['updatedate'] = new Date();
+    DBModel.create(newData).then(function(result) {
+      if (!result) {
+        return res.status(400).send({message: 'fail create data'});
+      } else {
+        return res.jsonp(result);
+      }
+    }).catch(function(err) {
+      return res.status(400).send({
+        message: errorHandler.getErrorMessage(err)
+      });
     });
-  });
 };
 
 /**
@@ -90,18 +90,18 @@ exports.read = function(req, res) {
  */
 exports.update = function(req, res) {
 
-  if(req.body.updatevodtimestamp === true) {req.body.vodlastchange = Date.now(); }
-  if(req.body.updatelivetvtimestamp === true) {req.body.livetvlastchange = Date.now(); }
-  var updateData = req.loginData;
-  logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
+    if(req.body.updatevodtimestamp === true) {req.body.vodlastchange = Date.now(); }
+    if(req.body.updatelivetvtimestamp === true) {req.body.livetvlastchange = Date.now(); }
+    var updateData = req.loginData;
+    logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
 
-  updateData.updateAttributes(req.body).then(function(result) {
-    res.json(result);
-  }).catch(function(err) {
-    return res.status(400).send({
-      message: errorHandler.getErrorMessage(err)
+    updateData.updateAttributes(req.body).then(function(result) {
+        res.json(result);
+    }).catch(function(err) {
+        return res.status(400).send({
+            message: errorHandler.getErrorMessage(err)
+        });
     });
-  });
 };
 
 /**
@@ -170,7 +170,7 @@ exports.list = function(req, res) {
       });
     } else {
 
-      res.setHeader("X-Total-Count", results.count);
+      res.setHeader("X-Total-Count", results.count);      
       res.json(results.rows);
     }
   }).catch(function(err) {

@@ -1,5 +1,3 @@
-'use strict';
-
 var fs = require('fs'),
     mkdirp = require('mkdirp'),
     path = require('path'),
@@ -18,9 +16,9 @@ function makeDirectory(dirName, cb){
 }
 
 /*function takes a basepath and a custompath.
- Basepath is the url of the CDN+'public'.
- Custompath is the relative path of the file, same url that will be stored to the database
- For each hierarchy level, it checks if path exists. If not, creates folder.
+Basepath is the url of the CDN+'public'.
+Custompath is the relative path of the file, same url that will be stored to the database
+For each hierarchy level, it checks if path exists. If not, creates folder.
  */
 function mkdir_recursive(basepath, custompath){
     var fullpath = basepath;
@@ -156,7 +154,7 @@ function updateFile (prev_val,target_paths,delete_files,delete_on)
         }
     }
 
-    //for all the files uploaded, change the path on update
+   //for all the files uploaded, change the path on update
     for (var i=0;i<file_name.length;i++)
     {
         source_path=path.resolve('./public/files/tempfiles/'+ file_name[i]);
@@ -177,16 +175,16 @@ function uploadFile (req, res){
     var tofield = req.params.field;
     var existingfile = path.resolve('./public'+req.app.locals.settings[tofield]);
     var fileName= req.files.file.name;
-    var fileExtension = get_file_extention(fileName);
+     var fileExtension = get_file_extention(fileName);
     var tempPath = req.files.file.path;
     var tempDirPath = path.resolve('./public/files/'+tomodel);
 
 
     if(fileExtension === '.apk'){
-        var uploadLinkPath = '/files/' + tomodel + '/' + fileName.replace(fileExtension, '').replace(/\W/g, '')+fileExtension; //apk file allows alphanumeric characters and the underscore. append timestamp to ensure uniqueness
+        uploadLinkPath = '/files/' + tomodel + '/' + fileName.replace(fileExtension, '').replace(/\W/g, '')+fileExtension; //apk file allows alphanumeric characters and the underscore. append timestamp to ensure uniqueness
     }
     else{
-       var uploadLinkPath = '/files/' + tomodel + '/' + Date.now() + fileName.replace(fileExtension, '').replace(/[^0-9a-z]/gi, '')+fileExtension; //other file types allow only alphanumeric characters. append timestamp to ensure uniqueness
+        uploadLinkPath = '/files/' + tomodel + '/' + Date.now() + fileName.replace(fileExtension, '').replace(/[^0-9a-z]/gi, '')+fileExtension; //other file types allow only alphanumeric characters. append timestamp to ensure uniqueness
     }
 
     var targetPath = path.resolve('./public' + uploadLinkPath);
@@ -197,26 +195,26 @@ function uploadFile (req, res){
                 res.json({err: 1, result: 'fail upload'});
             else
 
-            if(tomodel == 'settings') {
-                dbModel.models[tomodel].update(
-                    { [tofield]: uploadLinkPath},
-                { where: {id: 1 }}
-            ).then(function (update_result) {
-                    //update memory value
-                    //an if is required req.app.locals.settings[tofield] = uploadLinkPath;
-                    //delete existing file if available
-                    fs.unlink(existingfile, function (err) {
-                        //todo: do sth on error?
+                if(tomodel == 'settings') {
+                    dbModel.models[tomodel].update(
+                        { [tofield]: uploadLinkPath},
+                        { where: {id: 1 }}
+                    ).then(function (update_result) {
+                        //update memory value
+                        //an if is required req.app.locals.settings[tofield] = uploadLinkPath;
+                        //delete existing file if available
+                        fs.unlink(existingfile, function (err) {
+                            //todo: do sth on error?
+                        });
+                        //send response
+                        res.json({err: 0, result: uploadLinkPath});
+                    }).catch(function (error) {
+                        res.send(response.DATABASE_ERROR); //request not executed
                     });
-                    //send response
+                }
+                else {
                     res.json({err: 0, result: uploadLinkPath});
-                }).catch(function (error) {
-                    res.send(response.DATABASE_ERROR); //request not executed
-                });
-            }
-            else {
-                res.json({err: 0, result: uploadLinkPath});
-            }
+                }
 
         });
     });

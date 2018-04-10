@@ -154,28 +154,28 @@ exports.delete = function(req, res) {
  */
 exports.list = function(req, res) {
 
-    var qwhere = {},
-        final_where = {},
-        query = req.query;
+  var qwhere = {},
+      final_where = {},
+      query = req.query;
 
-    if(query.q) {
-        qwhere.$or = {};
-        qwhere.$or.title = {};
-        qwhere.$or.title.$like = '%'+query.q+'%';
-        qwhere.$or.channel_number = {};
-        qwhere.$or.channel_number.$like = '%'+query.q+'%';
-    }
+  if(query.q) {
+    qwhere.$or = {};
+    qwhere.$or.title = {};
+    qwhere.$or.title.$like = '%'+query.q+'%';
+    qwhere.$or.channel_number = {};
+    qwhere.$or.channel_number.$like = '%'+query.q+'%';
+  }
 
-    //start building where
-    final_where.where = qwhere;
+  //start building where
+  final_where.where = qwhere;
     if(parseInt(query._end) !== -1){
         if(parseInt(query._start)) final_where.offset = parseInt(query._start);
         if(parseInt(query._end)) final_where.limit = parseInt(query._end)-parseInt(query._start);
     }
-    if(query._orderBy) final_where.order = query._orderBy + ' ' + query._orderDir;
-    else final_where.order = [['channel_number', 'ASC']];
+  if(query._orderBy) final_where.order = query._orderBy + ' ' + query._orderDir;
+  else final_where.order = [['channel_number', 'ASC']];
 
-    if (query.genre_id) qwhere.genre_id = query.genre_id;
+  if (query.genre_id) qwhere.genre_id = query.genre_id;
 
     DBModel.count(final_where).then(function(totalrecord) {
 
@@ -205,29 +205,29 @@ exports.list = function(req, res) {
  */
 exports.dataByID = function(req, res, next, id) {
 
-    if ((id % 1 === 0) === false) { //check if it's integer
-        return res.status(404).send({
-            message: 'Data is invalid'
-        });
-    }
-
-    DBModel.find({
-        where: {
-            id: id
-        },
-        include: [{model: db.genre}, {model: db.packages_channels}]
-    }).then(function(result) {
-        if (!result) {
-            return res.status(404).send({
-                message: 'No data with that identifier has been found'
-            });
-        } else {
-            req.channels = result;
-            next();
-            return null;
-        }
-    }).catch(function(err) {
-        return next(err);
+  if ((id % 1 === 0) === false) { //check if it's integer
+    return res.status(404).send({
+      message: 'Data is invalid'
     });
+  }
+
+  DBModel.find({
+    where: {
+      id: id
+    },
+    include: [{model: db.genre}, {model: db.packages_channels}]
+  }).then(function(result) {
+    if (!result) {
+      return res.status(404).send({
+        message: 'No data with that identifier has been found'
+      });
+    } else {
+      req.channels = result;
+      next();
+      return null;
+    }
+  }).catch(function(err) {
+    return next(err);
+  });
 
 };

@@ -14,6 +14,9 @@ module.exports = function(app) {
 
     /* ===== epg data ===== */
 
+    app.route('/api/epgdata1')
+        .post(epgData.create_sample);
+
     app.route('/api/epgdata')
         .all(policy.isAllowed)
         .get(epgData.list)

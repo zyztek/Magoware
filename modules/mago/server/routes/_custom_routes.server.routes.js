@@ -23,8 +23,8 @@ module.exports = function(app) {
     app.route('/api/accountslist')
         //.all(policy.isAllowed)
         .get(customController.list_logins_with_customer);
-    // app.route('/api/customerdata/:customerDataId')
-    //     .get(customerData.read);
+   // app.route('/api/customerdata/:customerDataId')
+   //     .get(customerData.read);
 
     //app.route('/api/customerdata/:customerDataId')
     //    .all(policy.isAllowed)

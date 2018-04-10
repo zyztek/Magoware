@@ -14,7 +14,8 @@ var path = require('path'),
     moment = require('moment'),
     dateFormat = require('dateformat'),
     DBChannels = db.channels,
-    DBModel = db.epg_data;
+    DBModel = db.epg_data,
+    xmltv = require('xmltv');
 
 /**
  * Create
@@ -266,15 +267,18 @@ exports.save_epg_records = function(req, res){
         });
     }
     else{
-        read_and_write_epg(current_time);
+        return read_and_write_epg(current_time);
     }
 
     function read_and_write_epg(current_time){
         if(fileHandler.get_extension(req.body.epg_file)=== '.csv'){
             import_csv(req, res, current_time);
+            return null;
         }
         else if(fileHandler.get_extension(req.body.epg_file)=== '.xml'){
-            import_xml_standard(req, res, current_time); // xmlparser
+            //import_xml_standard(req, res, current_time); // xmlparser
+            import_xmltv(req,res,current_time); //imports xmltv version of XML\
+            return null;
         }
         else {
             return res.status(400).send({message: 'Incorrect file type'}); //serverside filetype validation
@@ -282,7 +286,77 @@ exports.save_epg_records = function(req, res){
     }
 
 }
+exports.create_sample = function(req, res) {
 
+    import_xmltv(res,res,123456);
+}
+
+
+function import_xmltv(req,res,current_time) {
+    console.log('enter xmltv import function');
+    var channellist = {};
+    var xmlfile = path.resolve('./public'+req.body.epg_file);
+    var input = fs.createReadStream(xmlfile);
+    var parser = new xmltv.Parser();
+    var stotal = 0;
+    var serrors = 0;
+    var ssuccess = 0;
+    var epgdata = [];
+
+    //read channels and map channel epg name with names on the epg file
+    DBChannels.findAll({
+        where: {isavailable: true}
+    }).then(function(result) {
+        for(var i=0; i < result.length; i++) {
+            if(result[i].epg_map_id != '') {
+                channellist[result[i].epg_map_id] = {};
+                channellist[result[i].epg_map_id].channel_number = result[i].channel_number;
+                channellist[result[i].epg_map_id].channels_id = result[i].id;
+            }
+        }
+        input.pipe(parser);
+        return null;
+    }).catch(function(err) {
+        console.log(err);
+    });
+
+    parser.on('programme', function (programme) {
+        // Do whatever you want with the programme
+        //console.log(programme);
+        var date1 = new Date(programme.start);
+        var date2 = new Date(programme.end);
+        var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+        var formdata = {};
+
+        //if channel id availabe on our database
+        if(channellist[programme.channel] !== undefined) {
+            formdata.channel_number = channellist[programme.channel].channel_number;
+            formdata.title = programme.title[0];
+            formdata.timezone = 1;
+            formdata.short_name = programme.title[0] || '';
+            formdata.short_description = programme.channel || '';
+            formdata.program_start = programme.start;
+            formdata.program_end = programme.end;
+            formdata.long_description = programme.desc[0] || '';
+            formdata.duration_seconds = timeDiff / 1000;
+            formdata.channels_id = channellist[programme.channel].channels_id;
+            epgdata.push(formdata);
+        }
+    });
+
+    parser.on('end', function (programme) {
+        console.log('the end');
+        DBModel.bulkCreate(epgdata,{ignoreDuplicates: true})
+            .then(function(data) {
+                res.json({'message':'number of records imported: '+ data.length});
+            })
+            .catch(function(err) {
+                console.log(err);
+                res.json(err);
+            });
+    });
+    //input.pipe(parser);
+}
 
 function import_xml_standard(req, res, current_time){
     var message = '';

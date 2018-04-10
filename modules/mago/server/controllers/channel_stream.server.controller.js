@@ -30,7 +30,7 @@ exports.create = function(req, res) {
  * Show current
  */
 exports.read = function(req, res) {
-    res.json(req.channelStream);
+  res.json(req.channelStream);
 };
 
 /**
@@ -82,36 +82,36 @@ exports.delete = function(req, res) {
  */
 exports.list = function(req, res) {
 
-    var qwhere = {},
-        final_where = {},
-        query = req.query;
+  var qwhere = {},
+      final_where = {},
+      query = req.query;
 
-    //start building where
-    final_where.where = qwhere;
-    if(parseInt(query._start)) final_where.offset = parseInt(query._start);
-    if(parseInt(query._end)) final_where.limit = parseInt(query._end)-parseInt(query._start);
-    if(query._orderBy) final_where.order = query._orderBy + ' ' + query._orderDir;
-    final_where.include = [db.channels, db.channel_stream_source];
+  //start building where
+  final_where.where = qwhere;
+  if(parseInt(query._start)) final_where.offset = parseInt(query._start);
+  if(parseInt(query._end)) final_where.limit = parseInt(query._end)-parseInt(query._start);
+  if(query._orderBy) final_where.order = query._orderBy + ' ' + query._orderDir;
+  final_where.include = [db.channels, db.channel_stream_source];
 
-    if(query.channel_id) qwhere.channel_id = query.channel_id;
+  if(query.channel_id) qwhere.channel_id = query.channel_id;
 
-    DBModel.findAndCountAll(
+  DBModel.findAndCountAll(
 
-        final_where
+      final_where
 
-    ).then(function(results) {
-        if (!results) {
-            return res.status(404).send({
-                message: 'No data found'
-            });
-        } else {
+  ).then(function(results) {
+    if (!results) {
+      return res.status(404).send({
+        message: 'No data found'
+      });
+    } else {
 
-            res.setHeader("X-Total-Count", results.count);
-            res.json(results.rows);
-        }
-    }).catch(function(err) {
-        res.jsonp(err);
-    });
+      res.setHeader("X-Total-Count", results.count);      
+      res.json(results.rows);
+    }
+  }).catch(function(err) {
+    res.jsonp(err);
+  });
 };
 
 /**
@@ -119,34 +119,34 @@ exports.list = function(req, res) {
  */
 exports.dataByID = function(req, res, next, id) {
 
-    if ((id % 1 === 0) === false) { //check if it's integer
-        return res.status(404).send({
-            message: 'Data is invalid'
-        });
-    }
-
-    DBModel.find({
-        where: {
-            id: id
-        },
-        include: [{
-            model: db.channels
-        },
-            {
-                model: db.channel_stream_source
-            }]
-    }).then(function(result) {
-        if (!result) {
-            return res.status(404).send({
-                message: 'No data with that identifier has been found'
-            });
-        } else {
-            req.channelStream = result;
-            next();
-            return null;
-        }
-    }).catch(function(err) {
-        return next(err);
+  if ((id % 1 === 0) === false) { //check if it's integer
+    return res.status(404).send({
+      message: 'Data is invalid'
     });
+  }
+
+  DBModel.find({
+    where: {
+      id: id
+    },
+    include: [{
+      model: db.channels
+    },
+      {
+        model: db.channel_stream_source
+      }]
+  }).then(function(result) {
+    if (!result) {
+      return res.status(404).send({
+        message: 'No data with that identifier has been found'
+      });
+    } else {
+      req.channelStream = result;
+      next();
+      return null;
+    }
+  }).catch(function(err) {
+    return next(err);
+  });
 
 };

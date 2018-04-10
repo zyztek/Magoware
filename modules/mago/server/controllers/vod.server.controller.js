@@ -97,10 +97,11 @@ exports.delete = function(req, res) {
 
 };
 
+//todo: dokumentimi
 exports.list = function(req, res) {
-    var qwhere = {},
-        final_where = {},
-        query = req.query;
+      var qwhere = {},
+      final_where = {},
+      query = req.query;
 
     if(query.q) {
         qwhere.$or = {};
@@ -123,31 +124,31 @@ exports.list = function(req, res) {
     else if(query.updated_before) qwhere.createdAt = {lt: query.updated_before};
     else if(query.updated_after) qwhere.createdAt = {gt: query.updated_after};
 
-    //start building where
-    final_where.where = qwhere;
-    if(parseInt(query._end) !== -1){
-        if(parseInt(query._start)) final_where.offset = parseInt(query._start);
-        if(parseInt(query._end)) final_where.limit = parseInt(query._end)-parseInt(query._start);
+  //start building where
+  final_where.where = qwhere;
+  if(parseInt(query._end) !== -1){
+      if(parseInt(query._start)) final_where.offset = parseInt(query._start);
+      if(parseInt(query._end)) final_where.limit = parseInt(query._end)-parseInt(query._start);
+  }
+  if(query._orderBy) final_where.order = query._orderBy + ' ' + query._orderDir;
+  final_where.include = [db.vod_category, db.package];
+  //end build final where
+
+  DBModel.findAndCountAll(
+      final_where
+  ).then(function(results) {
+    if (!results) {
+      return res.status(404).send({
+        message: 'No data found'
+      });
+    } else {
+
+      res.setHeader("X-Total-Count", results.count);
+      res.json(results.rows);
     }
-    if(query._orderBy) final_where.order = query._orderBy + ' ' + query._orderDir;
-    final_where.include = [db.vod_category, db.package];
-    //end build final where
-
-    DBModel.findAndCountAll(
-        final_where
-    ).then(function(results) {
-        if (!results) {
-            return res.status(404).send({
-                message: 'No data found'
-            });
-        } else {
-
-            res.setHeader("X-Total-Count", results.count);
-            res.json(results.rows);
-        }
-    }).catch(function(err) {
-        res.jsonp(err);
-    });
+  }).catch(function(err) {
+    res.jsonp(err);
+  });
 };
 
 /**
@@ -155,47 +156,52 @@ exports.list = function(req, res) {
  */
 exports.dataByID = function(req, res, next, id) {
 
-    if ((id % 1 === 0) === false) { //check if it's integer
-        return res.status(404).send({
-            message: 'Data is invalid'
-        });
-    }
-
-    DBModel.find({
-        where: {
-            id: id
-        },
-        include: [{model: db.vod_category}, {model: db.package},{model: db.vod_subtitles},{model: db.vod_stream}]
-    }).then(function(result) {
-        if (!result) {
-            return res.status(404).send({
-                message: 'No data with that identifier has been found'
-            });
-        } else {
-            req.vod = result;
-            next();
-            return null;
-        }
-    }).catch(function(err) {
-        return next(err);
+  if ((id % 1 === 0) === false) { //check if it's integer
+    return res.status(404).send({
+      message: 'Data is invalid'
     });
+  }
+
+  DBModel.find({
+    where: {
+      id: id
+    },
+    include: [{model: db.vod_category}, {model: db.package},{model: db.vod_subtitles},{model: db.vod_stream}]
+  }).then(function(result) {
+    if (!result) {
+      return res.status(404).send({
+        message: 'No data with that identifier has been found'
+      });
+    } else {
+      req.vod = result;
+      next();
+      return null;
+    }
+  }).catch(function(err) {
+    return next(err);
+  });
 
 };
 
 //todo: document api
 //todo: revise these params
 exports.update_film = function(req, res) {
+    console.log("req.params ", req.params.vodId);
+    console.log("req.body ", req.body);
+    //omdbapi(null, title, null);
     omdbapi(req.body.imdb_id, req.body.title, req.body.year, function(response_omdbapi){
+        console.log("tek api ")
         DBModel.update(
             {
                 title: response_omdbapi.title,
                 description: response_omdbapi.description,
                 year: response_omdbapi.year,
+                //todo: image url? image_url: response_omdbapi.image, do zevendesohet apo jo?
                 rate: response_omdbapi.rate,
                 duration: response_omdbapi.duration,
                 director: response_omdbapi.director,
                 starring: response_omdbapi.starring,
-                pin_protected: response_omdbapi.pin_protected
+                pin_protected: response_omdbapi.pin_protected //todo: ta bej update kte apo jo?
             },
             {where: {id: req.params.vodId}}
         ).then(function(result){
@@ -209,6 +215,7 @@ exports.update_film = function(req, res) {
 };
 
 function omdbapi(imdb_id, title, year, callback){
+    console.log("tek imdb api ")
     var search_params = "";
     if(imdb_id) search_params = search_params+'i='+imdb_id;
     else if(title){
@@ -227,6 +234,10 @@ function omdbapi(imdb_id, title, year, callback){
     request(options, function (error, response, body) {
         //todo: if response dhe response parsable as JSON
         JSON.parse(response.body);
+        console.log("Tek request ", options.url);
+        console.log("indeksi ", ['R', 'X', 'PG-13'].indexOf(JSON.parse(response.body).Rated));
+        console.log("rated ", JSON.parse(response.body).Rated);
+        console.log("protected apo jo ", ((['R', 'X', 'PG-13'].indexOf(JSON.parse(response.body).Rated) !== -1) ? 1 : 0));
 
         var vod_data = {
             title: JSON.parse(response.body).Title,

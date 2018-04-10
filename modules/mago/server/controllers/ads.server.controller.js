@@ -4,7 +4,7 @@ var path = require('path'),
     db = require(path.resolve('./config/lib/sequelize')).models,
     DBModel = db.commands,
     DBDevices = db.devices;
-var moment = require('moment');
+    var moment = require('moment');
 var dateformat = require('dateformat');
 
 /**

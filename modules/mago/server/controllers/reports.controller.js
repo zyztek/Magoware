@@ -5,8 +5,8 @@ var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     db = require(path.resolve('./config/lib/sequelize')).models,
     LoginData = db.login_data;
-Combo = db.combo;
-SalesReport = db.salesreport;
+    Combo = db.combo;
+    SalesReport = db.salesreport;
 
 /**
  * List of Subscribers

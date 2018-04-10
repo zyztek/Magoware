@@ -4,9 +4,9 @@
  * Module dependencies.
  */
 var path = require('path'),
-    errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
-    db = require(path.resolve('./config/lib/sequelize')).models,
-    DBModel = db.my_channels;
+  errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
+  db = require(path.resolve('./config/lib/sequelize')).models,
+  DBModel = db.my_channels;
 
 /**
  * Create
@@ -87,11 +87,11 @@ exports.list = function(req, res) {
       query = req.query;
 
   if(query.q) {
-    qwhere.$or = {};
-    qwhere.$or.title = {};
-    qwhere.$or.title.$like = '%'+query.q+'%';
-    qwhere.$or.description = {};
-    qwhere.$or.description.$like = '%'+query.q+'%';
+      qwhere.$or = {};
+      qwhere.$or.title = {};
+      qwhere.$or.title.$like = '%'+query.q+'%';
+      qwhere.$or.description = {};
+      qwhere.$or.description.$like = '%'+query.q+'%';
   }
 
   //start building where
@@ -100,7 +100,7 @@ exports.list = function(req, res) {
   if(parseInt(query._end)) final_where.limit = parseInt(query._end)-parseInt(query._start);
   if(query._orderBy) final_where.order = query._orderBy + ' ' + query._orderDir;
   final_where.include = [];
-
+  
   DBModel.findAndCountAll(
 
       final_where

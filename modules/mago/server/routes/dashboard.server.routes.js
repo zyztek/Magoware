@@ -11,8 +11,8 @@ module.exports = function(app) {
 
     /*========== chart ============ */
     app.route('/api/dashboard/chart/salesreport')
-        .get(dashboardController.chartsgraph1)
-        .post(dashboardController.chartsgraph1);
+      .get(dashboardController.chartsgraph1)
+      .post(dashboardController.chartsgraph1);
 
     app.route('/api/dashboard/chart/salesreport_2')
         .get(dashboardController.chart_vis_sales)
