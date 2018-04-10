@@ -6,7 +6,7 @@ var path = require('path'),
     push_msg = require(path.resolve('./custom_functions/push_messages')),
     crypto = require('crypto'),
     models = db.models;
-var async = require("async");
+    var async = require("async");
 
 /**
  * @api {post} /apiv2/credentials/login /apiv2/credentials/login

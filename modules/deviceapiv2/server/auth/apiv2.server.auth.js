@@ -59,6 +59,7 @@ function auth_decrypt1(token_string, key) {
     });
     var decrypted = aes.finalize(test);
     try {
+        //console.log("decrypted", decrypted)
         return C.enc.Utf8.stringify(decrypted);
     }
     catch(err) {
@@ -103,13 +104,17 @@ exports.isAllowed = function(req, res, next) {
     //krijo objektin e auth
 
     if(req.headers.auth){
+        console.log("req headers ")
         if(missing_params(querystring.parse(auth_decrypt1(auth,req.app.locals.settings.new_encryption_key),";","=")) === false){
+            console.log("auth 1 -----> ", auth_decrypt1(auth,req.app.locals.settings.new_encryption_key))
             var auth_obj = querystring.parse(auth_decrypt1(auth,req.app.locals.settings.new_encryption_key),";","=");
         }
         else if(missing_params(querystring.parse(auth_decrypt1(auth,req.app.locals.settings.old_encryption_key),";","=")) === false && req.app.locals.settings.key_transition === true){
+            console.log("auth 2 -----> ", auth_decrypt1(auth,req.app.locals.settings.new_encryption_key))
             var auth_obj = querystring.parse(auth_decrypt1(auth,req.app.locals.settings.old_encryption_key),";","=");
         }
         else {
+            console.log("auth 3 -----> ", auth_decrypt1(auth,req.app.locals.settings.new_encryption_key))
             response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'INVALID_TOKEN', 'no-store');
         }
     }
@@ -124,12 +129,15 @@ exports.isAllowed = function(req, res, next) {
         }
         else{
             if(missing_params(querystring.parse(auth_decrypt(auth,req.app.locals.settings.new_encryption_key),";","=")) === false){
+                console.log("auth 11 -----> ", auth_decrypt(auth,req.app.locals.settings.new_encryption_key))
                 var auth_obj = querystring.parse(auth_decrypt(auth,req.app.locals.settings.new_encryption_key),";","=");
             }
             else if(missing_params(querystring.parse(auth_decrypt(auth,req.app.locals.settings.old_encryption_key),";","=")) === false && req.app.locals.settings.key_transition === true){
+                console.log("auth 22 -----> ", auth_decrypt(auth,req.app.locals.settings.new_encryption_key))
                 var auth_obj = querystring.parse(auth_decrypt(auth,req.app.locals.settings.old_encryption_key),";","=");
             }
             else {
+                console.log("auth 33 -----> ", auth_decrypt(auth,req.app.locals.settings.new_encryption_key))
                 response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'INVALID_TOKEN', 'no-store');
             }
         }
@@ -168,7 +176,7 @@ exports.isAllowed = function(req, res, next) {
                     else if(authenticationHandler.authenticate(auth_obj.password, result.salt, result.password) === false) {
                         response.send_res(req, res, [], 704, -1, 'WRONG_PASSWORD_DESCRIPTION', 'WRONG_PASSWORD_DATA', 'no-store');
                     }
-                    else if(result.resetPasswordExpires.length > 9 && result.resetPasswordExpires !== '0'){
+                    else if( (result.resetPasswordExpires !== null ) && (result.resetPasswordExpires.length > 9 && result.resetPasswordExpires !== '0') ){
                         response.send_res(req, res, [], 704, -1, 'EMAIL_NOT_CONFIRMED', 'EMAIL_NOT_CONFIRMED_DESC', 'no-store');
                     }
                     else {

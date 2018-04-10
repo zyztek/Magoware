@@ -16,15 +16,15 @@ var path = require('path'),
     mainController = require(path.resolve('./modules/deviceapiv2/server/controllers/main.server.controller')),
     customersAppController = require(path.resolve('./modules/deviceapiv2/server/controllers/customers_app.server.controller')),
     productsAppController = require(path.resolve('./modules/deviceapiv2/server/controllers/products.server.controller')),
-    sitesController = require(path.resolve('./modules/deviceapiv2/server/controllers/sites.server.controller')),
-    headerController = require(path.resolve('./modules/deviceapiv2/server/controllers/header.server.controller')),
+	sitesController = require(path.resolve('./modules/deviceapiv2/server/controllers/sites.server.controller')),
+	headerController = require(path.resolve('./modules/deviceapiv2/server/controllers/header.server.controller')),
     winston = require(path.resolve('./config/lib/winston'));
 
 module.exports = function(app) {
 
     app.use('/apiv2',function (req, res, next) {
         winston.info(req.originalUrl +'  '+ JSON.stringify(req.body));
-        res.header("Access-Control-Allow-Origin", "*");
+		res.header("Access-Control-Allow-Origin", "*");
         next();
     });
 
@@ -88,7 +88,7 @@ module.exports = function(app) {
         .all(authpolicy.isAllowed)
         .get(catchupController.catchup_events_get)
         .post(catchupController.catchup_events);
-
+	
     app.route('/apiv2/channels/catchup_stream')
         .all(authpolicy.isAllowed)
         .post(catchupController.catchup_stream);
@@ -157,6 +157,12 @@ module.exports = function(app) {
         .get(vodController.get_vod_list);
 
     //testing api
+    app.route('/apiv2/vod/vodlist')
+    //.all(authpolicy.isAllowed)
+        .get(vodController.get_vod_list);
+
+
+    //testing api
     app.route('/apiv2/vod/voditem/:vodID')
         //.all(authpolicy.isAllowed)
         .get(vodController.get_vod_item);
@@ -185,7 +191,7 @@ module.exports = function(app) {
         .post(mainController.device_menu);
 
     /*******************************************************************
-     Network - related API
+                         Network - related API
      *******************************************************************/
     app.route('/apiv2/network/dbtest')
         .all(authpolicy.isAllowed)

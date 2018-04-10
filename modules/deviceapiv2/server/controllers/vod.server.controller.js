@@ -277,7 +277,7 @@ exports.subtitles_get = function(req, res) {
 exports.totalhits = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
 
-    //if hits for a specific movie are requested
+     //if hits for a specific movie are requested
     if(req.body.id_vod != "all"){
         models.vod.findAll({
             attributes: [ ['id', 'id_vod'], ['clicks', 'hits'] ],
@@ -565,10 +565,6 @@ exports.get_vod_list = function(req, res) {
         final_where = {},
         query = req.query;
 
-    console.log('query = ',query,req.params,req.app.locals.settings);
-
-    var qlimit = (query.limit) ? parseInt(query.limit) : req.app.locals.settings.vod_subset_nr;
-
     if(query.q) {
         qwhere.$or = {};
         qwhere.$or.title = {};
@@ -578,31 +574,29 @@ exports.get_vod_list = function(req, res) {
         qwhere.$or.director = {};
         qwhere.$or.director.$like = '%'+query.q+'%';
     }
-    if(query.category) qwhere.category_id = query.category;
 
+    if(query.category) qwhere.category_id = query.category;
 
     //filter films added in the following time interval
     if(query.added_before && query.added_after) qwhere.createdAt = {lt: query.added_before, gt: query.added_after};
     else if(query.added_before) qwhere.createdAt = {lt: query.added_before};
     else if(query.added_after) qwhere.createdAt = {gt: query.added_after};
+
     //filter films updated in the following time interval
     if(query.updated_before && query.updated_after) qwhere.createdAt = {lt: query.updated_before, gt: query.updated_after};
-    else if(query.updated_before) qwhere.createdAt = {lt: query.updated_before};
-    else if(query.updated_after) qwhere.createdAt = {gt: query.updated_after};
+    else if(query.updated_before) qwhere.updatedAt = {lt: query.updated_before};
+    else if(query.updated_after) qwhere.updatedAt = {gt: query.updated_after};
 
     //start building where
     final_where.where = qwhere;
 
-    final_where.offset = (!req.params.pagenumber || req.params.pagenumber === '-1') ? 0 : ((parseInt(req.params.pagenumber)-1)*qlimit); //for older versions of vod, start query at first record
-    final_where.limit = (query.limit) ? parseInt(query.limit): qlimit;
-
     //if(parseInt(query._end) !== -1){
-    //    if(parseInt(query._start)) final_where.offset = parseInt(query._start);
-    //    if(parseInt(query._end)) final_where.limit = parseInt(query._end)-parseInt(query._start);
+    final_where.offset = isNaN(parseInt(query._start)) ? 0:parseInt(query._start);
+    final_where.limit =  isNaN(parseInt(query._end)) ?  req.app.locals.settings.vod_subset_nr: parseInt(query._end) - final_where.offset;
     //}
 
     if(query._orderBy) final_where.order = query._orderBy + ' ' + query._orderDir;
-    final_where.include = [models.vod_category, models.package];
+    final_where.include = [models.vod_category];
     //end build final where
 
     console.log(final_where);
