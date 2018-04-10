@@ -146,8 +146,8 @@ module.exports = {
     send_res: function(req, res, result, status, error, description, extra_data, header){
         var evaluation_tag = crypto.createHash('sha256').update(JSON.stringify(result)).digest('hex');
         var client_etag = (!req.header('clientsETag')) ? "" : req.header('clientsETag');
-        var status_code = (evaluation_tag!==client_etag) ? status : 304; // if the response data is different from the one in the app cache, send status different that 304
-        var response_data = (evaluation_tag!==client_etag) ? result : []; // only new responses will be sent
+        var status_code = (evaluation_tag!==client_etag || req.path === '/apiv2/settings/settings') ? status : 304; // if the response data is different from the one in the app cache, send status different that 304
+        var response_data = (evaluation_tag!==client_etag || req.path === '/apiv2/settings/settings') ? result : []; // only new responses will be sent
         var cache_header = (status_code===200) ? header : 'no-store'; //only responses that contain new data will be stored
 
         res.setHeader('etag', evaluation_tag);

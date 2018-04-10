@@ -4,31 +4,31 @@
  * Module dependencies.
  */
 var config = require('../config'),
-    express = require('express'),
-    bodyParser = require('body-parser'),
-    session = require('express-session'),
-    RedisStore = require('connect-redis')(session),
-    favicon = require('serve-favicon'),
-    cookieParser = require('cookie-parser'),
-    helmet = require('helmet'),
-    consolidate = require('consolidate'),
-    path = require('path'),
-    http = require('http'),
-    https = require('https'),
-    fs = require('fs'),
-    winston = require('./winston'),
+  express = require('express'),
+  bodyParser = require('body-parser'),
+  session = require('express-session'),
+  RedisStore = require('connect-redis')(session),
+  favicon = require('serve-favicon'),
+  cookieParser = require('cookie-parser'),
+  helmet = require('helmet'),
+  consolidate = require('consolidate'),
+  path = require('path'),
+  http = require('http'),
+  https = require('https'),
+  fs = require('fs'),
+  winston = require('./winston'),
 
-//documentation
-    docs = require("express-mongoose-docs");
+  //documentation
+  docs = require("express-mongoose-docs");
 
-//language configuration parameters
-global.languages = {};
-const language_folder_path = './config/languages/';
-global.vod_list = {};
-global.livetv_s_subscription_end = [];
-global.livetv_l_subscription_end = [];
-global.vod_s_subscription_end = [];
-global.vod_l_subscription_end = [];
+ //language configuration parameters
+    global.languages = {};
+    const language_folder_path = './config/languages/';
+    global.vod_list = {};
+    global.livetv_s_subscription_end = [];
+    global.livetv_l_subscription_end = [];
+    global.vod_s_subscription_end = [];
+    global.vod_l_subscription_end = [];
 
 /**
  * Initialize local variables
@@ -217,7 +217,7 @@ module.exports.initErrorRoutes = function(app) {
 
 /**
  * Configure Socket.io
- */
+*/
 
 module.exports.configureSocketIO = function(app, db) {
   winston.info('Initializing Socket.io...');

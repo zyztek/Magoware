@@ -4,10 +4,10 @@
  * Module dependencies.
  */
 var config = require('../config'),
-    express = require('./express'),
-    chalk = require('chalk'),
-    sequelize = require('./sequelize-connect'),
-    winston = require('./winston');
+  express = require('./express'),
+  chalk = require('chalk'),
+  sequelize = require('./sequelize-connect'),
+  winston = require('./winston');
 
 
 module.exports.init = function init(callback) {

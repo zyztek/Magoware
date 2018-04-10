@@ -1,7 +1,7 @@
 "use strict";
 
 var config = require('../config'),
-    request = require('request');
+  request = require('request');
 
 // Verify the reCaptcha response
 exports.verify = function(response, cb) {
