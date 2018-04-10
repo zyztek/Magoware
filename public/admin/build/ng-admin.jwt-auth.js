@@ -13,9 +13,9 @@
         }).then(function(response) {
           var payload = jwtHelper.decodeToken(response.data.token);
 
-          localStorage.userToken = response.data.token;
-          localStorage.userRole = payload.role;
-          localStorage.userName = payload.sub;
+            localStorage.userToken = response.data.token;
+            localStorage.userRole = payload.role;
+            localStorage.userName = payload.sub;
 
           successCallback(response);
 
@@ -129,15 +129,15 @@
     var that = this;
 
     var success = this.ngAdminJWTAuthConfigurator.getLoginSuccessCallback() || function(response) {
-          //that.notification.log(`You are logged in! `, { addnCls: 'humane-flatty-success' });
+           //that.notification.log(`You are logged in! `, { addnCls: 'humane-flatty-success' });        
           //that.$location.path('/dashboard').location['reload']();
+              
+                if (success) {
 
-          if (success) {
+                    that.$location.path('/dashboard');
+                    window.location.reload();
 
-            that.$location.path('/dashboard');
-            window.location.reload();
-
-          }
+                }
 
         };
     var error = this.ngAdminJWTAuthConfigurator.getLoginErrorCallback() || function(response) {
