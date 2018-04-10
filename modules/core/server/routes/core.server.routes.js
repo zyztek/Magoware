@@ -5,7 +5,7 @@ module.exports = function(app) {
   var core = require('../controllers/core.server.controller');
   var path = require('path');
 
-  // Define error pages
+    // Define error pages
   app.route('/server-error').get(core.renderServerError);
 
   // Return a 404 for all undefined api, module or lib routes

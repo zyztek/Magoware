@@ -36,18 +36,18 @@
 </head>
 
 <body ng-controller="AppCtrl">
-{% block content %}{% endblock %}
+  {% block content %}{% endblock %}
 
-<!--Embedding The User Object-->
-<script type="text/javascript">
-  var user = {{ user | json | safe }};
-</script>
+  <!--Embedding The User Object-->
+  <script type="text/javascript">
+    var user = {{ user | json | safe }};
+  </script>
 
-<!--Load The Socket.io File-->
-<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+  <!--Load The Socket.io File-->
+  <script type="text/javascript" src="/socket.io/socket.io.js"></script>
 
-<!--Application JavaScript Files-->
-{% for jsFile in jsFiles %}<script type="text/javascript" src="{{jsFile}}"></script>{% endfor %}
+  <!--Application JavaScript Files-->
+  {% for jsFile in jsFiles %}<script type="text/javascript" src="{{jsFile}}"></script>{% endfor %}
 
 </body>
 
