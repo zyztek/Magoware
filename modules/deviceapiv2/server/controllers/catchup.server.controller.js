@@ -149,7 +149,7 @@ exports.catchup_events_get =  function(req, res) {
 
 exports.catchup_stream =  function(req, res) {
     var channel_number = req.body.channelNumber;
-    var stream_mode = (['2', '3'].indexOf(req.auth_obj.appid) !== -1) ? 'catchup_small' : 'catchup_large'; //filter streams based on device resolution
+    var stream_mode = 'catchup'; //filter streams based on device resolution
 
     models.channels.findOne({
         attributes: ['id'],

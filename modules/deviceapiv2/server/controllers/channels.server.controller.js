@@ -66,13 +66,13 @@ exports.list = function(req, res) {
     if(req.thisuser.player.toUpperCase() === 'default'.toUpperCase()) stream_qwhere.stream_format = {$not: 0}; //don't send mpd streams for default player
     if(req.auth_obj.appid === 3) stream_qwhere.stream_format = 2; // send only hls streams for ios application
     stream_qwhere.stream_source_id = req.thisuser.channel_stream_source_id; // streams come from the user's stream source
-    stream_qwhere.stream_mode = (['2', '3'].indexOf(req.auth_obj.appid) !== -1) ? 'live_small' : 'live_large'; //filter streams based on device resolution
+    stream_qwhere.stream_mode = 'live'; //filter streams based on device resolution
 
     // requisites for catchup streams
     var catchupstream_where = {stream_source_id: req.thisuser.channel_stream_source_id};
     if(req.thisuser.player.toUpperCase() === 'default'.toUpperCase()) catchupstream_where.stream_format = {$not: 0}; //don't send mpd streams for default player
     if(req.auth_obj.appid === 3) catchupstream_where.stream_format = 2; // send only hls streams for ios application
-    catchupstream_where.stream_mode = (['2', '3'].indexOf(req.auth_obj.appid) !== -1) ? 'catchup_small' : 'catchup_large'; //filter streams based on device resolution
+    catchupstream_where.stream_mode = 'catchup'; //filter streams based on device resolution
 
 //find user channels and subscription channels for the user
     models.my_channels.findAll({
@@ -132,7 +132,7 @@ exports.list = function(req, res) {
                     temp_obj.icon_url = req.app.locals.settings.assets_url + my_channel_list[i]["genre.icon_url"];
                     temp_obj.stream_url = my_channel_list[i]["stream_url"];
                     temp_obj.genre_id = my_channel_list[i].genre_id;
-                    temp_obj.channel_mode = 'live_large';
+                    temp_obj.channel_mode = 'live';
                     temp_obj.pin_protected = 'false';
                     temp_obj.stream_source_id = 1;
                     temp_obj.stream_format = "1";
@@ -202,7 +202,7 @@ exports.list = function(req, res) {
  *          "icon_url": "http://.../image.png",
  *          "stream_url": "stream url",
  *          "genre_id": 1,
- *          "channel_mode": "live_large",
+ *          "channel_mode": "live",
  *          "pin_protected": "false", //"true" / "false" values
  *          "stream_source_id": 1,
  *          "stream_format": "0", //current values include 0 (mpd), 1 (smooth streaming), 2 (hls), 3 (other)
@@ -233,13 +233,13 @@ exports.list_get = function(req, res) {
     if(req.thisuser.player.toUpperCase() === 'default'.toUpperCase()) stream_qwhere.stream_format = {$not: 0}; //don't send mpd streams for default player
     if(req.auth_obj.appid === 3) stream_qwhere.stream_format = 2; // send only hls streams for ios application
     stream_qwhere.stream_source_id = req.thisuser.channel_stream_source_id; // streams come from the user's stream source
-    stream_qwhere.stream_mode = (['2', '3'].indexOf(req.auth_obj.appid) !== -1) ? 'live_small' : 'live_large'; //filter streams based on device resolution
+    stream_qwhere.stream_mode = 'live'; //filter streams based on device resolution
 
     // requisites for catchup streams
     var catchupstream_where = {stream_source_id: req.thisuser.channel_stream_source_id};
     if(req.thisuser.player.toUpperCase() === 'default'.toUpperCase()) catchupstream_where.stream_format = {$not: 0}; //don't send mpd streams for default player
     if(req.auth_obj.appid === 3) catchupstream_where.stream_format = 2; // send only hls streams for ios application
-    catchupstream_where.stream_mode = (['2', '3'].indexOf(req.auth_obj.appid) !== -1) ? 'catchup_small' : 'catchup_large'; //filter streams based on device resolution
+    catchupstream_where.stream_mode = 'catchup'; //filter streams based on device resolution
 
 //find user channels and subscription channels for the user
     models.my_channels.findAll({
@@ -299,7 +299,7 @@ exports.list_get = function(req, res) {
                     temp_obj.icon_url = req.app.locals.settings.assets_url + my_channel_list[i]["genre.icon_url"];
                     temp_obj.stream_url = my_channel_list[i]["stream_url"];
                     temp_obj.genre_id = my_channel_list[i].genre_id;
-                    temp_obj.channel_mode = 'live_large';
+                    temp_obj.channel_mode = 'live';
                     temp_obj.pin_protected = 'false';
                     temp_obj.stream_source_id = 1;
                     temp_obj.stream_format = "1";
@@ -1124,7 +1124,7 @@ exports.current_epgs =  function(req, res) {
     if(req.thisuser.player.toUpperCase() === 'default'.toUpperCase()) stream_qwhere.stream_format = {$not: 0}; //don't send mpd streams for default player
     if(req.auth_obj.appid === 3) stream_qwhere.stream_format = 2; // send only hls streams for ios application
     stream_qwhere.stream_source_id = req.thisuser.channel_stream_source_id; // streams come from the user's stream source
-    stream_qwhere.stream_mode = 'live_large';
+    stream_qwhere.stream_mode = 'live';
 
     models.my_channels.findAll({
         attributes: ['channel_number', 'title'], order: [[ 'channel_number', 'ASC' ]], where: userstream_qwhere,
@@ -1316,7 +1316,7 @@ exports.favorites = function(req, res) {
  *   }
  */
 exports.program_info = function(req, res) {
-    var stream_mode = (['2', '3'].indexOf(req.auth_obj.appid) !== -1) ? 'catchup_small' : 'catchup_large'
+    var stream_mode = 'catchup'
     models.epg_data.findOne({
         attributes: ['title', 'long_description', 'program_start', 'program_end'],
         where: {id: req.body.program_id},

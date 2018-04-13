@@ -29,10 +29,8 @@ export default function (nga, admin) {
             nga.field('stream_mode', 'choice')
                 .attributes({ placeholder: 'Stream Format' })
                 .choices([
-                    { value: 'live_large', label: 'Live TV large screen stream' },
-                    { value: 'live_small', label: 'Live TV small screen stream' },
-                    { value: 'catchup_large', label: 'Catchup  large screen stream' },
-                    { value: 'catchup_small', label: 'Catchup  small screen stream' }
+                    { value: 'live', label: 'Live TV stream' },
+                    { value: 'catchup', label: 'Catchup stream' }
                 ])
                 .validation({ required: true })
                 .cssClasses('hidden-xs')
@@ -104,10 +102,8 @@ export default function (nga, admin) {
             nga.field('stream_mode', 'choice')
                 .attributes({ placeholder: 'Stream Format' })
                 .choices([
-                    { value: 'live_large', label: 'Live TV large screen stream' },
-                    { value: 'live_small', label: 'Live TV small screen stream' },
-                    { value: 'catchup_large', label: 'Catchup  large screen stream' },
-                    { value: 'catchup_small', label: 'Catchup  small screen stream' }
+                    { value: 'live', label: 'Live TV stream' },
+                    { value: 'catchup', label: 'Catchup stream' }
                 ])
                 .validation({ required: true })
                 .attributes({ placeholder: 'Description' })
