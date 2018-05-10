@@ -33,9 +33,10 @@ export default function (nga, admin) {
 						{ value: 1, label: 'Live TV' },
 						{ value: 2, label: 'EPG' },
 						{ value: 3, label: 'Logout' },
-						{ value: 4, label: 'Applications' },
+						{ value: 4, label: 'Apps' },
 						{ value: 10, label: 'Network Test' },
 						{ value: 11, label: 'Vod' },
+						{ value: 12, label: 'Application menu' },
 						{ value: 20, label: 'Personal' },
 						{ value: 21, label: 'Catchup' }
 					])
@@ -110,9 +111,10 @@ export default function (nga, admin) {
 					{ value: 1, label: 'Live TV' },
 					{ value: 2, label: 'EPG' },
 					{ value: 3, label: 'Logout' },
-					{ value: 4, label: 'Applications' },
+					{ value: 4, label: 'Apps' },
 					{ value: 10, label: 'Network Test' },
 					{ value: 11, label: 'Vod' },
+					{ value: 12, label: 'Application menu' },
 					{ value: 20, label: 'Personal' },
 					{ value: 21, label: 'Catchup' }
 				])
