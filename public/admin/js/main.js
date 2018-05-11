@@ -21,6 +21,46 @@ myApp.controller('checkboxController', function($scope) {
 });
 //./checkboxController
 
+//subscription export
+//Takes user details
+myApp.controller('InvoiceCtrl', ['$scope', '$http','$stateParams', function ($scope, $http,$stateParams) {
+    //takes id from url
+    var currentID = $stateParams.id;
+    $http.get('../api/invoice/?login_data_id='+currentID).then(function(response) {
+        $scope.users = response.data;
+    });
+}]);
+//Footer Button
+myApp.controller('buttons', ['$scope', function ($scope) {
+    $scope.printInfo = function() {
+        window.print();
+    };
+
+    $scope.goBack = function() {
+        window.history.back();
+    };
+}]);
+
+myApp.config(function ($stateProvider) {
+    $stateProvider.state('invoice', {
+        url: '/invoice/:id',
+        templateUrl: 'subscription_export.html'
+    });
+});
+myApp.directive('showInvoice', ['$location', function ($location) {
+    return {
+        restrict: 'E',
+        scope: { post: '&' },
+        link: function (scope) {
+            scope.send = function () {
+                $location.path('/invoice/' + scope.post().values.id);
+            };
+        },
+        template: '<a class="btn btn-default" ng-click="send()"><i class="fa fa-print fa-lg"></i>&nbsp;GENERATE INVOICE</a>'
+    };
+}]);
+//./subscription export
+
 // Pagination & Sort
 var apiFlavor = require('./api_flavor');
 myApp.config(['RestangularProvider', apiFlavor.requestInterceptor]);
@@ -80,65 +120,65 @@ myApp.config(['$translateProvider', function ($translateProvider) {
 // Forgot Password Controller
 
 myApp.controller('main', ['Restangular', '$scope', '$uibModal','notification', function(Restangular, $scope, $uibModal,notification) {
-    
-        $scope.modal = function () {
-            var modalInstance = $uibModal.open({
-                template: '<div class="modal-header">'+
-                           '<h5 class="modal-title">Forgot Password</h5>'+
-                            '</div>'+
-                                '<div class="container modal-body">'+
-                                    '<form>'+
-                                        '<div class="form-group col-xs-9">'+
-                                            '<label for="exampleInputEmail1">Email / Username</label>'+
-                                            '<hr>'+
-                                            '<input type="input" class="form-control" ng-model="forgot.username" value="forgot.username" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email or username">'+
-                                        '</div>'+
-                                    '</form>'+
-                                '</div>'+
-                            '<div class="modal-footer">'+
-                                '<button class="btn btn-primary" type="button" ng-click="ok()">Submit</button>'+
-                                '<button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>'+
-                            '</div>',
-                controller: ('main', ['$scope', '$uibModalInstance', 'confirmClick', 'confirmMessge',
-                        function ($scope, $uibModalInstance, confirmClick, confirmMessge) {
 
-                                $scope.confirmMessage = confirmMessge;
+    $scope.modal = function () {
+        var modalInstance = $uibModal.open({
+            template: '<div class="modal-header">'+
+            '<h5 class="modal-title">Forgot Password</h5>'+
+            '</div>'+
+            '<div class="container modal-body">'+
+            '<form>'+
+            '<div class="form-group col-xs-9">'+
+            '<label for="exampleInputEmail1">Email / Username</label>'+
+            '<hr>'+
+            '<input type="input" class="form-control" ng-model="forgot.username" value="forgot.username" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email or username">'+
+            '</div>'+
+            '</form>'+
+            '</div>'+
+            '<div class="modal-footer">'+
+            '<button class="btn btn-primary" type="button" ng-click="ok()">Submit</button>'+
+            '<button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>'+
+            '</div>',
+            controller: ('main', ['$scope', '$uibModalInstance', 'confirmClick', 'confirmMessge',
+                function ($scope, $uibModalInstance, confirmClick, confirmMessge) {
 
-                            function closeModal() {
+                    $scope.confirmMessage = confirmMessge;
 
-                                $uibModalInstance.dismiss('cancel');
+                    function closeModal() {
 
-                            }
-                     
-                            $scope.ok = function () {
+                        $uibModalInstance.dismiss('cancel');
 
-                                    closeModal();
-                                    Restangular.one('auth/forgot').customPOST($scope.forgot)
-                                        .then(function successCallback(response) {
-                                            notification.log(response.message, { addnCls: 'humane-flatty-success' });
-
-                                          }, function errorCallback(response) {
-                                        });
-
-                            }
-                     
-                            $scope.cancel = function () {
-                                closeModal();
-                            }
-
-                        }]),
-                size: 'lg',
-                windowClass: 'confirm-window',
-                resolve: {
-                    confirmClick: function () {
-                        return $scope.ngConfirm;
-                    },
-                    confirmMessge: function () {
-                        return $scope.ngConfirmMessage;
                     }
+
+                    $scope.ok = function () {
+
+                        closeModal();
+                        Restangular.one('auth/forgot').customPOST($scope.forgot)
+                            .then(function successCallback(response) {
+                                notification.log(response.message, { addnCls: 'humane-flatty-success' });
+
+                            }, function errorCallback(response) {
+                            });
+
+                    }
+
+                    $scope.cancel = function () {
+                        closeModal();
+                    }
+
+                }]),
+            size: 'lg',
+            windowClass: 'confirm-window',
+            resolve: {
+                confirmClick: function () {
+                    return $scope.ngConfirm;
+                },
+                confirmMessge: function () {
+                    return $scope.ngConfirmMessage;
                 }
-            });
-        }
+            }
+        });
+    }
 }])
 
 // Login Controller
@@ -149,11 +189,11 @@ myApp.config(['NgAdminConfigurationProvider', 'RestangularProvider', 'ngAdminJWT
 
     if (location.protocol == 'http:') {
 
-    	ngAdminJWTAuthConfigurator.setJWTAuthURL('http://' + location.host + '/api/auth/login');
+        ngAdminJWTAuthConfigurator.setJWTAuthURL('http://' + location.host + '/api/auth/login');
 
     } else {
 
-    	ngAdminJWTAuthConfigurator.setJWTAuthURL('https://' + location.host + '/api/auth/login');
+        ngAdminJWTAuthConfigurator.setJWTAuthURL('https://' + location.host + '/api/auth/login');
 
     }
 
@@ -171,8 +211,8 @@ myApp.run(['Restangular', '$location', 'notification', function(Restangular, $lo
     Restangular.setErrorInterceptor(function(response, deferred, responseHandler) {
         if(response.status > 200) {
 
-                deferred.reject("Server not responding to [some address]. It could be down, or this could be the wrong url.");
-                notification.log('Error: ' + ' ( ' + response.data.message + ' )', { addnCls: 'humane-flatty-error' })
+            deferred.reject("Server not responding to [some address]. It could be down, or this could be the wrong url.");
+            notification.log('Error: ' + ' ( ' + response.data.message + ' )', { addnCls: 'humane-flatty-error' })
 
             return false;
 
@@ -199,17 +239,17 @@ myApp.config(['$stateProvider', require('./change-pass/change-password')]);
 myApp.config(['$stateProvider', require('./epgData/epgchart')]);
 
 myApp.config(['NgAdminConfigurationProvider', function (nga) {
-  
+
     // App Create
 
-	if (location.protocol == 'http:') {
-		var admin = nga.application('MAGOWARE').baseApiUrl('http://' + location.host + '/api/');
-	} else {
-		var admin = nga.application('MAGOWARE').baseApiUrl('https://' + location.host + '/api/');
-	}
+    if (location.protocol == 'http:') {
+        var admin = nga.application('MAGOWARE').baseApiUrl('http://' + location.host + '/api/');
+    } else {
+        var admin = nga.application('MAGOWARE').baseApiUrl('https://' + location.host + '/api/');
+    }
 
     // Table Configuration
-    
+
     admin.addEntity(nga.entity('Channels'));
     admin.addEntity(nga.entity('ChannelStreams'));
     admin.addEntity(nga.entity('ChannelStreamSources'));
@@ -310,10 +350,11 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     admin.header(require('./header.html'));
 
     var menujson = require('./menuobject.js');
-    console.log("objekti menus",menujson);
-    //admin.menu(require('./menu')(nga, admin));
-
+    // console.log("objekti menus",menujson);
     admin.menu(require('./dynamicmenu')(nga, admin,menujson));
+
+
+    // admin.menu(require('./menu')(nga, admin));
 
     // App
 
