@@ -246,7 +246,7 @@ exports.logout_user = function(req, res) {
                         {device_active: false}, {where: { googleappid: device.googleappid}}
                     ).then(function (result) {
                         //send push message to log devices out
-                        var message = new push_msg.ACTION_PUSH('Action', "You have been logged in another device", '5', "lock_account");
+                        var message = new push_msg.ACTION_PUSH('Action', "You have been logged in another device", '5', "logout_user");
                         push_msg.send_notification(device.googleappid, req.app.locals.settings.firebase_key, '', message, 5, false, true, function(result){});
                         callback(null);
                         return null;
