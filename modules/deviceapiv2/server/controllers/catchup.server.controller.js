@@ -10,11 +10,53 @@ var path = require('path'),
     akamai_token_generator = require(path.resolve('./modules/streams/server/controllers/akamai_token_v2')),
     models = db.models;
 
-// returns list of epg data for the given channel
+/**
+ * @api {post} /apiv2/channels/catchup_events /apiv2/channels/catchup_events
+ * @apiVersion 0.2.0
+ * @apiName CatchupEvents
+ * @apiGroup DeviceAPI
+ * @apiParam {String} auth Encrypted authentication token string.
+ * @apiDescription Returns list of epg data for the given channel, in a specific day
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "status_code": 200,
+ *       "error_code": 1,
+ *       "timestamp": 1,
+ *       "error_description": "OK",
+ *       "extra_data": "OK_DATA",
+ *       "response_object": [
+ *          {
+ *              "channelName": "Channel name",
+ *              "id": 206778,
+ *              "number": 100,
+ *              "title": "Event title",
+ *              "scheduled": false, // [true, false]
+ *              "description": "Event description",
+ *              "shortname": "Event short name",
+ *              "programstart": "05/24/2018 23:55:00",
+ *              "programend": "05/25/2018 00:40:00",
+ *              "duration": 2700, //in seconds
+ *              "progress": 10 //for current events in [1-100]
+ *          }, ....
+ *       ]
+ *     }
+ * @apiErrorExample Error-Response:
+ *     {
+ *       "status_code": 704,
+ *       "error_code": -1,
+ *       "timestamp": 1,
+ *       "error_description": "DATABASE_ERROR",
+ *       "extra_data": "Error connecting to database",
+ *       "response_object": []
+ *     }
+ *
+ *
+ */
 exports.catchup_events =  function(req, res) {
     var client_timezone = req.body.device_timezone; //offset of the client will be added to time - related info
-    var current_human_time = dateFormat(Date.now() - client_timezone*3600 + req.body.day*3600000*24, "yyyy-mm-dd 00:00:00"); //start of the day for the user, in server time
-    var interval_end_human = dateFormat((Date.now() - client_timezone*3600 + req.body.day*3600000*24), "yyyy-mm-dd 23:59:59"); //end of the day for the user, in server time
+    var client_time = 24-parseInt(client_timezone);
+    var current_human_time = dateFormat(Date.now()  + (req.body.day - 1)*3600000*24, "yyyy-mm-dd "+client_time+":00:00"); //start of the day for the user, in server time
+    var interval_end_human = dateFormat((Date.now() + req.body.day*3600000*24), "yyyy-mm-dd "+client_time+":00:00"); //end of the day for the user, in server time
 
     models.epg_data.findAll({
         attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end' ],
@@ -30,19 +72,7 @@ exports.catchup_events =  function(req, res) {
                 where: {login_id: req.thisuser.id}
             }
         ],
-        where: Sequelize.and(
-            {program_start: {lte: interval_end_human}},
-            Sequelize.or(
-                Sequelize.and(
-                    {program_start:{lte:current_human_time}},
-                    {program_end:{gte:current_human_time}}
-                ),
-                Sequelize.and(
-                    {program_start: {gte:current_human_time}},
-                    {program_end:{lte:interval_end_human}}
-                )
-            )
-        )
+        where: {program_start: {lte: interval_end_human}, program_end: {gte: current_human_time}}
     }).then(function (result) {
         //todo: what if channel number is invalid and it finds no title???
         var raw_result = [];
@@ -81,8 +111,9 @@ exports.catchup_events =  function(req, res) {
 // returns list of epg data for the given channel - GET METHOD
 exports.catchup_events_get =  function(req, res) {
     var client_timezone = req.body.device_timezone; //offset of the client will be added to time - related info
-    var current_human_time = dateFormat(Date.now() - client_timezone*3600 + req.body.day*3600000*24, "yyyy-mm-dd 00:00:00"); //start of the day for the user, in server time
-    var interval_end_human = dateFormat((Date.now() - client_timezone*3600 + req.body.day*3600000*24), "yyyy-mm-dd 23:59:59"); //end of the day for the user, in server time
+    var client_time = 24-parseInt(client_timezone);
+    var current_human_time = dateFormat(Date.now()  + (req.body.day - 1)*3600000*24, "yyyy-mm-dd "+client_time+":00:00"); //start of the day for the user, in server time
+    var interval_end_human = dateFormat((Date.now() + req.body.day*3600000*24), "yyyy-mm-dd "+client_time+":00:00"); //end of the day for the user, in server time
 
     models.epg_data.findAll({
         attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end' ],
@@ -98,19 +129,7 @@ exports.catchup_events_get =  function(req, res) {
                 where: {login_id: req.thisuser.id}
             }
         ],
-        where: Sequelize.and(
-            {program_start: {lte: interval_end_human}},
-            Sequelize.or(
-                Sequelize.and(
-                    {program_start:{lte:current_human_time}},
-                    {program_end:{gte:current_human_time}}
-                ),
-                Sequelize.and(
-                    {program_start: {gte:current_human_time}},
-                    {program_end:{lte:interval_end_human}}
-                )
-            )
-        )
+        where: {program_start: {lte: interval_end_human}, program_end: {gte: current_human_time}}
     }).then(function (result) {
         //todo: what if channel number is invalid and it finds no title???
         var raw_result = [];
