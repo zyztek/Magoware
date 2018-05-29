@@ -140,10 +140,10 @@ exports.settings = function(req, res) {
                     }
 
                     var daysleft = Math.ceil(Number(Math.ceil(seconds_left / 86400).toFixed(0)));
-                    callback(null, login_data, daysleft, refresh);
+                    callback(null, login_data, daysleft, seconds_left, refresh);
                     return null;
                 }).catch(function(error) {
-                    callback(null, login_data, 0, refresh);
+                    callback(null, login_data, 0, 0, refresh);
                     return null;
                 });
                 return null;
@@ -151,14 +151,14 @@ exports.settings = function(req, res) {
                 //todo: return some response?
             });
         },
-        function(login_data, daysleft, refresh, callback) {
-            var get_beta_app = (login_data.beta_user) ? 1 : 0;
+        function(login_data, daysleft, seconds_left, refresh, callback) {
+            var get_beta_app = (login_data.beta_user) ? [0, 1] : [0];
             //FIND LATEST AVAILABLE UPGRADE FOR THIS APPID, WHOSE API AND APP VERSION REQUIREMENT IS FULFILLED BY THE DEVICE, and status fits the user status
             models.app_management.findOne({
                 attributes: ['id', 'title', 'description', 'url', 'isavailable', 'updatedAt'],
                 limit: 1,
                 where: {
-                    beta_version: get_beta_app,
+                    beta_version: {in: get_beta_app},
                     appid: req.auth_obj.appid,
                     upgrade_min_api : {lte: req.body.api_version}, //device api version must be greater / equal to min api version of the upgrade
                     upgrade_min_app_version: {lte: req.body.appversion}, //device app version must be greater / equal to min app version of the upgrade
@@ -174,19 +174,19 @@ exports.settings = function(req, res) {
                     description = result['description'];
                     location = req.app.locals.settings.assets_url+''+result['url'];
                     activated = result['isavailable'];
-                    callback(null, login_data, daysleft, refresh, true);
+                    callback(null, login_data, daysleft, seconds_left, refresh, true);
                 }
                 else{
-                    callback(null, login_data, daysleft, refresh, false); //if there are no available upgrades, return false
+                    callback(null, login_data, daysleft, seconds_left, refresh, false); //if there are no available upgrades, return false
                 }
                 return null;
             }).catch(function(error) {
-                callback(null, login_data, daysleft, refresh, false);
+                callback(null, login_data, daysleft, seconds_left, refresh, false);
                 return null;
             });
         },
         //get client offset from the ip_timezone service
-        function(login_data, daysleft, refresh, available_upgrade, callback) {
+        function(login_data, daysleft, seconds_left, refresh, available_upgrade, callback) {
             if(req.body.activity === 'login' && req.auth_obj.screensize === 1 && login_data.auto_timezone === true){
                 var client_ip = (req.headers['x-forwarded-for']) ? req.headers['x-forwarded-for'].split(',').pop().replace('::ffff:', '').replace(' ', '') : req.ip.replace('::ffff:', '');
                 var apiurl = req.app.locals.settings.ip_service_url+req.app.locals.settings.ip_service_key+'/'+client_ip;
@@ -195,45 +195,40 @@ exports.settings = function(req, res) {
                     http.get(apiurl, function(resp){
                         resp.on('data', function(ip_info){
                             if(JSON.parse(ip_info).gmtOffset !== undefined && isvalidoffset(JSON.parse(ip_info).gmtOffset) !== false) {
-                                callback(null, login_data, daysleft, refresh, available_upgrade, isvalidoffset(JSON.parse(ip_info).gmtOffset)); //iptimezone calculated only for large screen devices, after login, for autotimezone true
+                                callback(null, login_data, daysleft, seconds_left, refresh, available_upgrade, isvalidoffset(JSON.parse(ip_info).gmtOffset)); //iptimezone calculated only for large screen devices, after login, for autotimezone true
                             }
-                            else callback(null, login_data, daysleft, refresh, available_upgrade, login_data.timezone); //return client timezone on error
+                            else callback(null, login_data, daysleft, seconds_left, refresh, available_upgrade, login_data.timezone); //return client timezone on error
                         });
                     }).on("error", function(e){
-                        callback(null, login_data, daysleft, refresh, available_upgrade, login_data.timezone); //return client timezone on error
+                        callback(null, login_data, daysleft, seconds_left, refresh, available_upgrade, login_data.timezone); //return client timezone on error
                     });
                 } catch(e) {
-                    callback(null, login_data, daysleft, refresh, available_upgrade, login_data.timezone); //url or key+service are invalid, return client timezone
+                    callback(null, login_data, daysleft, seconds_left, refresh, available_upgrade, login_data.timezone); //url or key+service are invalid, return client timezone
                 }
             }
             else{
-                callback(null, login_data, daysleft, refresh, available_upgrade, login_data.timezone); //device does not request timezone from ip
+                callback(null, login_data, daysleft, seconds_left, refresh, available_upgrade, login_data.timezone); //device does not request timezone from ip
             }
         },
-        function(login_data, daysleft, refresh, available_upgrade, offset, callback){
+        function(login_data, daysleft, seconds_left, refresh, available_upgrade, offset, callback){
             var allowed_content = (login_data.show_adult === true) ? [0, 1] : [0];
 
-            if(req.body.activity === 'vod'){
-                models.vod.findAll({
-                    attributes: ['id'],
-                    include: [
-                        {model: models.vod_stream, required: true, attributes: ['url', 'encryption', 'token', 'stream_format', 'token_url']},
-                        {model: models.vod_category, required: true, attributes: [], where:{password:{in: allowed_content}, isavailable: true}}
-                    ], where: {pin_protected:{in: allowed_content}, isavailable: true}
-                }).then(function (record_count) {
-                    callback(null, login_data, daysleft, refresh, available_upgrade, offset, record_count.length); //return nr of vod records
-                    return null;
-                }).catch(function(error) {
-                    callback(null, login_data, daysleft, refresh, available_upgrade, offset, 1000); //return nr of vod records
-                    return null;
-                });
-            }
-            else{
-                callback(null, login_data, daysleft, refresh, available_upgrade, offset, 0); //activity is not vod, send record count 0
-            }
+            models.vod.findAll({
+                attributes: ['id'],
+                include: [
+                    {model: models.vod_stream, required: true, attributes: ['url', 'encryption', 'token', 'stream_format', 'token_url']},
+                    {model: models.vod_category, required: true, attributes: [], where:{password:{in: allowed_content}, isavailable: true}}
+                ], where: {pin_protected:{in: allowed_content}, isavailable: true}
+            }).then(function (record_count) {
+                callback(null, login_data, daysleft, seconds_left, refresh, available_upgrade, offset, record_count.length); //return nr of vod records
+                return null;
+            }).catch(function(error) {
+                callback(null, login_data, daysleft, seconds_left, refresh, available_upgrade, offset, 1000); //return nr of vod records
+                return null;
+            });
         },
         //for vod activity, checks if there is a movie that the user would like to resume. if yes, sends url and position to the application and deletes the record
-        function(login_data, daysleft, refresh, available_upgrade, offset, record_count, callback){
+        function(login_data, daysleft, seconds_left, refresh, available_upgrade, offset, record_count, callback){
             if(req.body.activity === 'vod'){
                 models.vod_resume.findOne({
                     attributes: ['vod_id', 'resume_position'],
@@ -245,27 +240,27 @@ exports.settings = function(req, res) {
                             where: {vod_id: resume_movie.vod_id}
                         }).then(function (movie_url) {
                             vod.delete_resume_movie(login_data.id, resume_movie.vod_id);
-                            callback(null, login_data, daysleft, refresh, available_upgrade, offset, record_count, true, movie_url.url, resume_movie.resume_position); //send resume = true, movie stream and position
+                            callback(null, login_data, daysleft, seconds_left, refresh, available_upgrade, offset, record_count, true, movie_url.url, resume_movie.resume_position); //send resume = true, movie stream and position
                             return null;
                         }).catch(function(error) {
-                            callback(null, login_data, daysleft, refresh, available_upgrade, offset, record_count, false, 0, 0); //error occurred, send resume = false
+                            callback(null, login_data, daysleft, seconds_left, refresh, available_upgrade, offset, record_count, false, 0, 0); //error occurred, send resume = false
                         });
                         return null;
                     }
                     else {
-                        callback(null, login_data, daysleft, refresh, available_upgrade, offset, record_count, false, 0, 0); //no movie to resume was found, send resume = false
+                        callback(null, login_data, daysleft, seconds_left, refresh, available_upgrade, offset, record_count, false, 0, 0); //no movie to resume was found, send resume = false
                     }
                     return null;
                 }).catch(function(error) {
-                    callback(null, login_data, daysleft, refresh, available_upgrade, offset, record_count, false, 0, 0); //error occurred, send resume = false
+                    callback(null, login_data, daysleft, seconds_left, refresh, available_upgrade, offset, record_count, false, 0, 0); //error occurred, send resume = false
                 });
             }
             else{
-                callback(null, login_data, daysleft, refresh, available_upgrade, offset, record_count, false, 0, 0); //activity different from vod, send resume = false
+                callback(null, login_data, daysleft, seconds_left, refresh, available_upgrade, offset, record_count, false, 0, 0); //activity different from vod, send resume = false
             }
         },
         //RETURNING CLIENT RESPONSE
-        function(login_data, daysleft, refresh, available_upgrade, offset, record_count, resume_vod, movie_url, resume_position) {
+        function(login_data, daysleft, seconds_left, refresh, available_upgrade, offset, record_count, resume_vod, movie_url, resume_position) {
             //appoint calculated refresh to the right activity, false to others
             var mainmenurefresh = (req.body.activity === 'login') ? refresh : false;
             var vodrefresh = (req.body.activity === 'vod') ? refresh : false;
@@ -288,6 +283,7 @@ exports.settings = function(req, res) {
                 "vodrefresh": vodrefresh,
                 "mainmenurefresh": mainmenurefresh,
                 "daysleft": daysleft,
+                "seconds_left": seconds_left,
                 "days_left_message": days_left_message,
                 "record_count": Math.ceil(record_count / req.app.locals.settings.vod_subset_nr),
                 "resume_movie": resume_vod,
