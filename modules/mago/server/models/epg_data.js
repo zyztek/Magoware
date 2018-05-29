@@ -21,12 +21,28 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING(45),
             allowNull: true
         },
+        episode_title: {
+            type: DataTypes.STRING(45),
+            defaultvalue: '-'
+        },
         short_name: {
             type: DataTypes.STRING(45),
             allowNull: true
         },
         short_description: {
             type: DataTypes.STRING(255),
+            allowNull: true
+        },
+        event_category: {
+            type: DataTypes.STRING(45),
+            defaultvalue: '-'
+        },
+        event_language: {
+            type: DataTypes.STRING(10),
+            defaultvalue: '-'
+        },
+        event_rating: {
+            type: DataTypes.INTEGER,
             allowNull: true
         },
         program_start: {

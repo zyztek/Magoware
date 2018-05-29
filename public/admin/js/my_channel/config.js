@@ -32,35 +32,40 @@ export default function (nga, admin) {
               .pinned(true)])
 
 
-        mychann.creationView()
-			.title('<h4>My  Channels <i class="fa fa-angle-right" aria-hidden="true"></i> Create</h4>')
-			.fields([
-				nga.field('login_id', 'reference')
-					.targetEntity(admin.getEntity('LoginData'))
-                	.targetField(nga.field('username'))
-					.perPage(-1)
-					.label('Username'),
-                nga.field('title', 'string')
-                    .label('Title'),
-				nga.field('channel_number')
-					.label('Channel Nr'),
-                nga.field('stream_url', 'string')
-                    .label('Stream Url'),
-				nga.field('genre_id', 'reference')
-						.targetEntity(admin.getEntity('Genres'))
-						.targetField(nga.field('description'))
-						.validation({ required: true })
-						.attributes({ placeholder: 'Select Genre' })
-						.label('Genre'),
-				nga.field('description', 'string')
-					.label('Description'),
-				nga.field('isavailable', 'boolean')
-					.validation({ required: true })
-					.label('Is Available'),
-				nga.field('template')
-            	.label('')
+    mychann.creationView()
+        .title('<h4>My  Channels <i class="fa fa-angle-right" aria-hidden="true"></i> Create</h4>')
+        .fields([
+            nga.field('login_id', 'reference')
+                .targetEntity(admin.getEntity('LoginData'))
+                .targetField(nga.field('username'))
+                .perPage(-1)
+                .attributes({ placeholder: 'Select username from dropdown list' })
+                .label('Username'),
+            nga.field('title', 'string')
+                .attributes({ placeholder: 'Title' })
+                .label('Title'),
+            nga.field('channel_number')
+                .attributes({ placeholder: 'Channel Nr' })
+                .label('Channel Nr'),
+            nga.field('stream_url', 'string')
+                .attributes({ placeholder: 'Stream Url' })
+                .label('Stream Url'),
+            nga.field('genre_id', 'reference')
+                .targetEntity(admin.getEntity('Genres'))
+                .targetField(nga.field('description'))
+                .validation({ required: true })
+                .attributes({ placeholder: 'Select Genre' })
+                .label('Genre'),
+            nga.field('description', 'string')
+                .attributes({ placeholder: 'Description' })
+                .label('Description'),
+            nga.field('isavailable', 'boolean')
+                .validation({ required: true })
+                .label('Is Available'),
+            nga.field('template')
+                .label('')
                 .template(edit_button),
-			])
+        ]);
 
 
 	mychann.deletionView()

@@ -112,6 +112,9 @@ exports.list = function(req, res) {
   if(query.appid) qwhere.appid = query.appid;
   if(query.app_version) qwhere.app_version = query.app_version;
   if(query.ntype) qwhere.ntype = query.ntype;
+  if(query.device_active === 'true') qwhere.device_active = true;
+  else if(query.device_active === 'false') qwhere.device_active = false;
+  if(query.hdmi) qwhere.hdmi = query.hdmi;
 
   DBModel.findAndCountAll(
 

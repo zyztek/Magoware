@@ -29,7 +29,7 @@ module.exports = function(app) {
         .all(policy.isAllowed)
         .get(loginData.read)
         .put(loginData.update)
-        .delete(loginData.delete);
+        //.delete(loginData.delete);
 
     app.param('loginDataId', loginData.dataByID);
 

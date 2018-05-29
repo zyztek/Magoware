@@ -74,7 +74,7 @@ exports.create = function(req, res) {
                         var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
                     else if(result[i].appid === 2 && result[i].app_version >= '1.1.2.2')
                         var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
-                    else if(parseInt(devices[i].appid) === parseInt('3') && parseInt(devices[i].app_version) >= parseInt('1.3957040'))
+                    else if(parseInt(result[i].appid) === parseInt('3') && parseInt(result[i].app_version) >= parseInt('1.3957040'))
                         var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
                     else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0')
                         var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);

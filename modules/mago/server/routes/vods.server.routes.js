@@ -29,9 +29,9 @@ module.exports = function(app) {
     app.param('vodId', vods.dataByID);
 
 
-    app.route('/api/update_film/:vodId')
-    //.all(policy.isAllowed) //todo: remove comment, check route rights
-        .put(vods.update_film);
+    app.route('/api/update_film')
+    .all(policy.isAllowed)
+    .put(vods.update_film);
 
 
 };

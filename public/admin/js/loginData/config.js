@@ -68,7 +68,7 @@ export default function (nga, admin) {
             nga.field('customer_id', 'reference')
                 .targetEntity(admin.getEntity('CustomerData'))
                 .targetField(nga.field('firstname')
-                        .map((v, e) => e.firstname + ' ' + e.lastname))
+                    .map((v, e) => e.firstname + ' ' + e.lastname))
         .remoteComplete(true, {
             refreshDelay: 300,
             // populate choices from the response of GET
@@ -89,14 +89,14 @@ export default function (nga, admin) {
         nga.field('channel_stream_source_id', 'reference')
             .targetEntity(admin.getEntity('ChannelStreamSources'))
             .targetField(nga.field('stream_source'))
-            .attributes({ placeholder: 'Select Channel Stream Source' })
+            .attributes({ placeholder: 'Choose from dropdown list channel stream source for this customer' })
             .label('Channel Stream Source')
             .perPage(-1)
             .validation({ required: true}),
         nga.field('vod_stream_source', 'reference')
             .targetEntity(admin.getEntity('VodStreamSources'))
             .targetField(nga.field('description'))
-            .attributes({ placeholder: 'Select Vod Stream Source' })
+            .attributes({ placeholder: 'Choose from dropdown list VOD Stream Source for this customer' })
             .label('VOD Stream Source')
             .perPage(-1)
             .validation({ required: true}),
@@ -137,7 +137,7 @@ export default function (nga, admin) {
                 { value: +11, label: '(UTC+11:00) Magadan, Solomon Is.' },
                 { value: +12, label: '(UTC+12:00) Auckland, Fiji' },
             ])
-            .attributes({ placeholder: 'Select Timezone' })
+            .attributes({ placeholder: 'Select client timezone depending on country' })
             .validation({ required: true })
             .label('Timezone'),
         nga.field('get_messages', 'boolean')
@@ -162,7 +162,7 @@ export default function (nga, admin) {
         nga.field('template')
             .label('')
             .template(edit_button),
-    ]);
+]);
 
     logindata.editionView()
         .title('<h4>Login Accounts <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.username }}</h4>')
@@ -258,24 +258,8 @@ export default function (nga, admin) {
         nga.field('template')
             .label('')
             .template(edit_button),
-        nga.field('livetvlastchange', 'datetime')
-            .cssClasses('hidden')
-            .editable(false)
-            .label(''),
-        nga.field('updatelivetvtimestamp', 'boolean')
-            .cssClasses('hidden')
-            .editable(true)
-            .validation({ required: false })
-            .label(''),
-        nga.field('vodlastchange', 'datetime')
-            .cssClasses('hidden')
-            .editable(false)
-            .label(''),
-        nga.field('updatevodtimestamp', 'boolean')
-            .cssClasses('hidden')
-            .editable(true)
-            .validation({ required: false })
-            .label(''),
+
+
 
 
 
@@ -293,11 +277,13 @@ export default function (nga, admin) {
                         .targetField(nga.field('package_type_id')
                             .map(function truncate(value) {
                                 if (value === 1) {
-                                    return 'Mobile Package';
+                                    return 'Live big screen';
                                 } else if (value === 2) {
-                                    return 'STB Package';
+                                    return 'Live small screen';
                                 }  else if (value === 3) {
-                                    return 'VOD Package';
+                                    return 'Vod big screen';
+                                } else if (value === 4) {
+                                    return 'Vod small screen';
                                 }
                             }))
                         .label('Package Type'),
@@ -381,8 +367,31 @@ export default function (nga, admin) {
                     nga.field('combo_id', 'reference')
                         .targetEntity(admin.getEntity('Combos'))
                         .targetField(nga.field('name'))
-                        .label('Product'),
-                ])
+                        .label('Product')
+                ]),
+    nga.field('custom_action')
+        .label('')
+        .template('<show-invoice post="entry" class="pull-right"></show-invoice>'),
+        //hidden field
+        nga.field('livetvlastchange', 'datetime')
+            .cssClasses('hidden')
+            .editable(false)
+            .label(''),
+        nga.field('updatelivetvtimestamp', 'boolean')
+            .cssClasses('hidden')
+            .editable(true)
+            .validation({ required: false })
+            .label(''),
+        nga.field('vodlastchange', 'datetime')
+            .cssClasses('hidden')
+            .editable(false)
+            .label(''),
+        nga.field('updatevodtimestamp', 'boolean')
+            .cssClasses('hidden')
+            .editable(true)
+            .validation({ required: false })
+            .label('')
+        //./hidden field
         ]);
 
     return logindata;

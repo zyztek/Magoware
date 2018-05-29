@@ -36,33 +36,33 @@ export default function (nga, admin) {
         .actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>'])
 
 
-	vodsubtitles.creationView()
-		.title('<h4>Vod Subtitles <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Vod Subtitles</h4>')
-		.onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
-			progression.done();
-			$state.go($state.get('edit'), { entity: 'Vods', id: entry.values.vod_id });
+    vodsubtitles.creationView()
+        .title('<h4>Vod Subtitles <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Vod Subtitles</h4>')
+        .onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
+            progression.done();
+            $state.go($state.get('edit'), { entity: 'Vods', id: entry.values.vod_id });
 
-			return false;
-		}])
+            return false;
+        }])
         .fields([
             nga.field('vod_id', 'reference')
-            	.targetEntity(admin.getEntity('Vods'))
+                .targetEntity(admin.getEntity('Vods'))
                 .targetField(nga.field('title'))
-				.attributes({ placeholder: 'Select Vod' })
-				.validation({ required: true })
-				.perPage(-1)
-				.label('Vod'),
-			nga.field('title')
-				.attributes({ placeholder: 'Title' })
-				.validation({ required: true })
-				.label('Title'),
-			nga.field('subtitle_url' ,'file')
-				.uploadInformation({ 'url': '/file-upload/single-file/subtitles/subtitle_url','apifilename': 'result'})
-				.validation({ required: true })
-				.label('URL'),
+                .attributes({ placeholder: 'Select Vod from dropdown list' })
+                .validation({ required: true })
+                .perPage(-1)
+                .label('Vod'),
+            nga.field('title')
+                .attributes({ placeholder: 'Specify the subtitles title' })
+                .validation({ required: true })
+                .label('Title'),
+            nga.field('subtitle_url' ,'file')
+                .uploadInformation({ 'url': '/file-upload/single-file/subtitles/subtitle_url','apifilename': 'result'})
+                .validation({ required: true })
+                .label('URL'),
             nga.field('template')
-            	.label('')
-            	.template(edit_button),
+                .label('')
+                .template(edit_button),
         ]);
 
     vodsubtitles.editionView()

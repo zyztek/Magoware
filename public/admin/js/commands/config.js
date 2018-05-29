@@ -43,15 +43,15 @@ export default function (nga, admin) {
                 .label('User Type'),
             nga.field('username', 'reference')
                 .targetEntity(admin.getEntity('LoginData'))
-                .targetField(nga.field('username')
-                    .map(function (value) {
-                        var user = [];
-                        for (var i = 0; i < value.length; i++) {
-                            user[i] = value[i].username;
-                            return value;
-                        }
-                    }))
-                .perPage(-1),
+                .targetField(nga.field('username'))
+                .attributes({ placeholder: 'Select Account' })
+                .remoteComplete(true, {
+                    refreshDelay: 300,
+                    // populate choices from the response of GET /posts?q=XXX
+                    searchQuery: function(search) { return { q: search }; }
+                })
+                .perPage(10) // limit the number of results to 10
+                .label('Username'),
             nga.field('toandroidsmartphone', 'boolean')
                 .validation({ required: true })
                 .label('Android Smartphone'),

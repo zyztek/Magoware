@@ -9,6 +9,10 @@ module.exports = function(sequelize, DataTypes) {
             autoIncrement: true,
             unique: true
         },
+        imdb_id: {
+            type: DataTypes.STRING(25),
+            allowNull: true
+        },
         category_id: {
             type: DataTypes.INTEGER(11),
             allowNull: false
@@ -22,7 +26,7 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false
         },
         description: {
-            type: DataTypes.STRING(255),
+            type: DataTypes.STRING(280),
             allowNull: false
         },
         year: {
@@ -58,7 +62,7 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: true
         },
         pin_protected: {
-            type: DataTypes.BOOLEAN,
+            type: DataTypes.INTEGER(1),
             allowNull: false
         },
         isavailable: {

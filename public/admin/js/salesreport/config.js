@@ -11,9 +11,10 @@ export default function (nga, admin) {
 				nga.field('id', 'number')
 						.cssClasses('hidden-xs')
 						.label('ID'),
-				nga.field('user.username', 'string')
-						.cssClasses('hidden-xs')
-						.label('Agent'),
+				nga.field('user_id', 'reference')
+						.targetEntity(admin.getEntity('Users'))
+						.targetField(nga.field('username'))
+						.label('Sales Agent'),
 
 				nga.field('login_data_id', 'reference')
 						.targetEntity(admin.getEntity('LoginData'))
@@ -32,13 +33,14 @@ export default function (nga, admin) {
 						.label('Products'),
 				nga.field('active', 'boolean')
 						.label('Active sale'),
-				nga.field('cancellationdate', 'date')
+				nga.field('cancelation_date', 'date')
 						.cssClasses('hidden-xs')
 						.label('Cancelation Date'),
-				nga.field('cancellation_user_id', 'text')
-						.cssClasses('hidden-xs')
+				nga.field('cancelation_user', 'reference')
+						.targetEntity(admin.getEntity('Users'))
+						.targetField(nga.field('username'))
 						.label('Cancelation User'),
-				nga.field('cancellation_reason', 'text')
+				nga.field('cancelation_reason', 'text')
 						.cssClasses('hidden-xs')
 						.label('Cancelation Reason'),
 
@@ -84,7 +86,14 @@ export default function (nga, admin) {
 				nga.field('transaction_id', 'string')
 						.label('Transaction ID')
 						.editable(false),
-				nga.field('cancellation_reason', 'string')
+				/*
+				nga.field('active', 'boolean')
+						.attributes({readOnly: true})
+						.defaultValue(true)
+						.validation({ required: true })
+					.label('Cancel Sale'),
+				*/
+				nga.field('cancelation_reason', 'string')
 						.label('Cancelation Reason')
 						.editable(true)
 						.validation({ required: true}),

@@ -29,6 +29,9 @@
   {
     "api_url": "/api/salesreports","description": "sales report","api_group_id": 2
   },
+  {
+    "api_url": "/api/invoice","description": "sales report","api_group_id": 2
+  },
    {
     "api_url": "/api/vodpackages","description": "vod packages","api_group_id": 2
   },
@@ -73,6 +76,9 @@
 
   {
     "api_url": "/api/vods","description": "sales 1 api","api_group_id": 4
+  },
+  {
+    "api_url": "/api/update_film","description": "api gets vod data from 3rd parties","api_group_id": 4
   },
   {
     "api_url": "/api/vodsubtitles","description": "sales 2 api","api_group_id": 4

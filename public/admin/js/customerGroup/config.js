@@ -20,7 +20,7 @@ export default function (nga, admin) {
         .title('<h4>Customer Group <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Customer Group</h4>')
         .fields([
             nga.field('description')
-                .attributes({ placeholder: 'Group Name' })
+                .attributes({ placeholder: 'Name the group to identify customers types(for example staff)' })
                 .validation({ required: true })
                 .label('Description'),
             nga.field('template')

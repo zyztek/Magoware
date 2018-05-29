@@ -203,16 +203,12 @@ exports.latest = function(req, res) {
  * middleware
  */
 exports.dataByID = function(req, res, next, id) {
-
-  if ((id % 1 === 0) === false) { //check if it's integer
-    return res.status(404).send({
-      message: 'Data is invalid'
-    });
-  }
-
-  DBModel.find({
+  DBModel.findOne({
     where: {
-      id: id
+        $or: {
+            id: id,
+            username: id
+        }
     },
     include: [{model: db.customer_data}]
   }).then(function(result) {
@@ -230,3 +226,4 @@ exports.dataByID = function(req, res, next, id) {
   });
 
 };
+

@@ -9,30 +9,72 @@ var path = require('path'),
     db = require(path.resolve('./config/lib/sequelize')).models,
     refresh = require(path.resolve('./modules/mago/server/controllers/common.controller.js')),
     DBModel = db.channels,
+    ChannelPackages = db.packages_channels,
+    sequelize_t = require(path.resolve('./config/lib/sequelize')),
     fs = require('fs');
+
+
+
+/**
+ * custom functions
+ */
+function link_channel_with_packages(channel_id,array_package_ids) {
+    var transactions_array = [];
+
+    return ChannelPackages.destroy({
+                where: {
+                    channel_id: channel_id,
+                    package_id: {$notIn: array_package_ids}
+                }
+            }).then(function (result) {
+                return sequelize_t.sequelize.transaction(function (t) {
+                            for (var i = 0; i < array_package_ids.length; i++) {
+                                transactions_array.push(
+                                      ChannelPackages.upsert({
+                                            channel_id: channel_id,
+                                            package_id: array_package_ids[i]
+                                        }, {transaction: t})
+                                )
+                            }
+                            return Promise.all(transactions_array, {transaction: t}); //execute transaction
+                        }).then(function (result) {
+                            return {status: true, message:'transaction executed correctly'};
+                        }).catch(function (err) {
+                            return {status: false, message:'error executing transaction'};
+                        })
+            }).catch(function (err) {
+                return {status: false, message:'error deleteting existing packages'};
+            })
+}
 
 
 /**
  * Create
  */
 exports.create = function(req, res) {
+    var array_packages_channels = req.body.packages_channels || [];
+    delete req.body.packages_channels;
 
     DBModel.create(req.body).then(function(result) {
         if (!result) {
             return res.status(400).send({message: 'fail create data'});
         } else {
             logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
-            return res.jsonp(result);
+
+            return link_channel_with_packages(result.id,array_packages_channels).then(function(t_result) {
+                    if (t_result.status) {
+                        res.jsonp(result);
+                    }
+                    else {
+                        res.send(t_result);
+                    }
+                })
         }
     }).catch(function(err) {
         return res.status(400).send({
             message: 'Check if this channel number is available'//errorHandler.getErrorMessage(err)
         });
     });
-
-
-
-
 };
 
 /**
@@ -66,14 +108,27 @@ exports.update = function(req, res) {
         var deletefile = path.resolve('./public'+updateData.icon_url);
     }
 
+    var array_packages_channels = req.body.packages_channels || [];
+    delete req.body.packages_channels;
+
     updateData.updateAttributes(req.body).then(function(result) {
         logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
+
         if(deletefile) {
             fs.unlink(deletefile, function (err) {
                 //todo: return some response?
             });
         }
-        return res.json(result);
+
+        return link_channel_with_packages(req.body.id,array_packages_channels).then(function(t_result) {
+                    if (t_result.status) {
+                        return res.jsonp(result);
+                    }
+                    else {
+                        return res.send(t_result);
+                    }
+                })
+
     }).catch(function(err) {
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)

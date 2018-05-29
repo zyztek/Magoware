@@ -34,13 +34,13 @@ var path = require('path'),
 exports.create = function(req, res) {
 
   req.body.login_data_id = req.body.login_id;
-  req.body.product_id = req.body.combo_id;
   var sale_or_refund = 1;
 
   if (!req.body.transaction_id) req.body.transaction_id = crypto.randomBytes(16).toString('base64');
 
   subscriptionFunctions.add_subscription_transaction(req, res, sale_or_refund, req.body.transaction_id,req.body.start_date).then(function (result) {
     if (result.status) {
+        result.user = req.body.login_id;
       res.send(result);
     }
     else {

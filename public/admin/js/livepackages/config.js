@@ -29,13 +29,13 @@ export default function (nga, admin) {
         .title('<h4>Packages <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Package</h4>')
         .fields([
             nga.field('package_name', 'string')
-                .attributes({ placeholder: 'Package Name' })
+                .attributes({ placeholder: 'Name the package you are creating' })
                 .validation({ required: true })
                 .label('Package Name'),
             nga.field('package_type_id', 'reference')
                 .targetEntity(admin.getEntity('packagetypes'))
                 .targetField(nga.field('description'))
-                .attributes({ placeholder: 'Select Package Type' })
+                .attributes({ placeholder: 'Choose the Package Type from dropdown list' })
                 .validation({ required: true })
                 .permanentFilters({ package_type_id: [1,2] })
                 .label('Package Type'),
@@ -91,7 +91,7 @@ export default function (nga, admin) {
                         .targetField(nga.field('isavailable', 'boolean'))
                         .label('available'),
                 ])
-                //.listActions(['<ma-delete-button label="Remove" entry="entry" entity="entity" size="xs"></ma-delete-button>'])
+                .listActions(['<ma-delete-button label="Remove" entry="entry" entity="entity" size="xs"></ma-delete-button>'])
 
                 .perPage(15),
             nga.field('template')

@@ -67,21 +67,21 @@ function add_subscription(req, res, login_id, combo_id, username){
 }
 
 //add subscription to user
-exports.add_subscription_transaction = function(req,res,sale_or_refund,transaction_id,start_date) {
+exports.add_subscription_transaction = function(req,res,sale_or_refund,transaction_id,start_date,end_date) {
 
+    // if product_id exists in param list search combo by it, else search by combo id
+    var combo_where = (req.body.product_id) ? {product_id: req.body.product_id, isavailable: true} : {id: req.body.combo_id, isavailable: true};
     var transactions_array = [];
 
     if(!sale_or_refund) sale_or_refund = 1;
     if(!transaction_id) transaction_id = crypto.randomBytes(16).toString('base64');
     if(typeof start_date == 'undefined') start_date = Date.now(); //
+    if(typeof end_date == 'undefined') end_date = false; //
 
     // Loading Combo with All its packages
     return db.combo.findOne({
-            where: {
-                product_id: req.body.product_id,
-                isavailable: true
-            }, include: [{model:db.combo_packages,include:[db.package]}]
-        }).then(function(combo) {
+        where: combo_where, include: [{model:db.combo_packages,include:[db.package]}]
+    }).then(function(combo) {
         if (!combo)return {status: false, message: 'no combo found'}; //no combo found
         else {
             // Load Customer by LoginID
@@ -109,17 +109,27 @@ exports.add_subscription_transaction = function(req,res,sale_or_refund,transacti
 
                             if (typeof runningSub == 'undefined') {
                                 sub.start_date = startDate;
-                                sub.end_date = addDays(sub.start_date, combo.duration * sale_or_refund);
-
+                                if(end_date) {
+                                    sub.end_date = end_date;
+                                }
+                                else {
+                                    sub.end_date = addDays(sub.start_date, combo.duration * sale_or_refund);
+                                }
                                 transactions_array.push(
                                     db.subscription.create(sub, {transaction: t}) //add insert to transaction array
                                 )
                             } else {
-                                if (runningSub.end_date > startDate) {
-                                    runningSub.end_date = addDays(runningSub.end_date, combo.duration * sale_or_refund);
-                                } else {
-                                    runningSub.start_date = startDate;
-                                    runningSub.end_date = addDays(startDate, combo.duration * sale_or_refund);
+
+                                if(end_date) {  //if explicit end date
+                                    runningSub.end_date = end_date;
+                                }
+                                else {
+                                    if (runningSub.end_date > startDate) {
+                                        runningSub.end_date = addDays(runningSub.end_date, combo.duration * sale_or_refund);
+                                    } else {
+                                        runningSub.start_date = startDate;
+                                        runningSub.end_date = addDays(startDate, combo.duration * sale_or_refund);
+                                    }
                                 }
 
                                 transactions_array.push(    //add update to transaction array

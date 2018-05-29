@@ -74,74 +74,74 @@ export default function (nga, admin) {
         ]);
 
 
-	devicemenu.creationView()
-		.onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
+    devicemenu.creationView()
+        .onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
             progression.done();
             $state.go($state.get('list'), { entity: entity.name() });
             return false;
         }])
-		.title('<h4>Main Menu <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Menu</h4>')       
+        .title('<h4>Main Menu <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Menu</h4>')
         .fields([
-        	nga.field('title', 'string')
-				.attributes({ placeholder: 'Title' })
-				.validation({ required: true })
-				.label('Title'),
-			nga.field('url', 'string')
-				.attributes({ placeholder: 'Url' })
-				.label('Url'),
-			nga.field('icon_url', 'file')
-				.uploadInformation({ 'url': '/file-upload/single-file/device_menu/icon_url','apifilename': 'result'})
+            nga.field('title', 'string')
+                .attributes({ placeholder: 'Name of main menu item (for example Live TV)' })
+                .validation({ required: true })
+                .label('Title'),
+            nga.field('url', 'string')
+                .attributes({ placeholder: 'In case you are adding an external application (for example youtube) fill the application url.' })
+                .label('Url'),
+            nga.field('icon_url', 'file')
+                .uploadInformation({ 'url': '/file-upload/single-file/device_menu/icon_url','apifilename': 'result'})
                 .template('<div class="row">'+
-                          '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>'+
-                          '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>'+
-                        '</div>'+
-						'<div class="row"><small id="emailHelp" class="form-text text-muted">240x240 px</small></div>')
+                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>'+
+                    '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>'+
+                    '</div>'+
+                    '<div class="row"><small id="emailHelp" class="form-text text-muted">240x240 px</small></div>')
                 .validation({
-				    validator: function(value) {
-				        if (value == null) {
-				            throw new Error('Please, choose icon');
-				        }
-				    }
-				})
-				.label('Icon *'),
-			nga.field('menu_code', 'choice')
-				.attributes({ placeholder: 'Menu Code' })
-				.choices([
-					{ value: 0, label: 'Url' },
-					{ value: 1, label: 'Live TV' },
-					{ value: 2, label: 'EPG' },
-					{ value: 3, label: 'Logout' },
-					{ value: 4, label: 'Apps' },
-					{ value: 10, label: 'Network Test' },
-					{ value: 11, label: 'Vod' },
+                    validator: function(value) {
+                        if (value == null) {
+                            throw new Error('Please, choose icon');
+                        }
+                    }
+                })
+                .label('Icon *'),
+            nga.field('menu_code', 'choice')
+                .attributes({ placeholder: 'Choose from dropdown list the type of main menu item you are creating' })
+                .choices([
+                    { value: 0, label: 'Url' },
+                    { value: 1, label: 'Live TV' },
+                    { value: 2, label: 'EPG' },
+                    { value: 3, label: 'Logout' },
+                    { value: 4, label: 'Apps' },
+                    { value: 10, label: 'Network Test' },
+                    { value: 11, label: 'Vod' },
 					{ value: 12, label: 'Application menu' },
-					{ value: 20, label: 'Personal' },
-					{ value: 21, label: 'Catchup' }
-				])
-				.validation({ required: true })
-				.label('Menu Code'),
+                    { value: 20, label: 'Personal' },
+                    { value: 21, label: 'Catchup' }
+                ])
+                .validation({ required: true })
+                .label('Menu Code'),
 
-			nga.field('appid', 'choices')
-					.attributes({ placeholder: 'App ID' })
-					.choices([
-						{ value: 1, label: 'Android Set Top Box' },
-						{ value: 2, label: 'Android Smart Phone' },
-						{ value: 3, label: 'IOS' },
-						{ value: 4, label: 'Android Smart TV' },
-						{ value: 5, label: 'Samsung Smart TV' }
-					])
-					.label('Applications IDs'),
-			nga.field('position', 'string')
-				.attributes({ placeholder: 'Position' })
-				.validation({ required: true })
-				.label('Position'),
-			nga.field('isavailable', 'boolean')
-				.attributes({ placeholder: 'Is Available' })
-				.validation({ required: true })
-				.label('Is Available'),
+            nga.field('appid', 'choices')
+                .attributes({ placeholder: 'Choose from dropdown list the device application this main menu will belong to' })
+                .choices([
+                    { value: 1, label: 'Android Set Top Box' },
+                    { value: 2, label: 'Android Smart Phone' },
+                    { value: 3, label: 'IOS' },
+                    { value: 4, label: 'Android Smart TV' },
+                    { value: 5, label: 'Samsung Smart TV' }
+                ])
+                .label('Applications IDs'),
+            nga.field('position', 'string')
+                .attributes({ placeholder: 'Position of this menu item in main menu ex:if you place number 1 this menu item will be the first one in main menu' })
+                .validation({ required: true })
+                .label('Position'),
+            nga.field('isavailable', 'boolean')
+                .attributes({ placeholder: 'Is Available' })
+                .validation({ required: true })
+                .label('Is Available'),
             nga.field('template')
-            	.label('')
-            	.template(edit_button),
+                .label('')
+                .template(edit_button),
 
         ]);
 

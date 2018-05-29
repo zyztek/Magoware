@@ -65,41 +65,41 @@ export default function (nga, admin) {
         .actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>'])
 
     channels.creationView()
-          .title('<h4>Channels <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Channel</h4>')
-            .onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
-                // stop the progress bar
-                progression.done();
-                // add a notification
-                $state.go($state.get('edit'), { entity: entity.name(), id: entry._identifierValue });
-                // cancel the default action (redirect to the edition view)
-                return false;
-            }])
-            .onSubmitError(['error', 'form', 'progression', 'notification', function(error, form, progression, notification) {
-			    // stop the progress bar
-			    progression.done();
-			    // add a notification
-			    //notification.log(`This channel number exists`, { addnCls: 'humane-flatty-error' });
-			    // cancel the default action (default error messages)
-			    return false;
-			}])
-          .fields([
-              nga.field('title', 'string')
-                  .attributes({ placeholder: 'Title' })
-                  .validation({ required: true })
-                  .label('Title'),
-			  nga.field('epg_map_id', 'string')
-					  .label('EPG Map ID'),
-			  nga.field('channel_number', 'string')
-				  .validation({ required: true })
-				  .label('Number'),
-             nga.field('genre_id', 'reference')
+        .title('<h4>Channels <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Channel</h4>')
+        .onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
+            // stop the progress bar
+            progression.done();
+            // add a notification
+            $state.go($state.get('edit'), { entity: entity.name(), id: entry._identifierValue });
+            // cancel the default action (redirect to the edition view)
+            return false;
+        }])
+        .onSubmitError(['error', 'form', 'progression', 'notification', function(error, form, progression, notification) {
+            // stop the progress bar
+            progression.done();
+            // add a notification
+            //notification.log(`This channel number exists`, { addnCls: 'humane-flatty-error' });
+            // cancel the default action (default error messages)
+            return false;
+        }])
+        .fields([
+            nga.field('title', 'string')
+                .attributes({ placeholder: 'Channel name' })
+                .validation({ required: true })
+                .label('Title'),
+            nga.field('epg_map_id', 'string')
+                .label('EPG Map ID'),
+            nga.field('channel_number', 'string')
+                .validation({ required: true })
+                .label('Number'),
+            nga.field('genre_id', 'reference')
                 .targetEntity(admin.getEntity('Genres'))
                 .targetField(nga.field('description'))
                 .validation({ required: true })
-                .attributes({ placeholder: 'Select Genre' })
+                .attributes({ placeholder: 'Choose from dropdown list one of the genres you already created' })
                 .label('Genre'),
             nga.field('description', 'text')
-                .attributes({ placeholder: 'Description' })
+                .attributes({ placeholder: 'You can specify data you need to know for the channel in this field' })
                 .validation({ required: true })
                 .label('Description'),
             nga.field('isavailable','boolean')
@@ -109,23 +109,40 @@ export default function (nga, admin) {
             nga.field('pin_protected', 'boolean')
                 .validation({ required: true })
                 .label('Pin Protected'),
-	        nga.field('icon_url', 'file')
+
+            nga.field('packages_channels','reference_many')
+                .targetEntity(admin.getEntity('Packages'))
+                .targetField(nga.field('package_name'))
+                .label('Packages')
+                .attributes({ placeholder: 'Select packages' })
+                .map(function getpckgid(value, entry) {
+                    var return_object = [];
+                    for (var i = 0; i < value.length; i++) {
+                        return_object[i] = value[i].package_id;
+                    }
+                    return return_object;
+                })
+                .singleApiCall(function (package_id) {
+                    return { 'package_id[]': package_id };
+                }),
+
+            nga.field('icon_url', 'file')
                 .uploadInformation({ 'url': '/file-upload/single-file/channels/icon_url', 'apifilename': 'result'})
                 .template('<div class="row">'+
-                          '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>'+
-                          '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>'+
-                          '</div>'+
-						'<div class="row"><small id="emailHelp" class="form-text text-muted">240x240 px</small></div>')
+                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>'+
+                    '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>'+
+                    '</div>'+
+                    '<div class="row"><small id="emailHelp" class="form-text text-muted">240x240 px</small></div>')
                 .validation({
-				    validator: function(value) {
-				        if (value == null) {
-				            throw new Error('Please, choose icon');
-				        }
-				    }
-				})
+                    validator: function(value) {
+                        if (value == null) {
+                            throw new Error('Please, choose icon');
+                        }
+                    }
+                })
                 .label('Icon *'),
             nga.field('template')
-            	.label('')
+                .label('')
                 .template(edit_button),
 
         ]);

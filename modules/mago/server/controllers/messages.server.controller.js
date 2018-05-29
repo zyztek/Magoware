@@ -31,6 +31,39 @@ function save_messages(obj, messagein, ttl, action, callback){
 /**
  * Create
  */
+
+/**
+ * @api {post} /api/messages Push messages - Send notifications
+ * @apiVersion 0.2.0
+ * @apiName Send push notifications
+ * @apiGroup Backoffice
+ * @apiHeader {String} authorization Token string acquired from login api.
+ *
+ * @apiParam {String} type  Optional field type. Value set ['one', 'all']. Selecting 'all' ignores field username.
+ * @apiParam {Number} username  Optional field username.  If type is equal to 'one', a username has to be selected.
+ * @apiParam {Boolean} toandroidsmartphone  Mandatory field toandroidsmartphone.  Set to true to send messages to android smart phones.
+ * @apiParam {Boolean} toios  Mandatory field toios.  Set to true to send messages to ios smart phones.
+ * @apiParam {Boolean} toandroidbox  Mandatory field toandroidbox.  Set to true to send messages to android STB devices.
+ * @apiParam {String} title  Mandatory field title. This is the title of the notification that will be displayed.
+ * @apiParam {String} message  Mandatory field message. This is the body of the notification that will be displayed.
+ * @apiParam {Boolean} sendtoactivedevices  Mandatory field sendtoactivedevices. Set to true if only active (logged) devices should receive the message.
+ * @apiParam {Number} timetolive  Mandatory field timetolive, in seconds. Currently not used by the application.
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "message": "Message sent"
+ *      }
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 OK
+ *     {
+ *       "message": "Error message" //for the actual message refer to list below
+ *     }
+ *
+ *      "You did not select any devices" //Either no users where selected, or no device types were selected
+ *      "No devices found with these filters" //There are no devices recorded that fulfill your conditions
+ */
+
 exports.create = function(req, res) {
     var no_users = (req.body.type === "one" && req.body.username === null) ? true : false; //no users selected for single user messages, don't send push
     var no_device_type = (req.body.toandroidsmartphone === false && req.body.toandroidbox === false  && req.body.toios === false) ? true : false; //no device types selected, don't send push
@@ -68,7 +101,7 @@ exports.create = function(req, res) {
                 for(var i=0; i<result.length; i++){
                     if(result[i].appid === 1 && result[i].app_version >= '2.2.2') var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1'); //todo: replace app version
                     else if(result[i].appid === 2 && result[i].app_version >= '1.1.2.2') var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1');
-                    else if(parseInt(devices[i].appid) === parseInt('3') && parseInt(devices[i].app_version) >= parseInt('1.3957040'))
+                    else if(parseInt(result[i].appid) === parseInt('3') && parseInt(result[i].app_version) >= parseInt('1.3957040'))
                         var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1');
                     else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0') var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1'); //todo: replace app version
                     else var message = {"action": "notification", "parameter1": req.body.message, "parameter2": req.body.message, "parameter3": ""};

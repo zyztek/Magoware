@@ -13,7 +13,6 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING(128),
             allowNull: false
         },
-
         user_id: {
             type: DataTypes.INTEGER(11),
             allowNull: false
@@ -59,7 +58,8 @@ module.exports = function(sequelize, DataTypes) {
         tableName: 'salesreport',
         associate: function(models) {
             salesreport.belongsTo(models.combo, {foreignKey: 'combo_id'});
-            salesreport.belongsTo(models.users, {foreignKey: 'user_id'})
+            salesreport.belongsTo(models.users, {foreignKey: 'user_id'});
+            salesreport.belongsTo(models.login_data, {foreignKey: 'login_data_id'});
         }
     });
     return salesreport;

@@ -27,11 +27,11 @@ export default function (nga, admin) {
 				.label('WiFi'),
 			nga.field('ntype')
 				.map(function app(value) {
-						if (value === 1) {
+						if (value == 1) {
 								return 'Wifi';
-						} else if (value === 2) {
+						} else if (value == 2) {
 								return 'Ethernet';
-						} else if (value === 3) {
+						} else if (value == 3) {
 								return '(GPRS)';
 						}
 				})
@@ -73,9 +73,16 @@ export default function (nga, admin) {
 		.filters([
           nga.field('q')
               .label('')
-              .template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>')
+              .template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>')
               .pinned(true),
-           nga.field('appid')
+           nga.field('appid','choice')
+               .choices([
+                   { value: 1, label: 'Box' },
+                   { value: 2, label: 'Android' },
+                   { value: 3, label: 'Ios' },
+                   { value: 4, label: 'Stv' },
+                   { value: 5, label: 'Samsung' }
+               ])
            	  .attributes({ placeholder: 'App Id' })
         	  .label('App ID'),
            nga.field('app_version')
@@ -84,14 +91,26 @@ export default function (nga, admin) {
            nga.field('api_version')
            	  .attributes({ placeholder: 'Api Version' })
         	  .label('Api Version'),
-           nga.field('ntype')
+           nga.field('ntype','choice')
+               .choices([
+                   { value: 1, label: 'Wifi' },
+                   { value: 2, label: 'Ethernet' },
+                   { value: 3, label: 'GPRS' }
+               ])
            	  .attributes({ placeholder: 'Ntype' })
         	  .label('Ntype'),
+            nga.field('device_active', 'boolean')
+                .filterChoices([
+                    { value: true, label: 'Active' },
+                    { value: false, label: 'Not Active' }
+                ])
+                .label('Device Active'),
+            nga.field('hdmi')
+                .attributes({ placeholder: 'HDMI' })
+                .label('HDMI'),
         ])
 		.listActions(['edit'])
-
-		
-        .exportFields([
+		.exportFields([
          devices.listView().fields(),
         ]);
 

@@ -84,6 +84,7 @@ exports.delete = function(req, res) {
                     message: errorHandler.getErrorMessage(err)
                 });
             });
+            return null;
         } else {
             return res.status(400).send({
                 message: 'Unable to find the Data'
@@ -97,7 +98,6 @@ exports.delete = function(req, res) {
 
 };
 
-//todo: dokumentimi
 exports.list = function(req, res) {
       var qwhere = {},
       final_where = {},
@@ -183,73 +183,135 @@ exports.dataByID = function(req, res, next, id) {
 
 };
 
-//todo: document api
-//todo: revise these params
+/**
+ * @api {post} /api/update_film/ update film
+ * @apiVersion 0.2.0
+ * @apiName UpdateFilm3rdParty
+ * @apiGroup Backoffice
+ * @apiHeader {String} authorization Token string acquired from login api.
+ * @apiDescription Gets movie information from a third party and updates movie
+ * @apiSuccessExample Success-Response:
+ *     {
+ *       "title": "Pan's Labyrinth",
+ *       "imdb_id": "tt0457430",
+ *       "description": "In the falangist Spain of 1944, ...",
+ *       "year": "2006",
+ *       "rate": 8,
+ *       "duration": "118",
+ *       "director": "Guillermo del Toro",
+ *       "starring": "Ivana Baquero, Sergi López, Maribel Verdú, Doug Jones"
+ *      }
+ * @apiErrorExample Error-Response:
+ *     {
+ *        "message": "error message"
+ *     }
+ *     Error value set:
+ *     An error occurred while updating this movie // Unexpected error occurred when the movie was being updated with teh new data
+ *     Could not find this movie // the search params did not return any movie
+ *     An error occurred while searching for this movie // Unexpected error occurred while searching for the movie in our database
+ *     An error occurred while trying to get this movie's data // Unexpected error occurred while getting the movie's data from the 3rd party
+ *     Unable to parse response // The response from the 3rd party service was of invalid format
+ *     Unable to find the movie specified by your keywords // The 3rd party service could not find a match using our keywords
+ *
+ */
 exports.update_film = function(req, res) {
-    console.log("req.params ", req.params.vodId);
-    console.log("req.body ", req.body);
-    //omdbapi(null, title, null);
-    omdbapi(req.body.imdb_id, req.body.title, req.body.year, function(response_omdbapi){
-        console.log("tek api ")
-        DBModel.update(
-            {
-                title: response_omdbapi.title,
-                description: response_omdbapi.description,
-                year: response_omdbapi.year,
-                //todo: image url? image_url: response_omdbapi.image, do zevendesohet apo jo?
-                rate: response_omdbapi.rate,
-                duration: response_omdbapi.duration,
-                director: response_omdbapi.director,
-                starring: response_omdbapi.starring,
-                pin_protected: response_omdbapi.pin_protected //todo: ta bej update kte apo jo?
-            },
-            {where: {id: req.params.vodId}}
-        ).then(function(result){
 
-        }).catch(function(error){
-            console.log(error)
+    //todo: take care of case when param list is empty.
+    var vod_where = {};
+    if(req.body.imdb_id) vod_where.imdb_id = req.body.imdb_id;
+    else if(req.body.vod_id) vod_where.id = req.body.vod_id;
+    else {
+        if(req.body.title) vod_where.title = req.body.title;
+        if(req.body.year) vod_where.year = req.body.year;
+    }
+
+    DBModel.findOne({
+        attributes: ['title', 'imdb_id'], where: vod_where
+    }).then(function(vod_data){
+        if(vod_data){
+            var search_params = {"vod_title": vod_data.title};
+            if(vod_data.imdb_id !== null) search_params.imdb_id = vod_data.imdb_id; //only use if it is not null
+            omdbapi(search_params, function(error, response){
+                if(error){
+                    return res.status(404).send({
+                        message: response
+                    });
+                }
+                else{
+                    DBModel.update(
+                        response, {where: vod_where}
+                    ).then(function(result){
+                        res.send(response);
+                    }).catch(function(error){
+                        return res.status(404).send({
+                            message: "An error occurred while updating this movie"
+                        });
+                    });
+                    return null;
+                }
+            });
+        }
+        else return res.status(404).send({
+            message: "Could not find this movie"
         });
-        res.send(response_omdbapi);
-    });
+    }).catch(function(error){
+        return res.status(404).send({
+            message: "An error occurred while searching for this movie"
+        });
+    })
+
+
 
 };
 
-function omdbapi(imdb_id, title, year, callback){
-    console.log("tek imdb api ")
+function omdbapi(vod_data, callback){
+
+    var api_key = "a421091c"; //todo: dynamic value
     var search_params = "";
-    if(imdb_id) search_params = search_params+'i='+imdb_id;
-    else if(title){
-        search_params = search_params+'t='+title;
-        if(year) search_params = search_params+'&y='+year;
+    if(vod_data.imdb_id) search_params = search_params+'&'+'i='+vod_data.imdb_id;
+    else{
+        if(vod_data.vod_title) search_params = search_params+'&'+'t='+vod_data.vod_title;
+        if(vod_data.year) search_params = search_params+'&'+'&y='+vod_data.year;
     }
 
-    var options = {
-        url: 'http://www.omdbapi.com/?'+search_params+'&apikey=a421091c',
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    };
-
-    request(options, function (error, response, body) {
-        //todo: if response dhe response parsable as JSON
-        JSON.parse(response.body);
-        console.log("Tek request ", options.url);
-        console.log("indeksi ", ['R', 'X', 'PG-13'].indexOf(JSON.parse(response.body).Rated));
-        console.log("rated ", JSON.parse(response.body).Rated);
-        console.log("protected apo jo ", ((['R', 'X', 'PG-13'].indexOf(JSON.parse(response.body).Rated) !== -1) ? 1 : 0));
-
-        var vod_data = {
-            title: JSON.parse(response.body).Title,
-            description: JSON.parse(response.body).Plot,
-            year: JSON.parse(response.body).Year,
-            image: JSON.parse(response.body).Poster,
-            rate: JSON.parse(response.body).imdbRating,
-            duration: JSON.parse(response.body).Runtime.replace(' min', ''),
-            director: JSON.parse(response.body).Director,
-            starring: JSON.parse(response.body).Actors,
-            pin_protected: (['R', 'X', 'PG-13'].indexOf(JSON.parse(response.body).Rated) !== -1) ? 1 : 0
+    if(search_params !== ""){
+        var options = {
+            url: 'http://www.omdbapi.com/?apikey='+api_key+search_params,
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
         };
-        callback(vod_data);
-    });
+
+        request(options, function (error, response, body) {
+            if(error){
+
+                callback(true, "An error occurred while trying to get this movie's data");
+            }
+            else try {
+                var vod_data = {
+                    title: JSON.parse(response.body).Title,
+                    imdb_id: JSON.parse(response.body).imdbID,
+                    //category: JSON.parse(response.body).Genre, //todo:get categories list, match them with our list
+                    description: JSON.parse(response.body).Plot,
+                    year: JSON.parse(response.body).Year,
+                    //icon_url: JSON.parse(response.body).Poster, //todo: check if url is valid. donwload + resize image. if successful, pass new filename as param
+                    rate: parseInt(JSON.parse(response.body).imdbRating),
+                    duration: JSON.parse(response.body).Runtime.replace(' min', ''),
+                    director: JSON.parse(response.body).Director,
+                    starring: JSON.parse(response.body).Actors,
+                    //pin_protected: (['R', 'X', 'PG-13'].indexOf(JSON.parse(response.body).Rated) !== -1) ? 1 : 0 //todo: will this rate be taken into consideration?
+                };
+                callback(null, vod_data);
+            }
+            catch(error){
+                callback(true, "Unable to parse response");
+            }
+
+        });
+    }
+    else{
+        callback(true, "Unable to find the movie specified by your keywords");
+    }
+
 }

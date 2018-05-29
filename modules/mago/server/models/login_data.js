@@ -116,6 +116,9 @@ module.exports = function(sequelize, DataTypes) {
             if (models.subscription){
                 loginData.hasMany(models.subscription, {foreignKey: 'login_id'});
             }
+            if(models.salesreport){
+                loginData.hasMany(models.salesreport, {foreignKey: 'login_data_id'});
+            }
             if(models.commands) loginData.hasMany(models.commands);
         }
     });

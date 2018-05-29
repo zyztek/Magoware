@@ -38,62 +38,63 @@ export default function (nga, admin) {
         .title('<h4>Vod Streams <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> Vod Streams')
         .actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>'])
 
-	vodstream.creationView()
-		.title('<h4>Vod Streams <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Vod Stream</h4>')
-		.onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
-			progression.done();
-			$state.go($state.get('edit'), { entity: 'Vods', id: entry.values.vod_id });
-			return false;
-		}])
+    vodstream.creationView()
+        .title('<h4>Vod Streams <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Vod Stream</h4>')
+        .onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
+            progression.done();
+            $state.go($state.get('edit'), { entity: 'Vods', id: entry.values.vod_id });
+            return false;
+        }])
         .fields([
             nga.field('vod_id', 'reference')
-            	.targetEntity(admin.getEntity('Vods'))
+                .targetEntity(admin.getEntity('Vods'))
                 .targetField(nga.field('title'))
-				.attributes({ placeholder: 'Vod' })
-				.validation({ required: true })
-				.perPage(-1)
-				.label('Vod'),
-			nga.field('stream_source_id', 'reference')
-				.targetEntity(admin.getEntity('VodStreamSources'))
+                .attributes({ placeholder: 'Choose from dropdown list VOD Movie' })
+                .validation({ required: true })
+                .perPage(-1)
+                .label('Vod'),
+            nga.field('stream_source_id', 'reference')
+                .targetEntity(admin.getEntity('VodStreamSources'))
                 .targetField(nga.field('description'))
-				.attributes({ placeholder: 'Stream Source' })
-				.validation({ required: true })
-				.perPage(-1)
-				.label('Stream Source'),
-			nga.field('url', 'string')
-				.attributes({ placeholder: 'Url' })
-				.validation({ required: true })
-				.label('Url'),
-			nga.field('stream_format', 'choice')
-					.attributes({ placeholder: 'Stream Format' })
-					.choices([
-						{ value: 0, label: 'MPEG Dash' },
-						{ value: 1, label: 'Smooth Streaming' },
-						{ value: 2, label: 'HLS' },
-						{ value: 3, label: 'OTHER' }
-					])
-					.validation({ required: true })
-					.label('Stream Format'),
-			nga.field('token', 'boolean')
-				.attributes({ placeholder: 'Token' })
-				.validation({ required: true })
-				.label('Token'),
-			nga.field('token_url', 'string')
-				.defaultValue('Token Url')
-				.attributes({ placeholder: 'Token Url' })
-				.validation({ required: false })
-				.label('Token Url'),
-			nga.field('encryption', 'boolean')
-				.validation({ required: true })
-				.label('Encryption'),
-			nga.field('encryption_url', 'string')
+                .attributes({ placeholder: 'Stream Source' })
+                .validation({ required: true })
+                .perPage(-1)
+                .label('Stream Source'),
+            nga.field('url', 'string')
+                .attributes({ placeholder: 'Movie Stream Url' })
+                .validation({ required: true })
+                .label('Url'),
+            nga.field('stream_format', 'choice')
+                .attributes({ placeholder: 'Stream Format' })
+                .choices([
+                    { value: 0, label: 'MPEG Dash' },
+                    { value: 1, label: 'Smooth Streaming' },
+                    { value: 2, label: 'HLS' },
+                    { value: 3, label: 'OTHER' }
+                ])
+                .validation({ required: true })
+                .label('Stream Format'),
+            nga.field('token', 'boolean')
+                .attributes({ placeholder: 'Token' })
+                .validation({ required: true })
+                .label('Token'),
+            nga.field('token_url', 'string')
+                .defaultValue('Token Url')
+                .attributes({ placeholder: 'Token Url' })
+                .validation({ required: false })
+                .label('Token Url'),
+            nga.field('encryption', 'boolean')
+                .validation({ required: true })
+                .label('Encryption'),
+            nga.field('encryption_url', 'string')
                 .defaultValue('Encryption url')
-				.validation({ required: false })
-				.label('Encryption url'),
+                .validation({ required: false })
+                .label('Encryption url'),
             nga.field('template')
-            	.label('')
-            	.template(edit_button),
+                .label('')
+                .template(edit_button),
         ]);
+
 
     vodstream.editionView()
     	.title('<h4>Vod Streams <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.vod_id }}</h4>')  

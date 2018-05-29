@@ -51,4 +51,8 @@ module.exports = function(app) {
     app.route('/api/sales_by_expiration')
         .get(salesReports.sales_by_expiration);
 
+    app.route('/api/invoice')
+        .all(policy.isAllowed)
+        .get(salesReports.invoice);
+
 };

@@ -141,12 +141,12 @@ export default function (nga, admin) {
 						'<ma-input-field field="field" value="entry.values.new_encryption_key"></ma-input-field>'+
 						'<small id="emailHelp" class="form-text text-muted">Key used to encrypt/decrypt token. 16 characters long</small>'+
 						'</div>'),
+            nga.field('key_transition', 'boolean')
+                .validation({ required: true })
+                .label('Key Transition'),
 			nga.field('firebase_key', 'text')
 					.validation({ required: true })
 					.label('Firebase key'),
-			nga.field('key_transition', 'boolean')
-				.validation({ required: true })
-				.label('Key Transition'),
 			nga.field('akamai_token_key', 'string')
                 .label('Akamai  token key'),
             nga.field('flussonic_token_key', 'string')

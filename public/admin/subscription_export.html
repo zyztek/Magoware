@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head>
+    <title>Simple Invoicing - Built with AngularJS</title>
+    <meta charset='utf-8'>
+    <meta name="description" content="AngularJS and Angular Code Example for creating Invoices and Invoicing Application">
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/custom.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+</head>
+<body>
+<div class="container" width="800px">
+    <div class="row">
+        <div class="col-xs-12 heading">
+            PACKAGE INVOICE
+        </div>
+    </div><!-- row -->
+
+    <div class="row branding">
+        <div class="col-xs-6">
+            <div class="invoice-number-container">
+                <label for="invoice-number">Invoice #</label><input type="text" id="invoice-number" ng-model="invoice.invoice_number" />
+            </div>
+        </div>
+        <div class="col-xs-6 logo-container">
+            <input type="file" id="imgInp" />
+            <img id="company_logo" src="images/mago1.png" alt="your image" width="300" />
+        </div>
+    </div><!-- row branding -->
+
+    <div class="row infos" ng-controller="InvoiceCtrl">
+        <div class="col-xs-6">
+            <div class="input-container"><i class="fa fa-address-card fa-md"></i> Name/Lastname:<br/>
+                <p class="move"><i class="fa fa-angle-double-right fa-lg"></i>&nbsp;&nbsp;{{users.firstname}}&nbsp;{{users.lastname}}</p>
+            </div>
+            <div class="input-container"><i class="fa fa-map-marker fa-md"></i> Address:<br/>
+               <p class="move"><i class="fa fa-angle-double-right fa-lg"></i>&nbsp;&nbsp;{{users.address}}</p>
+            </div>
+            <div class="input-container"><i class="fa fa-phone fa-md"></i> Distributor:<br/>
+                <p class="move"><i class="fa fa-angle-double-right fa-lg"></i>&nbsp;&nbsp;{{users.distributorname}}</p>
+            </div>
+            <div class="input-container"><i class="fa fa-user fa-mdmd"></i> User Type:<br/>
+                <p class="move"><i class="fa fa-angle-double-right fa-lg"></i>&nbsp;&nbsp;{{users.user_type}}</p>
+            </div>
+        </div>
+        <div class="col-xs-6 right">
+            <div class="input-container">www.magoware.tv</div>
+            <div class="input-container">info@magoware.tv</div>
+            <div class="input-container">Headquarters: Gjergj Fishta Blv., G & P building, 2nd Floor, Tirana, Albania</div>
+            <div class="input-container">Phone Albania +355 445 043 50</div>
+            <div class="input-container">USA +1 646 630 8976</div>
+            <div class="input-container">United Kingdom +44 203 740 4877</div>
+            <div class="input-container">Australia +61 285 181 274</div>
+        </div>
+    </div><br/><!-- row infos -->
+
+    <div class="items-table" ng-controller="InvoiceCtrl">
+        <div class="row header">
+            <div class="col-xs-4">Product</div>
+            <div class="col-xs-4">Sale Date</div>
+            <div class="col-xs-4">Sale Type</div>
+        </div>
+        <div class="row invoice-item">
+            <div class="col-xs-4 input-container">
+                {{users.product}}
+            </div>
+            <div class="col-xs-4 input-container">
+                {{users.saledate}}
+            </div>
+            <div class="col-xs-2 input-container">
+                {{users.sale_type}}
+            </div>
+        </div>
+    </div>
+    <!--FOOTER-->
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 footer">
+                <p>
+                    Abonenti, me nënshkrimin e këtij dokumenti, me vullnet të lirë pranon se mban përgjegjësi të plotë për përdorimin e Aparatit/Dekoderit në përputhje me kontratën për marrjen e shërbimit, të nënshkruar me Shoqërinë “TIBO” sh.p.k.. Abonenti deklaron se Aparati/Dekoderi do të përdoret prej tij në mënyrë të përshtatshme, pa e dëmtuar dhe pa e përdorur në ambiente publike mënyrë të paautorizuar nga legjislacionet në fuqi të shteteve përkatëse. Përdorimi privat i Aparatit/Dekoderit prej Abonentit në ambiente personale është i autorizuar, gjithmonë duke patur kujdes që përmbajtja e programeve televizivë të mos cënojë të drejtat e mbrojtura nga legjislacioni i shteteve përkatese,në territorin e të cilëve përdoret Aparati/Dekoderi.
+                </p>
+            </div>
+        </div><!--./row-->
+    </div><!--./container-->
+    <!--./FOOTER-->
+
+    <div class="row noPrint actions" ng-controller="buttons">
+        <a href="" class="btn btn-primary" ng-click="printInfo()">Print</a>
+        <a href="" class="btn btn-primary" ng-click="goBack()">Back</a>
+    </div>
+
+
+</div>
+</body>
+</html>

@@ -23,13 +23,10 @@ module.exports = function(app) {
     app.route('/api/accountslist')
         //.all(policy.isAllowed)
         .get(customController.list_logins_with_customer);
-   // app.route('/api/customerdata/:customerDataId')
-   //     .get(customerData.read);
 
-    //app.route('/api/customerdata/:customerDataId')
-    //    .all(policy.isAllowed)
-    //    .put(customerData.update)
-    //    .delete(customerData.delete);
 
-    //app.param('customerDataId', customerData.dataByID);
+    app.route('/api/upsertsubscription')
+        .all(policy.isAllowed)
+        .post(customController.insert_or_update_user_subscription);
+
 };

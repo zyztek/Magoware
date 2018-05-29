@@ -3,61 +3,75 @@ import edit_button from '../edit_button.html';
 export default function (nga, admin) {
 	var epgdata = admin.getEntity('EpgData');
 	epgdata.listView()
-		.title('<h4>Epg Data <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
-		.actions(['batch', 'export', 'create'])
-		.fields([
-			nga.field('channel_number')
-				.cssClasses('hidden-xs')
-				.label('Nr'),
-			nga.field('title', 'string')
-				.label('Title'),
-			nga.field('short_name', 'string')
-				.cssClasses('hidden-xs')
-				.label('Short Name'),
-			nga.field('short_description')
-				.label('Short Description'),
-			nga.field('long_description', 'text')
-				.map(function truncate(value) {
-                 	if (!value) {
+        .title('<h4>Epg Data <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
+        .actions(['batch', 'export', 'create'])
+        .fields([
+            nga.field('channel_number')
+                    .cssClasses('hidden-xs')
+                    .label('Nr'),
+            nga.field('title', 'string')
+                    .label('Title'),
+            nga.field('episode_title', 'string')
+                    .label('Episode title'),
+            nga.field('short_name', 'string')
+                    .cssClasses('hidden-xs')
+                    .label('Short Name'),
+            nga.field('event_category', 'string')
+                .label('Category'),
+            nga.field('event_rating', 'number')
+                .attributes({ min:1, max:10 })
+                .label('Rating'),
+            nga.field('event_language', 'string')
+                .label('Language'),
+            nga.field('short_description')
+                    .label('Short Description'),
+            nga.field('long_description', 'text')
+                    .map(function truncate(value) {
+                        if (!value) {
                             return 'No Description';
-                      	}
-                            return value.length > 40 ? value.substr(0, 40) + '...' : value;
-                      	})
-				.cssClasses('hidden-xs')
-				.label('Long Description'),
-			nga.field('program_start', 'datetime')
-				.cssClasses('hidden-xs')
-				.label('Program Start'),
-			nga.field('program_end', 'datetime')
-				.cssClasses('hidden-xs')
-				.label('Program End'),
-			nga.field('duration_seconds', 'number')
-				.cssClasses('hidden-xs')
-				.label('Duration'),
-			nga.field('timezone', 'number')
-				.map(function truncate(value) {
-					if (!value) {
-						return "No Timezone";
-					}
-				})
-				.cssClasses('hidden-xs')
-				.label('Timezone'),
-		])
-		.filters([
+                        }
+                        return value.length > 40 ? value.substr(0, 40) + '...' : value;
+                    })
+                    .cssClasses('hidden-xs')
+                    .label('Long Description'),
+            nga.field('program_start', 'datetime')
+                    .cssClasses('hidden-xs')
+                    .label('Program Start'),
+            nga.field('program_end', 'datetime')
+                    .cssClasses('hidden-xs')
+                    .label('Program End'),
+            nga.field('duration_seconds', 'number')
+                    .cssClasses('hidden-xs')
+                    .label('Duration'),
+            nga.field('timezone', 'number')
+                    .map(function truncate(value) {
+                        if (!value) {
+                            return "No Timezone";
+                        }
+                    })
+                    .cssClasses('hidden-xs')
+                    .label('Timezone'),
+        ])
+        .filters([
           nga.field('q')
               .label('')
               .template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>')
               .pinned(true)])
 		.listActions(['edit'])
 
-		
+
         .exportFields([
          epgdata.listView().fields(),
         ]);
 
 
-	epgdata.creationView()
-		.title('<h4>Epg Data <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Epg Data</h4>')
+epgdata.creationView()
+        .onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
+            progression.done();
+            $state.go($state.get('list'), { entity: entity.name() });
+            return false;
+        }])
+        .title('<h4>Epg Data <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Epg Data</h4>')
         .fields([
             nga.field('channel_number', 'string')
 				.attributes({ placeholder: 'Channel Number' })
@@ -91,38 +105,59 @@ export default function (nga, admin) {
 			     { value: +11, label: '(UTC+11:00) Magadan, Solomon Is.' },
 			     { value: +12, label: '(UTC+12:00) Auckland, Fiji' },
 
-			    ])
-				.attributes({ placeholder: 'Select Timezone' })
-				.validation({ required: true })
-				.label('Timezone'),
-			nga.field('title', 'string')
-				.attributes({ placeholder: 'Title' })
-				.validation({ required: true })
-				.label('Title'),
-			nga.field('short_name', 'string')
-				.attributes({ placeholder: 'Short Name' })
-				.validation({ required: true })
-				.label('Short Name'),
-			nga.field('short_description', 'string')
-				.attributes({ placeholder: 'Short Description' })
-				.validation({ required: true })
-				.label('Short Description'),
-			nga.field('long_description', 'text')
-				.attributes({ placeholder: 'Long Description' })
-				.validation({ required: true })
-				.label('Long Description'),
-			nga.field('program_start', 'datetime')
-				.attributes({ placeholder: 'Program Start' })
-				.validation({ required: true })
-				.label('Program Start'),
-			nga.field('program_end', 'datetime')
-				.attributes({ placeholder: 'Program End' })
-				.validation({ required: true })
-				.label('Program End'),
-			nga.field('duration_seconds', 'number')
-				.attributes({ placeholder: 'Duration' })
-				.validation({ required: true })
-				.label('Duration'),
+                    ])
+                    .attributes({ placeholder: 'Select Timezone' })
+                    .validation({ required: false })
+                    .label('Timezone'),
+            nga.field('title', 'string')
+                    .attributes({ placeholder: 'Title' })
+                    .validation({ required: true })
+                    .label('Title'),
+            nga.field('episode_title', 'string')
+                    .map(function truncate(value) {
+                        if (!value) {return "-";}
+                        else return value;
+                    })
+                    .label('Episode title'),
+            nga.field('short_name', 'string')
+                    .attributes({ placeholder: 'Short Name' })
+                    .validation({ required: true })
+                    .label('Short Name'),
+            nga.field('short_description', 'string')
+                    .attributes({ placeholder: 'Short Description' })
+                    .validation({ required: true })
+                    .label('Short Description'),
+            nga.field('long_description', 'text')
+                    .attributes({ placeholder: 'Long Description' })
+                    .validation({ required: true })
+                    .label('Long Description'),
+            nga.field('event_category', 'string')
+                    .map(function truncate(value) {
+                        if (!value) {return "-";}
+                        else return value;
+                    })
+                    .label('Category'),
+            nga.field('event_rating', 'number')
+                    .attributes({ min:1, max:10 })
+                    .label('Rating (1-10)'),
+            nga.field('event_language', 'string')
+                    .map(function truncate(value) {
+                        if (!value) {return "-";}
+                        else return value;
+                    })
+                    .label('Language'),
+            nga.field('program_start', 'datetime')
+                    .attributes({ placeholder: 'Program Start' })
+                    .validation({ required: true })
+                    .label('Program Start'),
+            nga.field('program_end', 'datetime')
+                    .attributes({ placeholder: 'Program End' })
+                    .validation({ required: true })
+                    .label('Program End'),
+            nga.field('duration_seconds', 'number')
+                    .attributes({ placeholder: 'Duration' })
+                    .validation({ required: true })
+                    .label('Duration'),
             nga.field('template')
             	.label('')
             	.template(edit_button),
@@ -134,8 +169,8 @@ export default function (nga, admin) {
         .fields([
             epgdata.creationView().fields(),
         ]);
-   
+
 
 	return epgdata;
-	
+
 }

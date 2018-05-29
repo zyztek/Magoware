@@ -1,7 +1,7 @@
 {
   "name": "magoware_portal",
-  "version": "1.12.007",
-  "db_migration_nr": "db.010",
+  "version": "1.12.6",
+  "db_migration_nr": "db.009",
   "description": "MAGOWARE Administartion Portal",
   "main": "server.js",
   "dependencies": {
@@ -16,6 +16,7 @@
     "crypto-js": "^3.1.9-1",
     "dateformat": "^2.0.0",
     "docdash": "^0.4.0",
+    "download-file": "^0.1.5",
     "express": "^4.14.0",
     "express-mongoose-docs": "^0.3.1",
     "express-session": "^1.15.0",
@@ -25,6 +26,7 @@
     "helmet": "^3.4.0",
     "http": "0.0.0",
     "https": "^1.0.0",
+    "iconv-lite": "^0.4.19",
     "jsonwebtoken": "^7.2.1",
     "lodash": "^4.17.4",
     "merge": "^1.2.0",

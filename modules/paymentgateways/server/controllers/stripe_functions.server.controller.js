@@ -51,7 +51,7 @@ exports.stripe_get_key = function(req,res) {
 exports.stripe_one_off_charge = function(req,res) {
     var thisresponse = new response.OK();
     var sale_or_refund = 1;
-
+    var stripe = require("stripe")(req.app.locals.paymenttokens.STRIPE.API_KEY);
 
     if((!req.body.username && !req.body.email) || !req.body.product_id) {
         thisresponse.extra_data = "Missing username or product ID.";

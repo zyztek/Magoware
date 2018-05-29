@@ -371,16 +371,19 @@ exports.subscription_get = function(req, res) {
 exports.salereport = function(req, res) {
     models.salesreport.findAll({
         attributes: ['user_username', 'distributorname', [db.sequelize.fn('date_format', db.sequelize.col('saledate'), '%Y-%m-%d %H:%m:%s'), 'saledate']],
-        where: {user_username: req.auth_obj.username},
-        include: [{model: models.combo, required: true, attributes:['duration', 'name']}]
+        where: {login_data_id: req.thisuser.id},
+        include: [
+            {model: models.combo, required: true, attributes:['duration', 'name']},
+            {model: models.users, required: true, attributes:['username']}
+        ]
     }).then(function (result) {
         //the following loop avoids nested response
         var salereport = []; //temp array where we store the values of the query
         for(var i = 0; i < result.length; i++){
             //for each object we store its values in a temp variable
             var temp_salereport_record = {
-                "user_username": result[i].user_username,
-                "distributorname": result[i].distributorname,
+                "user_username": req.auth_obj.username,
+                "distributorname": result[i].user.username,
                 "sale_date": result[i].saledate,
                 "combo_name": result[i].combo.name,
                 "combo_duration": result[i].combo.duration
@@ -426,16 +429,19 @@ exports.salereport = function(req, res) {
 exports.salereport_get = function(req, res) {
     models.salesreport.findAll({
         attributes: ['user_username', 'distributorname', [db.sequelize.fn('date_format', db.sequelize.col('saledate'), '%Y-%m-%d %H:%m:%s'), 'saledate']],
-        where: {user_username: req.auth_obj.username},
-        include: [{model: models.combo, required: true, attributes:['duration', 'name']}]
+        where: {login_data_id: req.thisuser.id},
+        include: [
+            {model: models.combo, required: true, attributes:['duration', 'name']},
+            {model: models.users, required: true, attributes:['username']}
+        ]
     }).then(function (result) {
         //the following loop avoids nested response
         var salereport = []; //temp array where we store the values of the query
         for(var i = 0; i < result.length; i++){
             //for each object we store its values in a temp variable
             var temp_salereport_record = {
-                "user_username": result[i].user_username,
-                "distributorname": result[i].distributorname,
+                "user_username": req.auth_obj.username,
+                "distributorname": result[i].user.username,
                 "sale_date": result[i].saledate,
                 "combo_name": result[i].combo.name,
                 "combo_duration": result[i].combo.duration

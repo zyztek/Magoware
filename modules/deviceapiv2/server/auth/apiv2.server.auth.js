@@ -147,52 +147,52 @@ exports.isAllowed = function(req, res, next) {
 
     if(auth_obj){
         if((req.body.hdmi === 'true') && (['2', '3'].indexOf(auth_obj.appid) !== -1)){
-            response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'INVALID_INSTALLATION', 'no-store');
+            response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'INVALID_INSTALLATION', 'no-store'); //hdmi cannot be active for mobile devices
         }
-        if(valid_timestamp(auth_obj) === false){
+        else if(valid_timestamp(auth_obj) === false){
             response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'INVALID_TIMESTAMP', 'no-store');
         }
-
-        if(valid_appid(auth_obj) === true){
+        else if(valid_appid(auth_obj) === true){
             set_screensize(auth_obj);
+
+            if(req.empty_cred){
+                req.auth_obj = auth_obj;
+                next();
+            }
+            else{
+                //do lexojme te dhenat e user. kjo do behet sinkrone me te tjerat
+                models.login_data.findOne({
+                    where: {username: auth_obj.username}
+                }).then(function (result) {
+                    if(result) {
+                        if(result.account_lock) {
+                            response.send_res(req, res, [], 703, -1, 'ACCOUNT_LOCK_DESCRIPTION', 'ACCOUNT_LOCK_DATA', 'no-store');
+                        }
+                         else if(authenticationHandler.authenticate(auth_obj.password, result.salt, result.password) === false) {
+                         response.send_res(req, res, [], 704, -1, 'WRONG_PASSWORD_DESCRIPTION', 'WRONG_PASSWORD_DATA', 'no-store');
+                         }
+                        else if( (result.resetPasswordExpires !== null ) && (result.resetPasswordExpires.length > 9 && result.resetPasswordExpires !== '0') ){
+                            response.send_res(req, res, [], 704, -1, 'EMAIL_NOT_CONFIRMED', 'EMAIL_NOT_CONFIRMED_DESC', 'no-store');
+                        }
+                        else {
+                            req.thisuser = result;
+                            req.auth_obj = auth_obj;
+                            next();
+                            return null; //returns promise
+                        }
+                    }
+                    else{
+                        response.send_res(req, res, [], 702, -1, 'USER_NOT_FOUND_DESCRIPTION', 'USER_NOT_FOUND_DATA', 'no-store');
+                    }
+                }).catch(function(error) {
+                    response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+                });
+            }
         }
         else {
             response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'INVALID_APPID', 'no-store');
         }
 
-        if(req.empty_cred){
-            req.auth_obj = auth_obj;
-            next();
-        }
-        else{
-            //do lexojme te dhenat e user. kjo do behet sinkrone me te tjerat
-            models.login_data.findOne({
-                where: {username: auth_obj.username}
-            }).then(function (result) {
-                if(result) {
-                    if(result.account_lock) {
-                        response.send_res(req, res, [], 703, -1, 'ACCOUNT_LOCK_DESCRIPTION', 'ACCOUNT_LOCK_DATA', 'no-store');
-                    }
-                    else if(authenticationHandler.authenticate(auth_obj.password, result.salt, result.password) === false) {
-                        response.send_res(req, res, [], 704, -1, 'WRONG_PASSWORD_DESCRIPTION', 'WRONG_PASSWORD_DATA', 'no-store');
-                    }
-                    else if( (result.resetPasswordExpires !== null ) && (result.resetPasswordExpires.length > 9 && result.resetPasswordExpires !== '0') ){
-                        response.send_res(req, res, [], 704, -1, 'EMAIL_NOT_CONFIRMED', 'EMAIL_NOT_CONFIRMED_DESC', 'no-store');
-                    }
-                    else {
-                        req.thisuser = result;
-                        req.auth_obj = auth_obj;
-                        next();
-                        return null; //returns promise
-                    }
-                }
-                else{
-                    response.send_res(req, res, [], 702, -1, 'USER_NOT_FOUND_DESCRIPTION', 'USER_NOT_FOUND_DATA', 'no-store');
-                }
-            }).catch(function(error) {
-                response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
-            });
-        }
     }
 };
 

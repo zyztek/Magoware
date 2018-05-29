@@ -67,43 +67,44 @@ export default function (nga, admin){
 		.actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>'])
 
 
-	subscription.creationView()
-		.title('<h4>Subscriptions <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Subscription</h4>')
-		.fields([
+    subscription.creationView()
+        .title('<h4>Subscriptions <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Subscription</h4>')
+        .fields([
             nga.field('login_id', 'reference')
-				.targetEntity(admin.getEntity('LoginData'))
+                .targetEntity(admin.getEntity('LoginData'))
                 .targetField(nga.field('username'))
-				.attributes({ placeholder: 'Select Account' })
-				.validation({ required: true })
-				.perPage(-1)
-				.remoteComplete(true, {
-					refreshDelay: 300,
-					// populate choices from the response of GET /posts?q=XXX
-					searchQuery: function(search) { return { q: search }; }
-				})
-				.perPage(10) // limit the number of results to 10
-				.label('Username'),
-			nga.field('combo_id', 'reference')
-				.targetEntity(admin.getEntity('Combos'))
+                .attributes({ placeholder: 'Choose from the dropdown list username' })
+                .validation({ required: true })
+                .perPage(-1)
+                .remoteComplete(true, {
+                    refreshDelay: 300,
+                    // populate choices from the response of GET /posts?q=XXX
+                    searchQuery: function(search) { return { q: search }; }
+                })
+                .perPage(10) // limit the number of results to 10
+                .label('Username'),
+            nga.field('combo_id', 'reference')
+                .targetEntity(admin.getEntity('Combos'))
                 .targetField(nga.field('name'))
-				.attributes({ placeholder: 'Select Product' })
-				.validation({ required: true })
-				.perPage(-1)
-				.label('Combo'),
-			nga.field('start_date','date')
-				.attributes({ placeholder: 'Start Date' })
-				.validation({ required: true })
-				.defaultValue(new Date())
-				.label('Start Date'),
-			nga.field('template')
-				.label('')
-				.template(edit_button),
+                .attributes({ placeholder: 'Choose from the dropdown list Combo' })
+                .validation({ required: true })
+                .perPage(-1)
+                .label('Combo'),
+            nga.field('start_date','date')
+                .attributes({ placeholder: 'Start Date' })
+                .validation({ required: true })
+                .defaultValue(new Date())
+                .label('Start Date'),
+            nga.field('template')
+                .label('')
+                .template(edit_button),
         ])
-		.onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
-			progression.done();
-			$state.go($state.get('edit'), { entity: 'LoginData', id: entry.values.login_id });
-			return false;
-		}]);
+        .onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
+            console.log(entry);
+            progression.done();
+            $state.go($state.get('edit'), {entity: 'LoginData', id: entry.values.user});
+            return false;
+        }]);
 
     subscription.editionView() 
     	.title('<h4>Subscriptions: Edit subscription date <i class="fa fa-angle-right" aria-hidden="true"></i></h4>')

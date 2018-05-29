@@ -36,20 +36,20 @@ export default function (nga, admin) {
         .fields([
             nga.field('username', 'reference')
                 .targetEntity(admin.getEntity('LoginData'))
-                .targetField(nga.field('username')
-                    .map(function (value) {
-                        var user = [];
-                        for (var i = 0; i < value.length; i++) {
-                            user[i] = value[i].username;
-                            return value;
-                        }
-                    }))
-                .perPage(-1),
+                .targetField(nga.field('username'))
+                .attributes({ placeholder: 'Select Account from dropdown list' })
+                .remoteComplete(true, {
+                    refreshDelay: 300,
+                    // populate choices from the response of GET /posts?q=XXX
+                    searchQuery: function(search) { return { q: search }; }
+                })
+                .perPage(10) // limit the number of results to 10
+                .label('Username'),
             nga.field('all_users', 'boolean')
                 .validation({ required: true })
                 .label('Send to all users (overrides username)'),
             nga.field('appid', 'choices')
-                .attributes({ placeholder: 'Send to device type:' })
+                .attributes({ placeholder: 'Select from dropdown list to send to device type:' })
                 .choices([
                     { value: 1, label: 'Android Set Top Box' },
                     { value: 2, label: 'Android Smart Phone' },
@@ -67,14 +67,17 @@ export default function (nga, admin) {
                     { value: 'all', label: 'Everywhere (overrules other values)' }
                 ])
                 .validation({required: true})
+                .attributes({ placeholder: 'Select from dropdown list filter values' })
                 .label('Display:'),
 
             nga.field('title', 'string')
+                .attributes({ placeholder: 'Title' })
                 .label('Title'),
             nga.field('message', 'text')
+                .attributes({ placeholder: 'Message' })
                 .label('Message'),
             nga.field('link_url', 'string')
-                .template('<div class="form-group">'+
+                .template('<div>'+
                     '<ma-input-field field="field" value="entry.values.link_url"></ma-input-field>'+
                     '<small id="emailHelp" class="form-text text-muted">Default empty string</small>'+
                     '</div>')
@@ -86,21 +89,25 @@ export default function (nga, admin) {
                     { value: '2', label: 'Center' },
                     { value: '3', label: 'Bottom' }
                 ]).validation({ required: true })
+                .attributes({ placeholder: 'Select from dropdown list filter values' })
                 .label('Position'),
 
             nga.field('imageGif', 'string')
                 .validation({required: true})
+                .attributes({ placeholder: 'Image link' })
                 .label('Image link'),
 
 
             nga.field('duration', 'number')
-                .template('<div class="form-group">'+
+                .template('<div>'+
                     '<ma-input-field field="field" value="entry.values.duration"></ma-input-field>'+
                     '<small id="emailHelp" class="form-text text-muted">Ad duration. Default 5000 ms</small>'+
                     '</div>')
-            .label('Duration in ms'),
+                .attributes({ placeholder: 'Duration in ms' })
+                .label('Duration in ms'),
 
             nga.field('delivery_time', 'datetime')
+                .attributes({ placeholder: 'Choose date' })
                 .label('Send ad at:'),
 
             nga.field('template')

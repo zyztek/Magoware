@@ -5,6 +5,7 @@
  */
 var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
+    subscription_functions = require(path.resolve('./custom_functions/sales.js')),
     db = require(path.resolve('./config/lib/sequelize')).models,
     sequelizes =  require(path.resolve('./config/lib/sequelize')),
     sequelize = require('sequelize'),
@@ -41,14 +42,27 @@ exports.read = function(req, res) {
  * Update
  */
 exports.update = function(req, res) {
-    var updateData = req.salesReport;
 
-    updateData.updateAttributes(req.body).then(function(result) {
-        res.json(result);
-    }).catch(function(err) {
-        return res.status(400).send({ message: errorHandler.getErrorMessage(err) });
+    var sale_or_refund = -1;
+    var transaction_id = req.body.transaction_id;
+    req.body.product_id = req.body.combo_id;
+
+    subscription_functions.add_subscription_transaction(req,res,sale_or_refund,transaction_id).then(function(result) {
+        if(result.status) {
+            var updateData = req.salesReport;
+            req.body.cancelation_date = Date.now();
+            req.body.cancelation_user = req.token.uid;
+            updateData.updateAttributes(req.body).then(function(result) {
+                //res.json(result);
+                res.status(200).send(result)
+            }).catch(function(err) {
+                return res.status(400).send({ message: errorHandler.getErrorMessage(err) });
+            });
+        }
+        else {
+            res.status(404).send(result)
+        }
     });
-
 };
 
 
@@ -565,7 +579,6 @@ exports.latest = function(req, res) {
 /**
  * middleware
  */
-
 exports.dataByID = function(req, res, next, id) {
 
     if ((id % 1 === 0) === false) { //check if it's integer
@@ -573,10 +586,9 @@ exports.dataByID = function(req, res, next, id) {
             message: 'Data is invalid'
         });
     }
-
     DBModel.find({
         where: { id: id },
-        include: [{model: db.combo}, {model: db.users}]
+        //include: [{model: db.combo}, {model: db.users}]
     }).then(function(result) {
         if (!result) {
             return res.status(404).send({
@@ -585,9 +597,73 @@ exports.dataByID = function(req, res, next, id) {
         } else {
             req.salesReport = result;
             next();
+            return null;
         }
     }).catch(function(err) {
         return next(err);
     });
+
+};
+
+
+
+exports.invoice = function(req, res) {
+
+    var invoice_query = {};
+    if(req.query.login_data_id) invoice_query.id = req.query.login_data_id;
+    if(req.query.username) invoice_query.username = req.query.username;
+
+    if(!(Object.keys(invoice_query).length === 0 && invoice_query.constructor === Object)){
+        try{
+            db.login_data.findAll({
+                attributes: ['username', 'pin'],
+                where: invoice_query,
+                include: [
+                    {model: db.customer_data, attributes: ['firstname', 'lastname', 'email', 'address', 'country', 'telephone'], required: true},
+                    {model: db.salesreport, attributes: ['saledate'], where: {active: true}, required: true,
+                        include: [
+                            {model: db.users, attributes: ['username'], required: true}, {model: db.combo, attributes: ['name'], required: true}
+                        ]
+                    }
+                ],
+                order: [ [ db.salesreport, 'saledate', 'DESC' ] ]
+            }).then(function(invoice) {
+                console.log("the length ", invoice[0].salesreports.length)
+                if (!invoice) {
+                    return res.status(404).send({
+                        message: 'No sales found for this user'
+                    });
+                } else {
+                    var invoice_data = {
+                        "username": invoice[0].username,
+                        "password": 1234,
+                        "pin": invoice[0].pin,
+                        "firstname": invoice[0].customer_datum.firstname,
+                        "lastname": invoice[0].customer_datum.lastname,
+                        "email": invoice[0].customer_datum.email,
+                        "address": invoice[0].customer_datum.address,
+                        "country": invoice[0].customer_datum.country,
+                        "telephone": invoice[0].customer_datum.telephone,
+                        "saledate": dateFormat(invoice[0].salesreports[0].saledate, 'yyyy-mm-dd HH:MM:ss'),
+                        "distributorname": invoice[0].salesreports[0].user.username,
+                        "product": invoice[0].salesreports[0].combo.name,
+                        "sale_type": (invoice[0].salesreports.length > 1) ? "Ri-abonim" : "Aktivizim",
+                        "user_type": "Klient"
+                    };
+                    return res.send(invoice_data);
+                }
+            }).catch(function(error) {
+                res.send(error)
+            });
+        }
+        catch(error){
+            console.log(error)
+        }
+    }
+    else {
+        return res.status(404).send({
+            message: 'Make sure your search parameters are correct'
+        });
+    }
 
 };

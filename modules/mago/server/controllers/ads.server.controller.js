@@ -8,7 +8,7 @@ var path = require('path'),
 var dateformat = require('dateformat');
 
 /**
- * @api {post} /api/ads Send ads
+ * @api {post} /api/ads Push messages - Send ads
  * @apiVersion 0.2.0
  * @apiName Send ads
  * @apiGroup Backoffice
@@ -17,7 +17,7 @@ var dateformat = require('dateformat');
  * @apiParam {boolean} all_users  Mandatory field all_users. Overrules field username.
  * @apiParam {Number[]} appid  Mandatory field appid. Cannot be an empty array.
  * @apiParam {String[]} activity  Mandatory field activity. Cannot be an empty array. Value "all" overrules other values. Value set ["all", "vod", "livetv"]
- * @apiParam {String} title  Oprional field title.
+ * @apiParam {String} title  Optional field title.
  * @apiParam {String} message  Optional field message.
  * @apiParam {Number} duration  Optional field duration, in milliseconds. If empty, default value is 5000ms.
  * @apiParam {String} imageGif  Mandatory field imageGif.
@@ -33,7 +33,7 @@ var dateformat = require('dateformat');
  * @apiErrorExample Error-Response:
  *     HTTP/1.1 400 OK
  *     {
- *       "message": "Error message" //for actual messages refer to list below
+ *       "message": "Error message" //for the actual message refer to list below
  *     }
  *
  *      "You did not select a position to display the ad" //xOffset is missing, empty or invalid

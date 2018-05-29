@@ -30,38 +30,38 @@ export default function (nga, admin) {
         ]);
 
 
-	combo.creationView()
-		.onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
+    combo.creationView()
+        .onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
             progression.done();
             $state.go($state.get('edit'), { entity: entity.name(), id: entry._identifierValue });
             return false;
         }])
-		.title('<h4>Products & Services <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Product</h4>')
+        .title('<h4>Products & Services <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Product</h4>')
         .fields([
-			nga.field('product_id', 'string')
-					.attributes({ placeholder: 'Name' })
-					.validation({ required: true })
-					.label('Product ID'),
-			nga.field('name', 'string')
-				.attributes({ placeholder: 'Name' })
-				.validation({ required: true })
-				.label('Name'),
-			nga.field('duration')
-				.attributes({ placeholder: 'Duration' })
-				.validation({ required: true })
-				.label('Duration'),
-			nga.field('value', 'number')
-				.attributes({ placeholder: 'Value' })
-				.validation({ required: true })
-				.label('Value'),
-			nga.field('isavailable', 'boolean')
-				.attributes({ placeholder: 'Is Available' })
-				.validation({ required: true })
-				.label('Is Available'),
+            nga.field('product_id', 'string')
+                .attributes({ placeholder: 'Product ID' })
+                .validation({ required: true })
+                .label('Product ID'),
+            nga.field('name', 'string')
+                .attributes({ placeholder: ' Name of your product' })
+                .validation({ required: true })
+                .label('Name'),
+            nga.field('duration')
+                .attributes({ placeholder: 'Duration of this product in days' })
+                .validation({ required: true })
+                .label('Duration'),
+            nga.field('value', 'number')
+                .attributes({ placeholder: 'Price of the product' })
+                .validation({ required: true })
+                .label('Value'),
+            nga.field('isavailable', 'boolean')
+                .attributes({ placeholder: 'Is Available' })
+                .validation({ required: true })
+                .label('Is Available'),
             nga.field('template')
-            	.label('')
-            	.template(edit_button),  
-        ]);	
+                .label('')
+                .template(edit_button),
+        ]);
 
     combo.editionView()
     	.actions(['list'])

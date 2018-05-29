@@ -102,7 +102,8 @@ exports.isAllowed = function(req, res, next) {
                     }
 
                 } else {
-                    return next();
+                    next();
+                    return null;
                 }
             }).catch(function(err) {
                 return res.status(404).json({

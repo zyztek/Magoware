@@ -35,7 +35,6 @@ export default function (nga, admin) {
                 .validation({ required: true })
                 .cssClasses('hidden-xs')
                 .label('Stream mode'),
-
             nga.field('token_url', 'string')
                 .map(function truncate(value) {
                     if (!value) {
@@ -84,33 +83,31 @@ export default function (nga, admin) {
             nga.field('channel_id', 'reference')
                 .targetEntity(admin.getEntity('Channels'))
                 .targetField(nga.field('title'))
-                .attributes({ placeholder: 'Select Channel' })
+                .attributes({ placeholder: 'Select Channel from dropdown list' })
                 .validation({ required: true })
                 .perPage(-1)
                 .label('Channel'),
             nga.field('stream_source_id', 'reference')
                 .targetEntity(admin.getEntity('ChannelStreamSources'))
                 .targetField(nga.field('stream_source'))
-                .attributes({ placeholder: 'Select Stream Source' })
+                .attributes({ placeholder: 'Select Stream Source from dropdown list' })
                 .validation({ required: true })
                 .perPage(-1)
                 .label('Stream Source Id'),
             nga.field('stream_url', 'string')
-                .attributes({ placeholder: 'Stream Url' })
+                .attributes({ placeholder: 'Channel Stream Url' })
                 .validation({ required: true })
                 .label('Stream Url'),
             nga.field('stream_mode', 'choice')
-                .attributes({ placeholder: 'Stream Format' })
+                .attributes({ placeholder: 'Select Channel Mode from dropdown list' })
                 .choices([
                     { value: 'live', label: 'Live TV stream' },
                     { value: 'catchup', label: 'Catchup stream' }
                 ])
                 .validation({ required: true })
-                .attributes({ placeholder: 'Description' })
-                .validation({ required: true })
                 .label('Channel mode'),
             nga.field('stream_format', 'choice')
-                .attributes({ placeholder: 'Stream Format' })
+                .attributes({ placeholder: 'Choose from dropdown list stream format , for example HLS format' })
                 .choices([
                     { value: 0, label: 'MPEG Dash' },
                     { value: 1, label: 'Smooth Streaming' },
@@ -119,7 +116,6 @@ export default function (nga, admin) {
                 ])
                 .validation({ required: true })
                 .label('Stream Format'),
-
             nga.field('is_octoshape', 'boolean')
                 .validation({ required: true })
                 .label('Is Octoshape'),
@@ -128,16 +124,16 @@ export default function (nga, admin) {
                 .validation({ required: true })
                 .label('Token'),
             nga.field('token_url', 'string')
-                .attributes({ placeholder: 'Token Url' })
-                .validation({ required: true })
+                .defaultValue('Token Url')
+                .validation({ required: false })
                 .label('Token Url'),
             nga.field('encryption', 'boolean')
                 .attributes({ placeholder: 'Encryption' })
                 .validation({ required: true })
                 .label('Encryption'),
             nga.field('encryption_url', 'string')
-                .attributes({ placeholder: 'Encryption Url' })
-                .validation({ required: true })
+                .defaultValue('Encryption url')
+                .validation({ required: false })
                 .label('Encryption Url'),
             nga.field('template')
                 .label('')
