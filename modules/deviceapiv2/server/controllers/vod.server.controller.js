@@ -836,19 +836,20 @@ exports.get_vod_item_related = function(req, res) {
 };
 
 //get this vod item related movies.
+//get this vod item related movies.
 exports.get_vod_items_recommended = function(req, res) {
     //todo: implement related movies logic with results
 
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
     var query = req.query;
     var qwhere  = {};
-        qwhere.where = {};
+    qwhere.where = {};
 
-    qwhere.attributes = ['id', 'title', 'description', 'rate', 'duration', 'year', 'pin_protected',
-                        [db.sequelize.fn("concat", req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'icon'],
-                        [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('image_url')), 'largeimage'],
-                        [db.sequelize.fn('UNIX_TIMESTAMP', db.sequelize.col('createdAt')), 'dataadded']
-                        ];
+    qwhere.attributes = ['id', 'title', ['category_id', 'categoryid'], 'description', 'rate', 'duration', 'year', 'pin_protected',
+        [db.sequelize.fn("concat", req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'icon'],
+        [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('image_url')), 'largeimage'],
+        [db.sequelize.fn('UNIX_TIMESTAMP', db.sequelize.col('createdAt')), 'dataadded']
+    ];
     qwhere.where.pin_protected = 0;
     qwhere.isavailable = 1;
     qwhere.offset = isNaN(parseInt(query._start)) ? 0:parseInt(query._start);
