@@ -8,7 +8,7 @@ var path = require('path'),
     credentialsController = require(path.resolve('./modules/deviceapiv2/server/controllers/credentials.server.controller')),
     channelsController = require(path.resolve('./modules/deviceapiv2/server/controllers/channels.server.controller')),
     catchupController = require(path.resolve('./modules/deviceapiv2/server/controllers/catchup.server.controller')),
-    //vodController = require(path.resolve('./modules/deviceapiv2/server/controllers/vod.server.controller')),
+//vodController = require(path.resolve('./modules/deviceapiv2/server/controllers/vod.server.controller')),
     settingsController = require(path.resolve('./modules/deviceapiv2/server/controllers/settings.server.controller')),
     networkController = require(path.resolve('./modules/deviceapiv2/server/controllers/network.server.controller')),
     eventlogsController = require(path.resolve('./modules/deviceapiv2/server/controllers/eventlogs.server.controller')),
@@ -16,8 +16,8 @@ var path = require('path'),
     mainController = require(path.resolve('./modules/deviceapiv2/server/controllers/main.server.controller')),
     customersAppController = require(path.resolve('./modules/deviceapiv2/server/controllers/customers_app.server.controller')),
     productsAppController = require(path.resolve('./modules/deviceapiv2/server/controllers/products.server.controller')),
-	sitesController = require(path.resolve('./modules/deviceapiv2/server/controllers/sites.server.controller')),
-	headerController = require(path.resolve('./modules/deviceapiv2/server/controllers/header.server.controller')),
+    sitesController = require(path.resolve('./modules/deviceapiv2/server/controllers/sites.server.controller')),
+    headerController = require(path.resolve('./modules/deviceapiv2/server/controllers/header.server.controller')),
     deviceepgController = require(path.resolve('./modules/deviceapiv2/server/controllers/deviceepg.server.controller')),
     winston = require(path.resolve('./config/lib/winston'));
 
@@ -25,7 +25,7 @@ module.exports = function(app) {
 
     app.use('/apiv2',function (req, res, next) {
         winston.info(req.originalUrl +'  '+ JSON.stringify(req.body));
-		res.header("Access-Control-Allow-Origin", "*");
+        res.header("Access-Control-Allow-Origin", "*");
         next();
     });
 
@@ -110,6 +110,8 @@ module.exports = function(app) {
 
     app.route('/help_support')
         .get(settingsController.help_support);
+    app.route('/apiv2/help_support')
+        .get(settingsController.help_support);
 
     //main device menu
     app.route('/apiv2/main/device_menu')
@@ -118,7 +120,7 @@ module.exports = function(app) {
         .post(mainController.device_menu);
 
     /*******************************************************************
-                         Network - related API
+     Network - related API
      *******************************************************************/
     app.route('/apiv2/network/dbtest')
         .all(authpolicy.isAllowed)
