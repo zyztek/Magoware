@@ -17269,7 +17269,7 @@
 	'use strict';
 
 	Object.defineProperty(exports, '__esModule', {
-	    value: true
+			value: true
 	});
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
@@ -17283,32 +17283,32 @@
 	var _filter_genre_btnHtml2 = _interopRequireDefault(_filter_genre_btnHtml);
 
 	exports['default'] = function (nga, admin) {
-	    var message = admin.getEntity('messages');
-	    message.listView().batchActions(['sendmessage', '<my-custom-directive selection="selection"></my-custom-directive>']).title('<h4>Messages <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').fields([nga.field('username').label('Username'), nga.field('title').label('Title'), nga.field('message').map(function truncate(value) {
-	        if (!value) {
-	            return '';
-	        }
-	        return value.length > 14 ? value.substr(0, 14) + '...' : value;
-	    }).label('Messages'), nga.field('action').label('Action'), nga.field('createdAt', 'datetime').label('Created')]).listActions(['edit']).exportFields([message.listView().fields()]);
+			var message = admin.getEntity('messages');
+			message.listView().batchActions(['sendmessage', '<my-custom-directive selection="selection"></my-custom-directive>']).title('<h4>Messages <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>').fields([nga.field('username').label('Username'), nga.field('title').label('Title'), nga.field('message').map(function truncate(value) {
+					if (!value) {
+							return '';
+					}
+					return value.length > 14 ? value.substr(0, 14) + '...' : value;
+			}).label('Messages'), nga.field('action').label('Action'), nga.field('createdAt', 'datetime').label('Created')]).listActions(['edit']).exportFields([message.listView().fields()]);
 
-	    message.creationView().title('<h4>Messages <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Messages</h4>').actions(['list']).onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
-	        // redirect to the list view
-	        $state.go($state.current, {}, { reload: true }).then($state.go($state.get('list'), { entity: entity.name() })); // cancel the default action (redirect to the edition view)
-	    }]).fields([nga.field('type', 'choice').choices(function (entry) {
-	        var types = [{ value: 'one', label: 'One User' }, { value: 'all', label: 'All User' }];
-	        return types;
-	    }).attributes({ placeholder: 'Select User Type from dropdown list' }).label('User Type'), nga.field('username', 'reference').targetEntity(admin.getEntity('LoginData')).targetField(nga.field('username')).attributes({ placeholder: 'Select Account from dropdown list' }).remoteComplete(true, {
-	        refreshDelay: 300,
-	        // populate choices from the response of GET /posts?q=XXX
-	        searchQuery: function searchQuery(search) {
-	            return { q: search };
-	        }
-	    }).perPage(10) // limit the number of results to 10
-	    .label('Username'), nga.field('toandroidsmartphone', 'boolean').validation({ required: true }).label('Android Smartphone'), nga.field('toios', 'boolean').validation({ required: true }).label('IOS'), nga.field('toandroidbox', 'boolean').validation({ required: true }).label('Android Box'), nga.field('timetolive', 'number').attributes({ placeholder: 'Time to live in sec' }).validation({ required: true }).label('Time to live in sec'), nga.field('title', 'string').attributes({ placeholder: 'Info message' }).validation({ required: true }).label('Title'), nga.field('message', 'text').attributes({ placeholder: 'Message' }).validation({ required: true }).label('Message'), nga.field('sendtoactivedevices', 'boolean').validation({ required: true }).defaultValue(true).label('Send only to active devices'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
+			message.creationView().title('<h4>Messages <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Messages</h4>').actions(['list']).onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function (progression, notification, $state, entry, entity) {
+					// redirect to the list view
+					$state.go($state.current, {}, { reload: true }).then($state.go($state.get('list'), { entity: entity.name() })); // cancel the default action (redirect to the edition view)
+			}]).fields([nga.field('type', 'choice').choices(function (entry) {
+					var types = [{ value: 'one', label: 'One User' }, { value: 'all', label: 'All User' }];
+					return types;
+			}).label('User Type'), nga.field('username', 'reference').targetEntity(admin.getEntity('LoginData')).targetField(nga.field('username')).attributes({ placeholder: 'Select Account' }).remoteComplete(true, {
+					refreshDelay: 300,
+					// populate choices from the response of GET /posts?q=XXX
+					searchQuery: function searchQuery(search) {
+							return { q: search };
+					}
+			}).perPage(10) // limit the number of results to 10
+			.label('Username'), nga.field('appid', 'choices').attributes({ placeholder: 'Send to device type:' }).choices([{ value: 1, label: 'Android Set Top Box' }, { value: 2, label: 'Android Smart Phone' }, { value: 3, label: 'IOS' }, { value: 4, label: 'Android Smart TV' }, { value: 5, label: 'Samsung Smart TV' }, { value: 6, label: 'Apple TV' }]).validation({ required: true }).label('Applications IDs'), nga.field('timetolive', 'number').attributes({ placeholder: 'ttl' }).validation({ required: true }).label('Time to live in sec'), nga.field('title', 'string').attributes({ placeholder: 'Info message' }).validation({ required: true }).label('Title'), nga.field('message', 'text').attributes({ placeholder: 'Message' }).validation({ required: true }).label('Message'), nga.field('sendtoactivedevices', 'boolean').validation({ required: true }).defaultValue(true).label('Send only to active devices'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
 
-	    message.editionView().title('<h4>Messages <i class="fa fa-angle-right" aria-hidden="true"></i></h4>').actions(['list']).fields([nga.field('username').validation({ required: true }).label('Username'), nga.field('googleappid').attributes({ placeholder: 'Google app id' }).label('Google App ID'), nga.field('title').label('Title'), nga.field('action').label('Action'), nga.field('message', 'text').attributes({ placeholder: 'Message' }).validation({ required: true }).label('Messages'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
+			message.editionView().title('<h4>Messages <i class="fa fa-angle-right" aria-hidden="true"></i></h4>').actions(['list']).fields([nga.field('username').validation({ required: true }).label('Username'), nga.field('googleappid').attributes({ placeholder: 'Google app id' }).label('Google App ID'), nga.field('title').label('Title'), nga.field('action').label('Action'), nga.field('message', 'text').attributes({ placeholder: 'Message' }).validation({ required: true }).label('Messages'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
 
-	    return message;
+			return message;
 	};
 
 	module.exports = exports['default'];
@@ -17347,7 +17347,7 @@
 	            return { q: search };
 	        }
 	    }).perPage(10) // limit the number of results to 10
-	    .label('Username'), nga.field('toandroidsmartphone', 'boolean').validation({ required: true }).label('Android Smartphone'), nga.field('toios', 'boolean').validation({ required: true }).label('IOS'), nga.field('toandroidbox', 'boolean').validation({ required: true }).label('Android Box'), nga.field('command', 'choice').choices([{ value: 'file_replace', label: 'Replace file' }, { value: 'SOFTWARE_INSTALL', label: 'Software Installation' }, { value: 'DELETE_SHP', label: 'Delete shared preferences' }, { value: 'DELETE_DATA', label: 'Clear data' }, { value: 'debuggerd', label: 'Available free space' }, { value: 'pwd', label: 'Current directory name' }, { value: 'date', label: 'Current date and time' }]).label('Command'), nga.field('command').attributes({ placeholder: 'You can type your Command here' }).label('Write your Command').template('<ma-input-field field="field" value="entry.values.command"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">If you write here, you must not choose from above field. Above field overwrite this field.</small>'), nga.field('parameter1', 'string').attributes({ placeholder: 'parammeter1' }).label('Target'), nga.field('parameter2', 'string').attributes({ placeholder: 'parammeter2' }).label('Destination'), nga.field('parameter3', 'string').attributes({ placeholder: 'parammeter3' }).label('Options'), nga.field('sendtoactivedevices', 'boolean').validation({ required: true }).defaultValue(true).label('Send only to active devices'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
+	    .label('Username'), nga.field('appid', 'choices').attributes({ placeholder: 'Send to device type:' }).choices([{ value: 1, label: 'Android Set Top Box' }, { value: 2, label: 'Android Smart Phone' }, { value: 3, label: 'IOS' }, { value: 4, label: 'Android Smart TV' }, { value: 5, label: 'Samsung Smart TV' }, { value: 6, label: 'Apple TV' }]).validation({ required: true }).label('Applications IDs'), nga.field('command', 'choice').choices([{ value: 'file_replace', label: 'Replace file' }, { value: 'SOFTWARE_INSTALL', label: 'Software Installation' }, { value: 'DELETE_SHP', label: 'Delete shared preferences' }, { value: 'DELETE_DATA', label: 'Clear data' }, { value: 'debuggerd', label: 'Available free space' }, { value: 'pwd', label: 'Current directory name' }, { value: 'date', label: 'Current date and time' }]).label('Command'), nga.field('command').attributes({ placeholder: 'You can type your Command here' }).label('Write your Command').template('<ma-input-field field="field" value="entry.values.command"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">If you write here, you must not choose from above field. Above field overwrite this field.</small>'), nga.field('parameter1', 'string').attributes({ placeholder: 'parammeter1' }).label('Target'), nga.field('parameter2', 'string').attributes({ placeholder: 'parammeter2' }).label('Destination'), nga.field('parameter3', 'string').attributes({ placeholder: 'parammeter3' }).label('Options'), nga.field('sendtoactivedevices', 'boolean').validation({ required: true }).defaultValue(true).label('Send only to active devices'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
 	    return commands;
 	};
 
@@ -17386,7 +17386,7 @@
 	            return { q: search };
 	        }
 	    }).perPage(10) // limit the number of results to 10
-	    .label('Username'), nga.field('all_users', 'boolean').validation({ required: true }).label('Send to all users (overrides username)'), nga.field('appid', 'choices').attributes({ placeholder: 'Select from dropdown list to send to device type:' }).choices([{ value: 1, label: 'Android Set Top Box' }, { value: 2, label: 'Android Smart Phone' }, { value: 3, label: 'IOS' }, { value: 4, label: 'Android Smart TV' }, { value: 5, label: 'Samsung Smart TV' }]).validation({ required: true }).label('Applications IDs'), nga.field('activity', 'choices').choices([{ value: 'livetv', label: 'In live tv' }, { value: 'vod', label: 'In vod' }, { value: 'all', label: 'Everywhere (overrules other values)' }]).validation({ required: true }).attributes({ placeholder: 'Select from dropdown list filter values' }).label('Display:'), nga.field('title', 'string').attributes({ placeholder: 'Title' }).label('Title'), nga.field('message', 'text').attributes({ placeholder: 'Message' }).label('Message'), nga.field('link_url', 'string').template('<div>' + '<ma-input-field field="field" value="entry.values.link_url"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Default empty string</small>' + '</div>').label('Link'), nga.field('xOffset', 'choice').choices([{ value: '1', label: 'Top' }, { value: '2', label: 'Center' }, { value: '3', label: 'Bottom' }]).validation({ required: true }).attributes({ placeholder: 'Select from dropdown list filter values' }).label('Position'), nga.field('imageGif', 'string').validation({ required: true }).attributes({ placeholder: 'Image link' }).label('Image link'), nga.field('duration', 'number').template('<div>' + '<ma-input-field field="field" value="entry.values.duration"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Ad duration. Default 5000 ms</small>' + '</div>').attributes({ placeholder: 'Duration in ms' }).label('Duration in ms'), nga.field('delivery_time', 'datetime').attributes({ placeholder: 'Choose date' }).label('Send ad at:'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
+	    .label('Username'), nga.field('all_users', 'boolean').validation({ required: true }).label('Send to all users (overrides username)'), nga.field('appid', 'choices').attributes({ placeholder: 'Select from dropdown list to send to device type:' }).choices([{ value: 1, label: 'Android Set Top Box' }, { value: 2, label: 'Android Smart Phone' }, { value: 3, label: 'IOS' }, { value: 4, label: 'Android Smart TV' }, { value: 5, label: 'Samsung Smart TV' }, { value: 6, label: 'Apple TV' }]).validation({ required: true }).label('Applications IDs'), nga.field('activity', 'choices').choices([{ value: 'livetv', label: 'In live tv' }, { value: 'vod', label: 'In vod' }, { value: 'all', label: 'Everywhere (overrules other values)' }]).validation({ required: true }).attributes({ placeholder: 'Select from dropdown list filter values' }).label('Display:'), nga.field('title', 'string').attributes({ placeholder: 'Title' }).label('Title'), nga.field('message', 'text').attributes({ placeholder: 'Message' }).label('Message'), nga.field('link_url', 'string').template('<ma-input-field field="field" value="entry.values.link_url"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Default empty string</small>').label('Link'), nga.field('xOffset', 'choice').choices([{ value: '1', label: 'Top' }, { value: '2', label: 'Center' }, { value: '3', label: 'Bottom' }]).validation({ required: true }).attributes({ placeholder: 'Select from dropdown list filter values' }).label('Position'), nga.field('imageGif', 'string').validation({ required: true }).attributes({ placeholder: 'Image link' }).label('Image link'), nga.field('duration', 'number').template('<div>' + '<ma-input-field field="field" value="entry.values.duration"></ma-input-field>' + '<small id="emailHelp" class="form-text text-muted">Ad duration. Default 5000 ms</small>' + '</div>').attributes({ placeholder: 'Duration in ms' }).label('Duration in ms'), nga.field('delivery_time', 'datetime').attributes({ placeholder: 'Choose date' }).label('Send ad at:'), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
 	    return ads;
 	};
 

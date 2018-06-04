@@ -53,8 +53,10 @@ function send_notification(event_time, firebase_key, login_data_id, channel_numb
                             var message = new push_msg.SCHEDULE_PUSH(epg_program.title, epg_program.long_description, '2', "scheduling", program_id.toString(), channel_number.toString(), event_time.toString());
                         else if(devices[i].appid === 4 && devices[i].app_version >= '6.1.3.0')
                             var message = new push_msg.SCHEDULE_PUSH(epg_program.title, epg_program.long_description, '2', "scheduling", program_id.toString(), channel_number.toString(), event_time.toString());
+                        else if(['5', '6'].indexOf(devices[i].appid))
+                            var message = new push_msg.SCHEDULE_PUSH(epg_program.title, epg_program.long_description, '2', "scheduling", program_id.toString(), channel_number.toString(), event_time.toString());
                         else var message = {
-                                "event": "scheduling", //todo: te hiqet?
+                                "event": "scheduling",
                                 "program_id": program_id.toString(),
                                 "channel_number": channel_number.toString(),
                                 "event_time": event_time.toString(),
@@ -146,6 +148,8 @@ function send_action(action, login_id, app_ids, firebase_key){
                 else if(parseInt(result[i].appid) === parseInt('3') && parseInt(result[i].app_version) >= parseInt('1.3957040'))
                     var message = new push_msg.ACTION_PUSH('Action', "Your subscription has ended", '5', "termination");
                 else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0') var message = new push_msg.ACTION_PUSH('Action', "Your subscription has ended", '5', "termination");
+                else if(['5', '6'].indexOf(result[i].appid))
+                    var message = new push_msg.ACTION_PUSH('Action', "Your subscription has ended", '5', "termination");
                 else var message = {"action": "termination", "parameter1": "", "parameter2": "", "parameter3": ""};
                 push_msg.send_notification(result.googleappid, firebase_key, result.username, message, 5, false, false, null);
             }

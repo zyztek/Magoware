@@ -55,7 +55,8 @@ export default function (nga, admin) {
                     { value: 2, label: 'Android Smart Phone' },
                     { value: 3, label: 'IOS' },
                     { value: 4, label: 'Android Smart TV' },
-                    { value: 5, label: 'Samsung Smart TV' }
+                    { value: 5, label: 'Samsung Smart TV' },
+                    { value: 6, label: 'Apple TV' }
                 ])
                 .validation({required: true})
                 .label('Applications IDs'),
@@ -77,10 +78,8 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'Message' })
                 .label('Message'),
             nga.field('link_url', 'string')
-                .template('<div>'+
-                    '<ma-input-field field="field" value="entry.values.link_url"></ma-input-field>'+
-                    '<small id="emailHelp" class="form-text text-muted">Default empty string</small>'+
-                    '</div>')
+                .template('<ma-input-field field="field" value="entry.values.link_url"></ma-input-field>'+
+                    '<small id="emailHelp" class="form-text text-muted">Default empty string</small>')
                 .label('Link'),
 
             nga.field('xOffset', 'choice')

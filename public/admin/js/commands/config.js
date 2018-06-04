@@ -52,15 +52,18 @@ export default function (nga, admin) {
                 })
                 .perPage(10) // limit the number of results to 10
                 .label('Username'),
-            nga.field('toandroidsmartphone', 'boolean')
-                .validation({ required: true })
-                .label('Android Smartphone'),
-            nga.field('toios', 'boolean')
-                .validation({ required: true })
-                .label('IOS'),
-            nga.field('toandroidbox', 'boolean')
-                .validation({ required: true })
-                .label('Android Box'),
+            nga.field('appid', 'choices')
+                .attributes({ placeholder: 'Send to device type:' })
+                .choices([
+                    { value: 1, label: 'Android Set Top Box' },
+                    { value: 2, label: 'Android Smart Phone' },
+                    { value: 3, label: 'IOS' },
+                    { value: 4, label: 'Android Smart TV' },
+                    { value: 5, label: 'Samsung Smart TV' },
+                    { value: 6, label: 'Apple TV' }
+                ])
+                .validation({required: true})
+                .label('Applications IDs'),
             nga.field('command', 'choice')
                 .choices([
                     { value: 'file_replace', label: 'Replace file' },
@@ -77,7 +80,7 @@ export default function (nga, admin) {
                 .template(
                     '<ma-input-field field="field" value="entry.values.command"></ma-input-field>'+
                     '<small id="emailHelp" class="form-text text-muted">If you write here, you must not choose from above field. Above field overwrite this field.</small>'
-                    ),
+                ),
 
             nga.field('parameter1', 'string')
                 .attributes({ placeholder: 'parammeter1' })

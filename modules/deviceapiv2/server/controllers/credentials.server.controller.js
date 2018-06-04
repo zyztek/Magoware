@@ -6,7 +6,7 @@ var path = require('path'),
     push_msg = require(path.resolve('./custom_functions/push_messages')),
     crypto = require('crypto'),
     models = db.models;
-    var async = require("async");
+var async = require("async");
 
 /**
  * @api {post} /apiv2/credentials/login /apiv2/credentials/login
@@ -288,6 +288,8 @@ exports.lock_account = function lock_account(login_id, username) {
                     else if(parseInt(result[i].appid) === parseInt('3') && parseInt(result[i].app_version) >= parseInt('1.3957040'))
                         var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
                     else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0') var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
+                    else if(['5', '6'].indexOf(result[i].appid))
+                        var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
                     else var message = {"action": "lock_account", "parameter1": "", "parameter2": "", "parameter3": ""};
                     push_msg.send_notification(result[i].googleappid, setting.firebase_key, username, message, 5, false, true, function(result){});
                 }

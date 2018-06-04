@@ -66,25 +66,24 @@ function save_messages(obj, messagein, ttl, action, callback){
 
 exports.create = function(req, res) {
     var no_users = (req.body.type === "one" && req.body.username === null) ? true : false; //no users selected for single user messages, don't send push
-    var no_device_type = (req.body.toandroidsmartphone === false && req.body.toandroidbox === false  && req.body.toios === false) ? true : false; //no device types selected, don't send push
 
-    if(no_users || no_device_type){
+    if(no_users){
         return res.status(400).send({
             message: 'You did not select any devices'
         });
     }
     else{
         var where = {}; //the device filters will be passed here
-        var appids = []; //appids that should receive the push will be held here
         if(req.body.type === "one") where.login_data_id = req.body.username; //if only one user is selected, filter devices of that user
 
-        //for each selected device type, add appid in the list of appids
-        if(req.body.toandroidbox) appids.push(1);
-        if(req.body.toandroidsmartphone) appids.push(2);
-        if(req.body.toios) appids.push(3);
-        where.appid = {in: appids};
+        if (req.body.appid && req.body.appid.length > 0) {
+            var device_types = [];
+            for(var j=0; j<req.body.appid.length; j++) device_types.push(parseInt(req.body.appid[j]));
+        }
+        else return res.status(400).send({ message: "You did not select any device types" });
 
         if(req.body.sendtoactivedevices) where.device_active = true; //if we only want to send push msgs to active devices, add condition
+        where.appid = {in: device_types}; //filter devices by application id
 
         DBDevices.findAll(
             {
@@ -99,11 +98,13 @@ exports.create = function(req, res) {
                 });
             } else {
                 for(var i=0; i<result.length; i++){
-                    if(result[i].appid === 1 && result[i].app_version >= '2.2.2') var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1'); //todo: replace app version
+                    if(result[i].appid === 1 && result[i].app_version >= '2.2.2') var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1');
                     else if(result[i].appid === 2 && result[i].app_version >= '1.1.2.2') var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1');
                     else if(parseInt(result[i].appid) === parseInt('3') && parseInt(result[i].app_version) >= parseInt('1.3957040'))
                         var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1');
-                    else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0') var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1'); //todo: replace app version
+                    else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0') var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1');
+                    else if(['5', '6'].indexOf(result[i].appid))
+                        var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1');
                     else var message = {"action": "notification", "parameter1": req.body.message, "parameter2": req.body.message, "parameter3": ""};
                     push_msg.send_notification(result[i].googleappid, req.app.locals.settings.firebase_key, result[i].login_datum.username, message, req.body.timetolive, true, true, function(result){});
                 }

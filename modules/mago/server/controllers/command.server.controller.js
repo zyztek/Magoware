@@ -8,51 +8,51 @@ var path = require('path'),
     DBDevices = db.devices;
 
 /*
-function save_messages(obj, messagein, ttl, action, callback){
-    console.log("at save message")
+ function save_messages(obj, messagein, ttl, action, callback){
+ console.log("at save message")
 
-    DBModel.create({
-        username: obj.username,
-        googleappid: obj.googleappid,
-        title: messagein,
-        message: messagein,
-        action: action
-    }).then(function(result) {
-        if (!result) {
-            console.log('Fail to create data')
-        } else {
-            console.log('Messages saved')
-        }
-    }).catch(function(err) {
+ DBModel.create({
+ username: obj.username,
+ googleappid: obj.googleappid,
+ title: messagein,
+ message: messagein,
+ action: action
+ }).then(function(result) {
+ if (!result) {
+ console.log('Fail to create data')
+ } else {
+ console.log('Messages saved')
+ }
+ }).catch(function(err) {
 
-    });
+ });
 
-}
-*/
+ }
+ */
 
 /**
  * Create
  */
 exports.create = function(req, res) {
     var no_users = (req.body.type === "one" && req.body.username === null) ? true : false; //no users selected for single user messages, don't send push
-    var no_device_type = (req.body.toandroidsmartphone === false && req.body.toandroidbox === false  && req.body.toios === false) ? true : false; //no device types selected, don't send push
-    if(no_users || no_device_type){
+    if(no_users){
         return res.status(400).send({
             message: 'You did not select any devices'
         });
     }
     else{
         var where = {}; //the device filters will be passed here
-        var appids = []; //appids that should receive the push will be held here
+
         if(req.body.type === "one") where.login_data_id = req.body.username; //if only one user is selected, filter devices of that user
 
-        //for each selected device type, add appid in the list of appids
-        if(req.body.toandroidbox) appids.push(1);
-        if(req.body.toandroidsmartphone) appids.push(2);
-        if(req.body.toios) appids.push(3);
-        where.appid = {in: appids};
+        if (req.body.appid && req.body.appid.length > 0) {
+            var device_types = [];
+            for(var j=0; j<req.body.appid.length; j++) device_types.push(parseInt(req.body.appid[j]));
+        }
+        else return res.status(400).send({ message: "You did not select any device types" });
 
         if(req.body.sendtoactivedevices) where.device_active = true; //if we only want to send push msgs to active devices, add condition
+        where.appid = {in: device_types}; //filter devices by application id
 
         DBDevices.findAll(
             {
@@ -77,6 +77,8 @@ exports.create = function(req, res) {
                     else if(parseInt(result[i].appid) === parseInt('3') && parseInt(result[i].app_version) >= parseInt('1.3957040'))
                         var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
                     else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0')
+                        var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
+                    else if(['5', '6'].indexOf(result[i].appid))
                         var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
                     else var message = {
                             "action": req.body.command,
