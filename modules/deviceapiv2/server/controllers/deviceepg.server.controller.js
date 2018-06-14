@@ -66,7 +66,7 @@ exports.event =  function(req, res) {
         }).then(function (user_channel) {
             if(user_channel) channel_title = user_channel.title;
             models.epg_data.findAll({
-                attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end' ],
+                attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end', 'long_description' ],
                 order: [['program_start', 'ASC']],
                 limit: 3,
                 include: [
@@ -111,8 +111,8 @@ exports.event =  function(req, res) {
                                 raw_obj.number = obj[k].channel_number;
                                 raw_obj.title = obj.title;
                                 raw_obj.scheduled = (!obj.program_schedules[0]) ? false : schedule.is_scheduled(obj.program_schedules[0].id);
-                                raw_obj.description = obj.short_description;
-                                raw_obj.shortname = obj.short_name;
+                                raw_obj.description = obj.long_description;
+                                raw_obj.shortname = obj.short_description;
                                 raw_obj.programstart = dateFormat(programstart, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
                                 raw_obj.programend = dateFormat(programend, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
                                 raw_obj.duration = obj.duration_seconds;
@@ -210,7 +210,7 @@ exports.get_event =  function(req, res) {
         }).then(function (user_channel) {
             if(user_channel) channel_title = user_channel.title;
             models.epg_data.findAll({
-                attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end' ],
+                attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end', 'long_description' ],
                 order: [['program_start', 'ASC']],
                 limit: 3,
                 include: [
@@ -255,8 +255,8 @@ exports.get_event =  function(req, res) {
                                 raw_obj.number = obj[k].channel_number;
                                 raw_obj.title = obj.title;
                                 raw_obj.scheduled = (!obj.program_schedules[0]) ? false : schedule.is_scheduled(obj.program_schedules[0].id);
-                                raw_obj.description = obj.short_description;
-                                raw_obj.shortname = obj.short_name;
+                                raw_obj.description = obj.long_description;
+                                raw_obj.shortname = obj.short_description;
                                 raw_obj.programstart = dateFormat(programstart, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
                                 raw_obj.programend = dateFormat(programend, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
                                 raw_obj.duration = obj.duration_seconds;
@@ -382,7 +382,7 @@ exports.current_epgs =  function(req, res) {
                 {
                     model: models.epg_data, required: false,
                     attributes: [
-                        'id', 'short_description', 'short_name', 'duration_seconds',
+                        'id', 'title', 'short_description', 'long_description', 'short_name', 'duration_seconds',
                         db_funct.final_time('program_start', 'program_start', 'HOUR', req.body.device_timezone, '%m/%d/%Y %H:%i:%s'),
                         db_funct.final_time('program_end', 'program_end', 'HOUR', req.body.device_timezone, '%m/%d/%Y %H:%i:%s'),
                         db_funct.add_constant(false, 'scheduled')
@@ -394,12 +394,12 @@ exports.current_epgs =  function(req, res) {
             for(var i=0; i< channels.length; i++){
                 var raw_obj = {};
                 raw_obj.channelName =  channels[i].title;
-                raw_obj.title =  channels[i].title;
+                raw_obj.title =  (channels[i].epg_data[0]) ? channels[i].epg_data[0].title : "Program of "+ channels[i].title;
                 raw_obj.number =  channels[i].channel_number;
                 raw_obj.id = (channels[i].epg_data[0]) ? channels[i].epg_data[0].id : -1;
                 raw_obj.scheduled = false;
-                raw_obj.shortname = (channels[i].epg_data[0]) ? channels[i].epg_data[0].short_name : "Program of "+ channels[i].title;
-                raw_obj.description = (channels[i].epg_data[0]) ?  channels[i].epg_data[0].short_description : 'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
+                raw_obj.shortname = (channels[i].epg_data[0]) ? channels[i].epg_data[0].short_description  : "Program of "+ channels[i].title;
+                raw_obj.description = (channels[i].epg_data[0]) ?  channels[i].epg_data[0].long_description  : 'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
                 raw_obj.programstart = (channels[i].epg_data[0]) ? channels[i].epg_data[0].program_start : "01/01/1970 00:00:00";
                 raw_obj.programend = (channels[i].epg_data[0]) ? channels[i].epg_data[0].program_end : "01/01/1970 00:00:00";
                 raw_obj.duration = (channels[i].epg_data[0]) ? channels[i].epg_data[0].duration_seconds : 0;
@@ -520,9 +520,9 @@ exports.get_current_epgs =  function(req, res) {
                 {
                     model: models.epg_data, required: false,
                     attributes: [
-                        'id', 'short_description', 'short_name', 'duration_seconds',
-                        db_funct.final_time('program_start', 'program_start', 'HOUR', req.body.device_timezone, '%m/%d/%Y %H:%i:%s'),
-                        db_funct.final_time('program_end', 'program_end', 'HOUR', req.body.device_timezone, '%m/%d/%Y %H:%i:%s'),
+                        'id', 'title', 'short_description', 'long_description', 'short_name', 'duration_seconds',
+                        db_funct.final_time('program_start', 'program_start', 'HOUR', req.query.device_timezone, '%m/%d/%Y %H:%i:%s'),
+                        db_funct.final_time('program_end', 'program_end', 'HOUR', req.query.device_timezone, '%m/%d/%Y %H:%i:%s'),
                         db_funct.add_constant(false, 'scheduled')
                     ],
                     where: {program_start: {lte: server_time}, program_end: {gte: server_time}}
@@ -532,16 +532,16 @@ exports.get_current_epgs =  function(req, res) {
             for(var i=0; i< channels.length; i++){
                 var raw_obj = {};
                 raw_obj.channelName =  channels[i].title;
-                raw_obj.title =  channels[i].title;
+                raw_obj.title =  (channels[i].epg_data[0]) ? channels[i].epg_data[0].title : "Program of "+ channels[i].title;
                 raw_obj.number =  channels[i].channel_number;
                 raw_obj.id = (channels[i].epg_data[0]) ? channels[i].epg_data[0].id : -1;
                 raw_obj.scheduled = false;
-                raw_obj.shortname = (channels[i].epg_data[0]) ? channels[i].epg_data[0].short_name : "Program of "+ channels[i].title;
-                raw_obj.description = (channels[i].epg_data[0]) ?  channels[i].epg_data[0].short_description : 'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
+                raw_obj.shortname = (channels[i].epg_data[0]) ? channels[i].epg_data[0].short_description  : "Program of "+ channels[i].title;
+                raw_obj.description = (channels[i].epg_data[0]) ?  channels[i].epg_data[0].long_description  : 'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
                 raw_obj.programstart = (channels[i].epg_data[0]) ? channels[i].epg_data[0].program_start : "01/01/1970 00:00:00";
                 raw_obj.programend = (channels[i].epg_data[0]) ? channels[i].epg_data[0].program_end : "01/01/1970 00:00:00";
                 raw_obj.duration = (channels[i].epg_data[0]) ? channels[i].epg_data[0].duration_seconds : 0;
-                raw_obj.progress = (channels[i].epg_data[0]) ? Math.round(((Date.now() + 3600000*req.body.device_timezone) - moment(channels[i].epg_data[0].program_start, 'MM/DD/YYYY HH:mm:ss').format('x')) / (channels[i].epg_data[0].duration_seconds * 10)) : 0;
+                raw_obj.progress = (channels[i].epg_data[0]) ? Math.round(((Date.now() + 3600000*req.query.device_timezone) - moment(channels[i].epg_data[0].program_start, 'MM/DD/YYYY HH:mm:ss').format('x')) / (channels[i].epg_data[0].duration_seconds * 10)) : 0;
                 raw_obj.status = 2;
 
                 raw_result.push(raw_obj);
@@ -623,7 +623,7 @@ exports.epg = function(req, res) {
 
     //gets epg of the channels from the list for the next 4 hours starting from timeshift
     models.epg_data.findAll({
-        attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end' ],
+        attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end', 'channel_number', 'long_description' ],
         include: [
             {
                 model: models.channels, required: true, attributes: ['title', 'channel_number'],
@@ -634,6 +634,7 @@ exports.epg = function(req, res) {
                 attributes: ['id'],	where: {login_id: req.thisuser.id}
             }
         ],
+        order: [['channel_number', 'ASC'], ['program_start', 'ASC']],
         where: Sequelize.and(
             Sequelize.or(
                 {program_start:{between:[starttime, endtime]}},
@@ -661,8 +662,8 @@ exports.epg = function(req, res) {
                             raw_obj.id = obj.id;
                             raw_obj.scheduled = (!obj.program_schedules[0]) ? false : schedule.is_scheduled(obj.program_schedules[0].id);
                             raw_obj.title = obj.title;
-                            raw_obj.description = obj.short_description;
-                            raw_obj.shortname = obj.short_name;
+                            raw_obj.description = obj.long_description;
+                            raw_obj.shortname = obj.short_description;
                             raw_obj.programstart = dateFormat(programstart, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
                             raw_obj.programend = dateFormat(programend, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
                             raw_obj.duration = obj.duration_seconds;
@@ -727,7 +728,7 @@ exports.get_epg = function(req, res) {
 
     //gets epg of the channels from the list for the next 4 hours starting from timeshift
     models.epg_data.findAll({
-        attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end' ],
+        attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end', 'channel_number', 'long_description' ],
         include: [
             {
                 model: models.channels, required: true, attributes: ['title', 'channel_number'],
@@ -738,6 +739,7 @@ exports.get_epg = function(req, res) {
                 attributes: ['id'],	where: {login_id: req.thisuser.id}
             }
         ],
+        order: [['channel_number', 'ASC'], ['program_start', 'ASC']],
         where: Sequelize.and(
             Sequelize.or(
                 {program_start:{between:[starttime, endtime]}},
@@ -765,8 +767,8 @@ exports.get_epg = function(req, res) {
                             raw_obj.id = obj.id;
                             raw_obj.scheduled = (!obj.program_schedules[0]) ? false : schedule.is_scheduled(obj.program_schedules[0].id);
                             raw_obj.title = obj.title;
-                            raw_obj.description = obj.short_description;
-                            raw_obj.shortname = obj.short_name;
+                            raw_obj.description = obj.long_description;
+                            raw_obj.shortname = obj.short_description;
                             raw_obj.programstart = dateFormat(programstart, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
                             raw_obj.programend = dateFormat(programend, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
                             raw_obj.duration = obj.duration_seconds;
@@ -854,7 +856,7 @@ exports.daily_epg =  function(req, res) {
         },
         get_epg: ['get_channel', function(results, callback) {
             models.epg_data.findAll({
-                attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end' ],
+                attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end', 'long_description' ],
                 order: [['program_start', 'ASC']],
                 include: [
                     {
@@ -907,14 +909,14 @@ exports.daily_epg =  function(req, res) {
                 var programstart = parseInt(epg_data.get_epg[1][i].program_start.getTime()) +  parseInt((client_timezone) * 3600000);
                 var programend = parseInt(epg_data.get_epg[1][i].program_end.getTime()) +  parseInt((client_timezone) * 3600000);
 
-                temp_obj.channelName = epg_data.get_epg[1][i].title;
+                temp_obj.channelName = epg_data.get_epg[0];
                 temp_obj.id = epg_data.get_epg[1][i].id;
                 temp_obj.number = req.body.channel_number;
                 temp_obj.title = epg_data.get_epg[1][i].title;
                 temp_obj.scheduled = (!epg_data.get_epg[1][i].program_schedules[0]) ? false : schedule.is_scheduled(epg_data.get_epg[1][i].program_schedules[0].id);
                 temp_obj.status = program_status(epg_data.get_epg[1][i].program_start.getTime(), epg_data.get_epg[1][i].program_end.getTime());
-                temp_obj.description = epg_data.get_epg[1][i].short_description;
-                temp_obj.shortname = epg_data.get_epg[1][i].short_name;
+                temp_obj.description = epg_data.get_epg[1][i].long_description;
+                temp_obj.shortname = epg_data.get_epg[1][i].short_description;
                 temp_obj.programstart = dateFormat(programstart, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
                 temp_obj.programend = dateFormat(programend, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
                 temp_obj.duration = epg_data.get_epg[1][i].duration_seconds;
@@ -1003,7 +1005,7 @@ exports.get_daily_epg =  function(req, res) {
         },
         get_epg: ['get_channel', function(results, callback) {
             models.epg_data.findAll({
-                attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end' ],
+                attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end', 'long_description' ],
                 order: [['program_start', 'ASC']],
                 include: [
                     {
@@ -1056,14 +1058,14 @@ exports.get_daily_epg =  function(req, res) {
                 var programstart = parseInt(epg_data.get_epg[1][i].program_start.getTime()) +  parseInt((client_timezone) * 3600000);
                 var programend = parseInt(epg_data.get_epg[1][i].program_end.getTime()) +  parseInt((client_timezone) * 3600000);
 
-                temp_obj.channelName = epg_data.get_epg[1][i].title;
+                temp_obj.channelName = epg_data.get_epg[0];
                 temp_obj.id = epg_data.get_epg[1][i].id;
                 temp_obj.number = channel_number;
                 temp_obj.title = epg_data.get_epg[1][i].title;
                 temp_obj.scheduled = (!epg_data.get_epg[1][i].program_schedules[0]) ? false : schedule.is_scheduled(epg_data.get_epg[1][i].program_schedules[0].id);
                 temp_obj.status = program_status(epg_data.get_epg[1][i].program_start.getTime(), epg_data.get_epg[1][i].program_end.getTime());
-                temp_obj.description = epg_data.get_epg[1][i].short_description;
-                temp_obj.shortname = epg_data.get_epg[1][i].short_name;
+                temp_obj.description = epg_data.get_epg[1][i].long_description;
+                temp_obj.shortname = epg_data.get_epg[1][i].short_description;
                 temp_obj.programstart = dateFormat(programstart, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
                 temp_obj.programend = dateFormat(programend, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
                 temp_obj.duration = epg_data.get_epg[1][i].duration_seconds;
@@ -1099,7 +1101,7 @@ exports.test_get_epg_data = function(req, res) {
 
     final_where.attributes = [ 'id', 'channel_number', 'title',[db.sequelize.fn("concat", req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'icon_url']],
     final_where.include = [{
-                                model: models.epg_data, attributes: ['title', 'short_name', 'short_description', 'long_description', 'program_start','program_end','duration_seconds'],
+                                model: models.epg_data, attributes: ['title', 'short_name', 'short_description', 'long_description', 'program_start','program_end','duration_seconds', 'long_description'],
                                 required: false,
                                 where: Sequelize.and(
                                     {program_start: {gte:starttime}},
@@ -1120,4 +1122,12 @@ exports.test_get_epg_data = function(req, res) {
     });
 };
 
-
+function program_status(programstart, programend){
+    if(programstart < Date.now() && programend < Date.now()){
+        return 1;
+    }
+    else if(programstart < Date.now() && programend > Date.now()){
+        return 2;
+    }
+    else return 3
+}
