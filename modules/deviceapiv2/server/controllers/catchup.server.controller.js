@@ -59,7 +59,7 @@ exports.catchup_events =  function(req, res) {
     var interval_end_human = dateFormat((Date.now() + req.body.day*3600000*24), "yyyy-mm-dd "+client_time+":00:00"); //end of the day for the user, in server time
 
     models.epg_data.findAll({
-        attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end' ],
+        attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end', 'long_description' ],
         order: [['program_start', 'ASC']],
         include: [
             {
@@ -89,8 +89,8 @@ exports.catchup_events =  function(req, res) {
                         raw_obj.number = obj[k].channel_number;
                         raw_obj.title = obj.title;
                         raw_obj.scheduled = (!obj.program_schedules[0]) ? false : schedule.is_scheduled(obj.program_schedules[0].id); //if there is an event in the local memory, return true
-                        raw_obj.description = obj.short_description;
-                        raw_obj.shortname = obj.short_name;
+                        raw_obj.description = obj.long_description;
+                        raw_obj.shortname = obj.short_description;
                         raw_obj.programstart = dateFormat(programstart, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
                         raw_obj.programend = dateFormat(programend, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
                         raw_obj.duration = obj.duration_seconds;
@@ -111,11 +111,12 @@ exports.catchup_events =  function(req, res) {
 // returns list of epg data for the given channel - GET METHOD
 exports.get_catchup_events =  function(req, res) {
     var client_timezone = req.query.device_timezone; //offset of the client will be added to time - related info
-    var current_human_time = dateFormat(Date.now() - client_timezone*3600 + req.query.day*3600000*24, "yyyy-mm-dd 00:00:00"); //start of the day for the user, in server time
-    var interval_end_human = dateFormat((Date.now() - client_timezone*3600 + req.query.day*3600000*24), "yyyy-mm-dd 23:59:59"); //end of the day for the user, in server time
+    var client_time = 24-parseInt(client_timezone);
+    var current_human_time = dateFormat(Date.now()  + (req.query.day - 1)*3600000*24, "yyyy-mm-dd "+client_time+":00:00"); //start of the day for the user, in server time
+    var interval_end_human = dateFormat((Date.now() + req.query.day*3600000*24), "yyyy-mm-dd "+client_time+":00:00"); //end of the day for the user, in server time
 
     models.epg_data.findAll({
-        attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end' ],
+        attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end', 'long_description' ],
         order: [['program_start', 'ASC']],
         include: [
             {
@@ -128,19 +129,7 @@ exports.get_catchup_events =  function(req, res) {
                 where: {login_id: req.thisuser.id}
             }
         ],
-        where: Sequelize.and(
-            {program_start: {lte: interval_end_human}},
-            Sequelize.or(
-                Sequelize.and(
-                    {program_start:{lte:current_human_time}},
-                    {program_end:{gte:current_human_time}}
-                ),
-                Sequelize.and(
-                    {program_start: {gte:current_human_time}},
-                    {program_end:{lte:interval_end_human}}
-                )
-            )
-        )
+        where: {program_start: {lte: interval_end_human}, program_end: {gte: current_human_time}}
     }).then(function (result) {
         //todo: what if channel number is invalid and it finds no title???
         var raw_result = [];
@@ -157,8 +146,8 @@ exports.get_catchup_events =  function(req, res) {
                         raw_obj.number = obj[k].channel_number;
                         raw_obj.title = obj.title;
                         raw_obj.scheduled = (!obj.program_schedules[0]) ? false : schedule.is_scheduled(obj.program_schedules[0].id); //if there is an event in the local memory, return true
-                        raw_obj.description = obj.short_description;
-                        raw_obj.shortname = obj.short_name;
+                        raw_obj.description = obj.long_description;
+                        raw_obj.shortname = obj.short_description;
                         raw_obj.programstart = dateFormat(programstart, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
                         raw_obj.programend = dateFormat(programend, 'mm/dd/yyyy HH:MM:ss'); //add timezone offset to program_start timestamp, format it as M/D/Y H:m:s
                         raw_obj.duration = obj.duration_seconds;
