@@ -129,7 +129,6 @@ exports.isAllowed = function(req, res, next) {
         }
         else{
             if(missing_params(querystring.parse(auth_decrypt(auth,req.app.locals.settings.new_encryption_key),";","=")) === false){
-                console.log("auth 11 -----> ", auth_decrypt(auth,req.app.locals.settings.new_encryption_key))
                 var auth_obj = querystring.parse(auth_decrypt(auth,req.app.locals.settings.new_encryption_key),";","=");
             }
             else if(missing_params(querystring.parse(auth_decrypt(auth,req.app.locals.settings.old_encryption_key),";","=")) === false && req.app.locals.settings.key_transition === true){
