@@ -59,11 +59,18 @@ export default function (nga, admin) {
                     '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>'+
                     '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>'+
                     '</div>'+
-                    '<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1200 px</small></div>')
+                    '<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1200 px, not larger than 600 KB</small></div>')
                 .validation({
                     validator: function(value) {
                         if (value == null) {
                             throw new Error('Please, choose icon');
+                        }else {
+                            var icon_url = document.getElementById('icon_url');
+                            if (icon_url.value.length > 0) {
+                                if(icon_url.files[0].size > 614400 ){
+                                    throw new Error('Your Icon is too Big, not larger than 600 KB');
+                                }
+                            }
                         }
                     }
                 })
@@ -74,11 +81,18 @@ export default function (nga, admin) {
                     '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.small_icon_url }}" height="40" width="40" /></div>'+
                     '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.small_icon_url"></ma-file-field></div>'+
                     '</div>'+
-                    '<div class="row"><small id="emailHelp" class="form-text text-muted">159x117 px</small></div>')
+                    '<div class="row"><small id="emailHelp" class="form-text text-muted">159x117 px, not larger than 150 KB</small></div>')
                 .validation({
                     validator: function(value) {
                         if (value == null) {
-                            throw new Error('Please, choose icon');
+                            throw new Error('Please, choose your small icon');
+                        }else {
+                            var small_icon_url = document.getElementById('small_icon_url');
+                            if (small_icon_url.value.length > 0) {
+                                if(small_icon_url.files[0].size > 153600 ){
+                                    throw new Error('Your Small Icon is too Big, not larger than 150 KB');
+                                }
+                            }
                         }
                     }
                 })

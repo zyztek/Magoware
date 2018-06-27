@@ -115,6 +115,7 @@ exports.list = function(req, res) {
   if(query.device_active === 'true') qwhere.device_active = true;
   else if(query.device_active === 'false') qwhere.device_active = false;
   if(query.hdmi) qwhere.hdmi = query.hdmi;
+  if(query.username) qwhere.username = query.username;
 
   DBModel.findAndCountAll(
 

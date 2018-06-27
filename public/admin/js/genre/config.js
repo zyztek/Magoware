@@ -52,11 +52,18 @@ export default function (nga, admin) {
                     '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>'+
                     '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>'+
                     '</div>'+
-                    '<div class="row"><small id="emailHelp" class="form-text text-muted">120x120 px</small></div>')
+                    '<div class="row"><small id="emailHelp" class="form-text text-muted">120x120 px, not larger than 200 KB</small></div>')
                 .validation({
                     validator: function(value) {
                         if (value == null) {
                             throw new Error('Please, choose icon');
+                        }else {
+                            var icon_url = document.getElementById('icon_url');
+                            if (icon_url.value.length > 0) {
+                                if(icon_url.files[0].size > 204800 ){
+                                    throw new Error('Your Icon is too Big, not larger than 200 KB');
+                                }
+                            }
                         }
                     }
                 })

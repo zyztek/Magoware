@@ -140,23 +140,50 @@ export default function (nga, admin) {
             .attributes({ placeholder: 'Select client timezone depending on country' })
             .validation({ required: true })
             .label('Timezone'),
-        nga.field('get_messages', 'boolean')
-            .attributes({ placeholder: 'Auto Timezone' })
+
+        nga.field('get_messages', 'choice')
+            .defaultValue(true)
+            .choices([
+                { value: false, label: 'Disabled' },
+                { value: true, label: 'Enabled' }
+            ])
+            .attributes({ placeholder: 'Choose from dropdown list' })
             .validation({ required: true})
             .label('Get messages'),
-        nga.field('show_adult', 'boolean')
+        nga.field('show_adult', 'choice')
+            .defaultValue(false)
+            .choices([
+                { value: false, label: 'Disabled' },
+                { value: true, label: 'Enabled' }
+            ])
+            .attributes({ placeholder: 'Choose from dropdown list' })
             .validation({ required: true})
             .label('Show adult content'),
-        nga.field('auto_timezone','boolean')
-            .attributes({ placeholder: 'Auto Timezone' })
+        nga.field('auto_timezone','choice')
+            .defaultValue(false)
+            .choices([
+                { value: false, label: 'Disabled' },
+                { value: true, label: 'Enabled' }
+            ])
+            .attributes({ placeholder: 'Choose from dropdown list' })
             .validation({ required: true})
             .label('Auto Timezone'),
-        nga.field('account_lock','boolean')
-            .attributes({ placeholder: 'Account Lock' })
+        nga.field('account_lock','choice')
+            .defaultValue(false)
+            .choices([
+                { value: false, label: 'Disabled' },
+                { value: true, label: 'Enabled' }
+            ])
+            .attributes({ placeholder: 'Choose from dropdown list' })
             .label('Account Locked')
             .validation({ required: true}),
-        nga.field('beta_user','boolean')
-            .attributes({ placeholder: 'Is tester' })
+        nga.field('beta_user','choice')
+            .attributes({ placeholder: 'Choose from dropdown list' })
+            .defaultValue(false)
+            .choices([
+                { value: false, label: 'Disabled' },
+                { value: true, label: 'Enabled' }
+            ])
             .label('Is tester')
             .validation({ required: true}),
         nga.field('template')
@@ -236,25 +263,48 @@ export default function (nga, admin) {
             .attributes({ placeholder: 'Select Timezone' })
             .validation({ required: true })
             .label('Timezone'),
-        nga.field('get_messages', 'boolean')
-            .attributes({ placeholder: 'Auto Timezone' })
+
+        nga.field('get_messages', 'choice')
+            .choices([
+                { value: false, label: 'Disabled' },
+                { value: true, label: 'Enabled' }
+            ])
+            .attributes({ placeholder: 'Choose from dropdown list' })
             .validation({ required: true})
             .label('Get messages'),
-        nga.field('show_adult', 'boolean')
+        nga.field('show_adult', 'choice')
+            .choices([
+                { value: false, label: 'Disabled' },
+                { value: true, label: 'Enabled' }
+            ])
+            .attributes({ placeholder: 'Choose from dropdown list' })
             .validation({ required: true})
             .label('Show adult content'),
-        nga.field('auto_timezone','boolean')
-            .attributes({ placeholder: 'Auto Timezone' })
+        nga.field('auto_timezone','choice')
+            .choices([
+                { value: true, label: 'Enabled' },
+                { value: false, label: 'Disabled' }
+            ])
+            .attributes({ placeholder: 'Choose from dropdown list' })
             .validation({ required: true})
             .label('Auto Timezone'),
-        nga.field('account_lock','boolean')
-            .attributes({ placeholder: 'Account Lock' })
+        nga.field('account_lock','choice')
+            .choices([
+                { value: false, label: 'Disabled' },
+                { value: true, label: 'Enabled' }
+            ])
+            .attributes({ placeholder: 'Choose from dropdown list' })
             .label('Account Locked')
             .validation({ required: true}),
-        nga.field('beta_user','boolean')
-            .attributes({ placeholder: 'Is tester' })
+        nga.field('beta_user','choice')
+            .choices([
+                { value: false, label: 'Disabled' },
+                { value: true, label: 'Enabled' }
+            ])
+            .attributes({ placeholder: 'Choose from dropdown list' })
             .label('Is tester')
             .validation({ required: true}),
+
         nga.field('template')
             .label('')
             .template(edit_button),

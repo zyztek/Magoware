@@ -67,51 +67,103 @@ export default function (nga, admin) {
 				    '<small id="emailHelp" class="form-text text-muted">Google analytics ID to monitor audience and system logs.</small>'+
 				  '</div>')
 				.label('Analytics ID'),
-			nga.field('box_logo_url', 'file')
-				.validation({ required: true })
-				.label('Box Logo')
+
+
+            nga.field('box_logo_url', 'file')
+                .label('Box Logo')
                 .template('<div class="row">'+
-						'<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.box_logo_url }}" height="40" width="40" /></div>'+
-                        '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.box_logo_url"></ma-file-field></div>'+
-                        '</div>'+
-						'<div class="row"><small id="emailHelp" class="form-text text-muted">1988x318 px</small></div>')
-				.uploadInformation({ 'url': '/file-upload/single-file/settings/box_logo_url','apifilename': 'result'}),
-			nga.field('box_background_url', 'file')
-				.validation({ required: true })
-				.label('Box Background')
+                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.box_logo_url }}" height="40" width="40" /></div>'+
+                    '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.box_logo_url"></ma-file-field></div>'+
+                    '</div>'+
+                    '<div class="row"><small id="emailHelp" class="form-text text-muted">1988x318 px,not larger than 600 KB</small></div>')
+                .uploadInformation({ 'url': '/file-upload/single-file/settings/box_logo_url','apifilename': 'result'})
+                .validation({ required: true, validator: function() {
+                        var box_logo_url = document.getElementById('box_logo_url');
+                        if (box_logo_url.value.length > 0) {
+                            if(box_logo_url.files[0].size > 614400 ){
+                                throw new Error('Your Box Logo is too Big, not larger than 600 KB');
+                            }
+                        }
+                    }
+                }),
+
+            nga.field('box_background_url', 'file')
+                .label('Box Background')
                 .template('<div class="row">'+
-                          '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.box_background_url }}" height="40" width="40" /></div>'+
-                          '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.box_background_url"></ma-file-field></div>'+
-                        '</div>'+
-						'<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1080 px</small></div>')
-				.uploadInformation({ 'url': '/file-upload/single-file/settings/box_background_url','apifilename': 'result'}),
-			nga.field('mobile_background_url', 'file')
-				.validation({ required: true })
-				.label('Mobile Background')
+                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.box_background_url }}" height="40" width="40" /></div>'+
+                    '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.box_background_url"></ma-file-field></div>'+
+                    '</div>'+
+                    '<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1080 px, not larger than 1.3 MB</small></div>')
+                .uploadInformation({ 'url': '/file-upload/single-file/settings/box_background_url','apifilename': 'result'})
+                .validation({ required: true, validator: function() {
+                        var box_background_url = document.getElementById('box_background_url');
+                        if (box_background_url.value.length > 0) {
+                            if(box_background_url.files[0].size > 1572864 ){
+                                throw new Error('Your Box Background is too Big, not larger than 1.3 MB');
+                            }
+                        }
+                    }
+                }),
+
+            nga.field('mobile_background_url', 'file')
+                .label('Mobile Background')
                 .template('<div class="row">'+
-                          '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.mobile_background_url }}" height="40" width="40" /></div>'+
-                          '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.mobile_background_url"></ma-file-field></div>'+
-                        '</div>'+
-						'<div class="row"><small id="emailHelp" class="form-text text-muted">566x318 px</small></div>')
-				.uploadInformation({ 'url': '/file-upload/single-file/settings/mobile_background_url','apifilename': 'result'}),
-			nga.field('mobile_logo_url', 'file')
-				.validation({ required: true })
-				.label('Mobile Logo')
+                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.mobile_background_url }}" height="40" width="40" /></div>'+
+                    '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.mobile_background_url"></ma-file-field></div>'+
+                    '</div>'+
+                    '<div class="row"><small id="emailHelp" class="form-text text-muted">566x318 px, not larger than 1 MB</small></div>')
+                .uploadInformation({ 'url': '/file-upload/single-file/settings/mobile_background_url','apifilename': 'result'})
+                .validation({ required: true, validator: function() {
+                        var mobile_background_url = document.getElementById('mobile_background_url');
+                        if (mobile_background_url.value.length > 0) {
+                            if(mobile_background_url.files[0].size > 1048576 ){
+                                throw new Error('Your Mobile Background is too Big, not larger than 1 MB');
+                            }
+                        }
+                    }
+                }),
+
+            nga.field('mobile_logo_url', 'file')
+                .label('Mobile Logo')
                 .template('<div class="row">'+
-                          '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.mobile_logo_url }}" height="40" width="40" /></div>'+
-                          '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.mobile_logo_url"></ma-file-field></div>'+
-                        '</div>'+
-						'<div class="row"><small id="emailHelp" class="form-text text-muted">240x38 px</small></div>')
-				.uploadInformation({ 'url': '/file-upload/single-file/settings/mobile_logo_url','apifilename': 'result'}),
-			nga.field('vod_background_url', 'file')
-				.validation({ required: true })
-				.label('VOD Background')
+                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.mobile_logo_url }}" height="40" width="40" /></div>'+
+                    '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.mobile_logo_url"></ma-file-field></div>'+
+                    '</div>'+
+                    '<div class="row"><small id="emailHelp" class="form-text text-muted">240x38 px, not larger than 600 KB</small></div>')
+                .uploadInformation({ 'url': '/file-upload/single-file/settings/mobile_logo_url','apifilename': 'result'})
+                .validation({ required: true, validator: function() {
+                        var mobile_logo_url = document.getElementById('mobile_logo_url');
+                        if (mobile_logo_url.value.length > 0) {
+                            if(mobile_logo_url.files[0].size > 614400 ){
+                                throw new Error('Your Mobile Logo is too Big, not larger than 600 KB');
+                            }
+                        }
+                    }
+                }),
+
+            nga.field('vod_background_url', 'file')
+                .label('VOD Background')
                 .template('<div class="row">'+
-                          '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.vod_background_url }}" height="40" width="40" /></div>'+
-                          '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.vod_background_url"></ma-file-field></div>'+
-                        '</div>'+
-						'<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1080 px</small></div>')
-				.uploadInformation({ 'url': '/file-upload/single-file/settings/vod_background_url','apifilename': 'result'}),
+                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.vod_background_url }}" height="40" width="40" /></div>'+
+                    '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.vod_background_url"></ma-file-field></div>'+
+                    '</div>'+
+                    '<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1080 px, not larger than 1 MB</small></div>')
+                .uploadInformation({ 'url': '/file-upload/single-file/settings/vod_background_url','apifilename': 'result'})
+                .validation({ required: true, validator: function() {
+                        var vod_background_url = document.getElementById('vod_background_url');
+                        if (vod_background_url.value.length > 0) {
+                            if(vod_background_url.files[0].size > 1048576 ){
+                                throw new Error('Your VOD Background is too Big, not larger than 1 MB');
+                            }
+                        }
+                    }
+                }),
+
+
+
+
+
+
 			nga.field('locale', 'string')
 				.validation({ required: true })
 				.label('Locale')

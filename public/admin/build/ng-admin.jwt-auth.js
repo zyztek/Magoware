@@ -169,13 +169,25 @@
 },{}],6:[function(require,module,exports){
   'use strict';
 
+        //MUST USE TO WORK CORRECT IN IE
+        String.prototype.endsWith = function(pattern) {
+            var d = this.length - pattern.length;
+            return d >= 0 && this.lastIndexOf(pattern) === d;
+        };
+
+        String.prototype.includes = function(pattern) {
+            var d = this.length - pattern.length;
+            return d >= 0 && this.lastIndexOf(pattern) === d;
+        };
+        //./MUST USE TO WORK CORRECT IN IE
+
   var ngAdminJWTAuth = angular.module('ng-admin.jwt-auth', ['angular-jwt']);
 
   ngAdminJWTAuth.config(['$stateProvider', '$httpProvider', function ($stateProvider, $httpProvider) {
 
     $stateProvider.state('login', {
       parent: '',
-      url: '/login',
+      url: '/dashboard',
       controller: 'loginController',
       controllerAs: 'loginController',
       templateProvider: ['ngAdminJWTAuthConfigurator', '$http', 'notification', function(configurator, $http, notification) {
