@@ -26,7 +26,7 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false
         },
         description: {
-            type: DataTypes.STRING(280),
+            type: DataTypes.STRING(1000),
             allowNull: false
         },
         year: {
@@ -58,7 +58,7 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: true
         },
         starring: {
-            type: DataTypes.STRING(255),
+            type: DataTypes.STRING(1000),
             allowNull: true
         },
         pin_protected: {

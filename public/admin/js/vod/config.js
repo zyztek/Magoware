@@ -121,12 +121,18 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'Duration of movie in minutes' })
                 .label('Duration'),
             nga.field('description', 'text')
+                .transform(function lineBreaks(value, entry) {
+                    return value.split("\n").join("<br/>");
+                })
                 .attributes({ placeholder: 'Movie Subject' })
-                .validation({ required: true })
+                .validation({ required: true, maxlength: 1000})
                 .label('Description'),
             nga.field('starring', 'text')
+                .transform(function lineBreak(value, entry) {
+                    return value.split("\n").join("<br/>");
+                })
                 .attributes({ placeholder: 'Movie actors' })
-                .validation({ required: true })
+                .validation({ required: true, maxlength: 1000})
                 .label('Starring'),
             nga.field('icon_url','file')
                 .uploadInformation({ 'url': '/file-upload/single-file/vod/icon_url','apifilename': 'result'})
