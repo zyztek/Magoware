@@ -8,7 +8,6 @@ var path = require('path'),
     DBpayment_transactions = db.payment_transactions,
     async = require('async'),
     winston = require(path.resolve('./config/lib/winston')),
-    stripe = require("stripe")(req.app.locals.paymenttokens.STRIPE.API_KEY),
     whiteilst_IPs =['54.187.174.169',
         '54.187.205.235',
         '54.187.216.72',
@@ -188,6 +187,7 @@ exports.stripe_subscription_charge = function(req,res) {
 
 //incoming webhook from stripe
 exports.stripe_add_subscription = function(req,res) {
+    var stripe = require("stripe")(req.app.locals.paymenttokens.STRIPE.API_KEY);
 
     //todo: validate ip whitelist
 
@@ -300,6 +300,7 @@ exports.stripe_add_subscription = function(req,res) {
 
 //incoming refund webhook from stripe
 exports.stripe_refund = function(req,res) {
+    var stripe = require("stripe")(req.app.locals.paymenttokens.STRIPE.API_KEY);
     var sale_or_refund = -1;
     var transaction_id = req.body.data.object.id;
 
