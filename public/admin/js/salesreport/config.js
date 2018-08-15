@@ -5,7 +5,7 @@ export default function (nga, admin) {
 
 	salesreport.listView()
 			.title('<h4>Sale report <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
-			.listActions(['<ma-edit-button entry="entry" entity="entity" label="Cancel Subscription" size="xs"></ma-edit-button>'])
+        .listActions(['<ma-edit-button entry="entry" entity="entity" label="Cancel Subscription" size="xs"></ma-edit-button><download-invoice post="entry"></download-invoice>'])
 			.batchActions([])
 			.fields([
 				nga.field('id', 'number')

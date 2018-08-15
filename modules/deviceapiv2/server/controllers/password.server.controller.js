@@ -14,6 +14,7 @@ var path = require('path'),
     response = require(path.resolve("./config/responses.js")),
     db = require(path.resolve('./config/lib/sequelize')).models,
     login_data = db.login_data,
+    email_templates = db.email_templates,
     devices = db.devices;
 
 /**
@@ -66,9 +67,9 @@ exports.validateResetToken = function(req, res) {
  */
 exports.forgot = function(req, res, next) {
     var smtpConfig = {
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true, // use SSL
+        host: (req.app.locals.settings.smtp_host) ? req.app.locals.settings.smtp_host.split(':')[0] : 'smtp.gmail.com',
+        port: (req.app.locals.settings.smtp_host) ? Number(req.app.locals.settings.smtp_host.split(':')[1]) : 465,
+        secure: (req.app.locals.settings.smtp_secure === false) ? req.app.locals.settings.smtp_secure : true,
         auth: {
             user: req.app.locals.settings.email_username,
             pass: req.app.locals.settings.email_password
@@ -134,19 +135,32 @@ exports.forgot = function(req, res, next) {
         },
         //Prepare email template with user data and new password
         function(user, new_password, done) {
-            res.render(path.resolve('modules/deviceapiv2/server/templates/reset-password-email'), {
-                name: user.customer_datum.firstname + ' '+ user.customer_datum.lastname, //user info
-                appName: config.app.title,
-                password: new_password //plaintext random password that was generated
-            }, function(err, emailHTML) {
-                done(err, emailHTML, user);
+
+            email_templates.findOne({
+                attributes:['title','content'],
+                where: {template_id: 'reset-password-email', language: req.body.language }
+            }).then(function (result,err) {
+                if(!result){
+                    res.render(path.resolve('modules/deviceapiv2/server/templates/reset-password-email'), {
+                        name: user.customer_datum.firstname + ' '+ user.customer_datum.lastname, //user info
+                        appName: config.app.title,
+                        password: new_password //plaintext random password that was generated
+                    }, function(err, emailHTML) {
+                        done(err, emailHTML, user);
+                    });
+                } else {
+                    var response = result.content;
+                    var emailHTML = response.replace(new RegExp('{{name}}', 'gi'), user.customer_datum.firstname + ' ' + user.customer_datum.lastname).replace(new RegExp('{{appName}}', 'gi'),config.app.title).replace(new RegExp('{{password}}', 'gi'),new_password);
+                    done(err,emailHTML, user);
+                }
             });
+
         },
         // If valid email, send reset email using service
         function(emailHTML, user, done) {
             var mailOptions = {
                 to: user.customer_datum.email, //user.email,
-                from: config.mailer.from,
+                from: req.app.locals.settings.email_address,
                 subject: 'Password Reset',
                 html: emailHTML
             };

@@ -28,5 +28,11 @@
     "app_group_name":"large screen",
     "app_id":5,
     "app_group_id":1
+  },
+  {
+    "id":6,
+    "app_group_name":"large screen",
+    "app_id":6,
+    "app_group_id":1
   }
 ]

@@ -40,6 +40,10 @@ module.exports = function(sequelize, DataTypes) {
         encryption_url: {
             type: DataTypes.STRING(255),
             allowNull: false
+        },
+        drm_platform: {
+            type: DataTypes.STRING(20),
+            allowNull: false
         }
     }, {
         tableName: 'vod_stream',

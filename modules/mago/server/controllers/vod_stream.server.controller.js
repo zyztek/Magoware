@@ -29,7 +29,7 @@ exports.create = function(req, res) {
  * Show current
  */
 exports.read = function(req, res) {
-  res.json(req.vodStream);
+    res.json(req.vodStream);
 };
 
 /**
@@ -80,30 +80,30 @@ exports.delete = function(req, res) {
  */
 exports.list = function(req, res) {
 
-  var query = req.query;
-  var offset_start = parseInt(query._start);
-  var records_limit = query._end - query._start;
-  var qwhere = {};
-  if (query.vod_id) qwhere.vod_id = query.vod_id;
+    var query = req.query;
+    var offset_start = parseInt(query._start);
+    var records_limit = query._end - query._start;
+    var qwhere = {};
+    if (query.vod_id) qwhere.vod_id = query.vod_id;
 
-  DBModel.findAndCountAll({
-    where: qwhere,
-    offset: offset_start,
-    limit: records_limit,
-    include: [db.vod_stream_source, db.vod]
-  }).then(function(results) {
-    if (!results) {
-      return res.status(404).send({
-        message: 'No data found'
-      });
-    } else {
+    DBModel.findAndCountAll({
+        where: qwhere,
+        offset: offset_start,
+        limit: records_limit,
+        include: [db.vod_stream_source, db.vod]
+    }).then(function(results) {
+        if (!results) {
+            return res.status(404).send({
+                message: 'No data found'
+            });
+        } else {
 
-      res.setHeader("X-Total-Count", results.count);      
-      res.json(results.rows);
-    }
-  }).catch(function(err) {
-    res.jsonp(err);
-  });
+            res.setHeader("X-Total-Count", results.count);
+            res.json(results.rows);
+        }
+    }).catch(function(err) {
+        res.jsonp(err);
+    });
 };
 
 /**
@@ -111,28 +111,29 @@ exports.list = function(req, res) {
  */
 exports.dataByID = function(req, res, next, id) {
 
-  if ((id % 1 === 0) === false) { //check if it's integer
-    return res.status(404).send({
-      message: 'Data is invalid'
-    });
-  }
-
-  DBModel.find({
-    where: {
-      id: id
-    },
-    include: [{model: db.vod_stream_source}, {model: db.vod}]
-  }).then(function(result) {
-    if (!result) {
-      return res.status(404).send({
-        message: 'No data with that identifier has been found'
-      });
-    } else {
-      req.vodStream = result;
-      next();
+    if ((id % 1 === 0) === false) { //check if it's integer
+        return res.status(404).send({
+            message: 'Data is invalid'
+        });
     }
-  }).catch(function(err) {
-    return next(err);
-  });
+
+    DBModel.find({
+        where: {
+            id: id
+        },
+        include: [{model: db.vod_stream_source}, {model: db.vod}]
+    }).then(function(result) {
+        if (!result) {
+            return res.status(404).send({
+                message: 'No data with that identifier has been found'
+            });
+        } else {
+            req.vodStream = result;
+            next();
+            return null;
+        }
+    }).catch(function(err) {
+        return next(err);
+    });
 
 };

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html >
+<head>
+    <title>Simple Invoicing - Built with AngularJS</title>
+    <meta charset='utf-8'>
+    <meta name="description" content="AngularJS and Angular Code Example for creating Invoices and Invoicing Application">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+</head>
+<body>
+
+<div class="container" ng-app="myApp" ng-controller="logsCtrl">
+    <div class="row">
+        <div class="btn-group inline pull-right">
+            <div class="btn btn-small"><see-logs post="entry" class="pull-right" data-method="ctrlFn"></see-logs></div>
+            <div class="btn btn-small"><ma-back-button class="pull-right" label="Cancel"></ma-back-button></div>
+        </div>
+    </div>
+    <hr><br/><br/><br/><br/>
+
+    <div class="row">
+        <table class="table">
+            <thead>
+            <tr>
+                <th style="border-bottom: none;">{{records1[0]}}</th>
+                <th style="border-bottom: none;">{{records1[1]}}</th>
+                <th style="border-bottom: none;">{{records1[2]}}</th>
+                <th style="border-bottom: none;">{{records1[3]}}</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="x in records.message">
+                <td>{{x.file_name}}</td>
+                <td>{{x.saved_records}}</td>
+                <td>{{x.non_saved_records}}</td>
+                <td>{{x.error_log}}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

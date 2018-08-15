@@ -1,7 +1,7 @@
 [
   {
     "id":1,
-    "appid":"1,2,3,4",
+    "appid":"1,2,3,4,6",
     "title":"Live Tv",
     "url":"not used",
     "icon_url":"\/files\/device_menu\/livetv240x240.png",
@@ -34,7 +34,7 @@
   },
   {
     "id":4,
-    "appid":"1,2,3,4",
+    "appid":"1,2,3,4,6",
     "title":"Personal",
     "url":"not used",
     "icon_url":"\/files\/device_menu\/personale240x240.png",
@@ -45,7 +45,7 @@
   },
   {
     "id":6,
-    "appid":"1,2,3,4",
+    "appid":"1,2,3,4,6",
     "title":"Logout",
     "url":"not used",
     "icon_url":"\/files\/device_menu\/logout240x240.png",

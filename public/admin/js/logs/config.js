@@ -7,9 +7,9 @@ export default function (nga, admin) {
         .batchActions([])
         .fields([
             nga.field('id', 'number')
-                .label('id'),
+                .label('ID'),
             nga.field('username', 'string')
-                .label('user'),
+                .label('User'),
             nga.field('user_ip', 'string')
                 .label('from ip'),
             nga.field('action', 'string')
@@ -23,9 +23,9 @@ export default function (nga, admin) {
         .title('<h4>Logs <i class="fa fa-angle-right" aria-hidden="true"></i> Details</h4>')
         .fields([
             nga.field('id', 'number')
-                .label('id'),
+                .label('ID'),
             nga.field('user.username', 'string')
-                .label('user'),
+                .label('User'),
             nga.field('user_ip', 'string')
                 .label('from ip'),
             nga.field('action', 'string')

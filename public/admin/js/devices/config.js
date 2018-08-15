@@ -110,7 +110,7 @@ export default function (nga, admin) {
                 .label('HDMI'),
             nga.field('username')
                 .attributes({ placeholder: 'Username' })
-                .label('Username')
+                .label('Username'),
         ])
 		.listActions(['edit'])
 		.exportFields([

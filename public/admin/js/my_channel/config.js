@@ -39,7 +39,7 @@ export default function (nga, admin) {
                 .targetEntity(admin.getEntity('LoginData'))
                 .targetField(nga.field('username'))
                 .perPage(-1)
-                .attributes({ placeholder: 'Select username from dropdown list' })
+                .attributes({ placeholder: 'Select Account from dropdown list' })
                 .label('Username'),
             nga.field('title', 'string')
                 .attributes({ placeholder: 'Title' })
@@ -54,7 +54,7 @@ export default function (nga, admin) {
                 .targetEntity(admin.getEntity('Genres'))
                 .targetField(nga.field('description'))
                 .validation({ required: true })
-                .attributes({ placeholder: 'Select Genre' })
+                .attributes({ placeholder: 'Select genre' })
                 .label('Genre'),
             nga.field('description', 'string')
                 .attributes({ placeholder: 'Description' })

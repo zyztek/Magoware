@@ -4,10 +4,10 @@
  * Module dependencies.
  */
 var config = require('../config'),
-  express = require('./express'),
-  chalk = require('chalk'),
-  sequelize = require('./sequelize-connect'),
-  winston = require('./winston');
+    express = require('./express'),
+    chalk = require('chalk'),
+    sequelize = require('./sequelize-connect'),
+    winston = require('./winston');
 
 
 module.exports.init = function init(callback) {
@@ -47,6 +47,14 @@ module.exports.start = function start(callback) {
       }
 
       if (callback) callback(app, db, config);
+    }).on('error', function(error){
+      if(error.code === 'EADDRINUSE')
+        console.log('Port '+config.port+' is already in use. \nPlease make sure this port is available, or change the configurations in ./config/env/default.js to use a free port.');
+      else if(error.code === 'EACCES')
+        console.log('You are attempting to connect to port '+config.port+' without root privilege. \nPlease make sure you have permission to use this port, or change the configurations in ./config/env/default.js to an available port above 1023.');
+      else
+        console.log('Failed to start the app with error: '+error.code+'\nPlease refer to Node Js documentation for this error, or contact the Magoware support team.');
+      process.exit(1);
     });
 
   });

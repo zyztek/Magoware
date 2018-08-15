@@ -16,8 +16,8 @@ async.waterfall([
         if(process.argv[2] === 'sync') process.env.DB_SYNC = true;
         if(process.argv[2] === 'sync' && process.argv[3] === 'force') process.env.DB_SYNC_FORCE = true;
 
-        console.log('sync = ',process.env.DB_SYNC);
-        console.log('force = ',process.env.DB_SYNC_FORCE);
+        //console.log('sync = ',process.env.DB_SYNC);
+        //console.log('force = ',process.env.DB_SYNC_FORCE);
 
         callback(null);
     },

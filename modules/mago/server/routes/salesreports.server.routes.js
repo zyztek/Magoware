@@ -55,4 +55,8 @@ module.exports = function(app) {
         .all(policy.isAllowed)
         .get(salesReports.invoice);
 
+    app.route('/api/invoice/download/:invoiceID')
+        .all(policy.isAllowed)
+        .get(salesReports.download_invoice);
+
 };

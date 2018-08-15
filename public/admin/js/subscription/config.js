@@ -14,6 +14,12 @@ export default function (nga, admin){
 				.targetEntity(admin.getEntity('Packages'))
                 .targetField(nga.field('package_name'))
 				.label('Packages'),
+
+            nga.field('group_id', 'reference')
+                .targetEntity(admin.getEntity('Users'))
+                .targetField(nga.field('username'))
+				.label('Distributor'),
+
 			nga.field('start_date', 'date')
 				.template(function (entry, values) {
 					var moment = new Date().toISOString().slice(0,10);
@@ -26,7 +32,7 @@ export default function (nga, admin){
 						}
 
 				})
-				.label('Start Date'),
+				.label('Start date'),
 			nga.field('end_date', 'date')
 				.template(function (entry, values) {
 					var moment = new Date().toISOString().slice(0,10);
@@ -39,7 +45,7 @@ export default function (nga, admin){
 						}
 
 				})
-				.label('End Date'),
+				.label('End date'),
 		]).listActions(['edit'])
         .filters([
           	nga.field('q')
@@ -73,7 +79,7 @@ export default function (nga, admin){
             nga.field('login_id', 'reference')
                 .targetEntity(admin.getEntity('LoginData'))
                 .targetField(nga.field('username'))
-                .attributes({ placeholder: 'Choose from the dropdown list username' })
+                .attributes({ placeholder: 'Choose Username from dropdown list' })
                 .validation({ required: true })
                 .perPage(-1)
                 .remoteComplete(true, {
@@ -86,21 +92,24 @@ export default function (nga, admin){
             nga.field('combo_id', 'reference')
                 .targetEntity(admin.getEntity('Combos'))
                 .targetField(nga.field('name'))
-                .attributes({ placeholder: 'Choose from the dropdown list Combo' })
+                .attributes({ placeholder: 'Choose Combo from dropdown list' })
                 .validation({ required: true })
                 .perPage(-1)
                 .label('Combo'),
-            nga.field('start_date','date')
-                .attributes({ placeholder: 'Start Date' })
+			nga.field('on_behalf_id','reference')
+			   .targetEntity(admin.getEntity('Users'))
+				.targetField(nga.field('username'))
+				.label('On Behalf Id'),
+			nga.field('start_date','date')
+                .attributes({ placeholder: 'Start date' })
                 .validation({ required: true })
                 .defaultValue(new Date())
-                .label('Start Date'),
+                .label('Start date'),
             nga.field('template')
                 .label('')
                 .template(edit_button),
         ])
         .onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
-            console.log(entry);
             progression.done();
             $state.go($state.get('edit'), {entity: 'LoginData', id: entry.values.user});
             return false;

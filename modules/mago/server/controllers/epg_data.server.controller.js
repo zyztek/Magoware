@@ -202,7 +202,7 @@ exports.list_chart_epg = function(req, res) {
         //where: {program_start: {gte: d}}
     }).then(function(channels){
         DBModel.findAll({
-                attributes: ['id', ['channel_number', 'group'],['program_start','start'],['program_end','end'],['title','content']],
+                attributes: ['id', ['channels_id', 'group'],['program_start','start'],['program_end','end'],['title','content']],
                 //limit: 100,
                 where: {program_start: {gte: past}, program_end :{lte: future}}
             }
@@ -314,7 +314,7 @@ exports.save_epg_records = function(req, res){
             else if(fileHandler.get_extension(epg_file)=== '.xml'){
                 //import_xml_standard(req, res, current_time, epg_file, import_log, callback);
                 //import_xmltv(res,res,123456);
-                import_xmltv(req, res, current_time, epg_file, import_log, callback)
+                import_xmltv(req, res, current_time, epg_file, import_log, callback);
             }
             else {
                 import_log.error_log.push('Incorrect file type for file '+epg_file)
@@ -546,7 +546,6 @@ exports.create_sample = function(req, res) {
 }
 
 function import_xmltv(req, res, current_time, epg_file, import_log, callback){
-//function import_xmltv(req,res,current_time) {
     console.log('enter xmltv import function');
 
     var import_file_log = {
@@ -555,8 +554,6 @@ function import_xmltv(req, res, current_time, epg_file, import_log, callback){
         non_saved_records: 0,
         error_log: []
     };
-
-    import_log.push(import_file_log);
 
     var channellist = {};
     var xmlfile = path.resolve('./public'+epg_file);
@@ -586,7 +583,6 @@ function import_xmltv(req, res, current_time, epg_file, import_log, callback){
 
     parser.on('programme', function (programme) {
         // Do whatever you want with the programme
-        //console.log(programme);
         var date1 = new Date(programme.start);
         var date2 = new Date(programme.end);
         var timeDiff = Math.abs(date2.getTime() - date1.getTime());
@@ -612,12 +608,13 @@ function import_xmltv(req, res, current_time, epg_file, import_log, callback){
         console.log('the end');
         DBModel.bulkCreate(epgdata,{ignoreDuplicates: true})
             .then(function(data) {
-                //res.json({'message':'number of records imported: '+ data.length});
+                import_file_log.saved_records = data.length;
+                import_log.push(import_file_log);
                 callback(null);
             })
             .catch(function(err) {
-                console.log(err);
-                //res.json(err);
+                import_file_log.error_log = err;
+                import_log.push(import_file_log);
                 callback(null);
             });
     });

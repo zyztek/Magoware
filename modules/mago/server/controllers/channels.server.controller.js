@@ -22,29 +22,29 @@ function link_channel_with_packages(channel_id,array_package_ids) {
     var transactions_array = [];
 
     return ChannelPackages.destroy({
-                where: {
-                    channel_id: channel_id,
-                    package_id: {$notIn: array_package_ids}
-                }
-            }).then(function (result) {
-                return sequelize_t.sequelize.transaction(function (t) {
-                            for (var i = 0; i < array_package_ids.length; i++) {
-                                transactions_array.push(
-                                      ChannelPackages.upsert({
-                                            channel_id: channel_id,
-                                            package_id: array_package_ids[i]
-                                        }, {transaction: t})
-                                )
-                            }
-                            return Promise.all(transactions_array, {transaction: t}); //execute transaction
-                        }).then(function (result) {
-                            return {status: true, message:'transaction executed correctly'};
-                        }).catch(function (err) {
-                            return {status: false, message:'error executing transaction'};
-                        })
-            }).catch(function (err) {
-                return {status: false, message:'error deleteting existing packages'};
-            })
+        where: {
+            channel_id: channel_id,
+            package_id: {$notIn: array_package_ids}
+        }
+    }).then(function (result) {
+        return sequelize_t.sequelize.transaction(function (t) {
+            for (var i = 0; i < array_package_ids.length; i++) {
+                transactions_array.push(
+                    ChannelPackages.upsert({
+                        channel_id: channel_id,
+                        package_id: array_package_ids[i]
+                    }, {transaction: t})
+                )
+            }
+            return Promise.all(transactions_array, {transaction: t}); //execute transaction
+        }).then(function (result) {
+            return {status: true, message:'transaction executed correctly'};
+        }).catch(function (err) {
+            return {status: false, message:'error executing transaction'};
+        })
+    }).catch(function (err) {
+        return {status: false, message:'error deleteting existing packages'};
+    })
 }
 
 
@@ -62,18 +62,22 @@ exports.create = function(req, res) {
             logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
 
             return link_channel_with_packages(result.id,array_packages_channels).then(function(t_result) {
-                    if (t_result.status) {
-                        res.jsonp(result);
-                    }
-                    else {
-                        res.send(t_result);
-                    }
-                })
+                if (t_result.status) {
+                    res.jsonp(result);
+                }
+                else {
+                    res.send(t_result);
+                }
+            })
         }
     }).catch(function(err) {
-        return res.status(400).send({
-            message: 'Check if this channel number is available'//errorHandler.getErrorMessage(err)
-        });
+        if(err.name === "SequelizeUniqueConstraintError"){
+            if(err.errors[0].path === "channel_number") return res.status(400).send({message: 'Check if this channel number is available'}); //channel number exists
+            else return res.status(400).send({message: err.errors[0].message}); //other duplicate fields. return sequelize error message
+        }
+        else {
+            return res.status(400).send({message: 'An error occurred while creating this channel. '+err.errors[0].message}); //another error occurred. return sequelize error message
+        }
     });
 };
 
@@ -121,13 +125,13 @@ exports.update = function(req, res) {
         }
 
         return link_channel_with_packages(req.body.id,array_packages_channels).then(function(t_result) {
-                    if (t_result.status) {
-                        return res.jsonp(result);
-                    }
-                    else {
-                        return res.send(t_result);
-                    }
-                })
+            if (t_result.status) {
+                return res.jsonp(result);
+            }
+            else {
+                return res.send(t_result);
+            }
+        })
 
     }).catch(function(err) {
         return res.status(400).send({
@@ -209,28 +213,30 @@ exports.delete = function(req, res) {
  */
 exports.list = function(req, res) {
 
-  var qwhere = {},
-      final_where = {},
-      query = req.query;
+    var qwhere = {},
+        final_where = {},
+        query = req.query;
 
-  if(query.q) {
-    qwhere.$or = {};
-    qwhere.$or.title = {};
-    qwhere.$or.title.$like = '%'+query.q+'%';
-    qwhere.$or.channel_number = {};
-    qwhere.$or.channel_number.$like = '%'+query.q+'%';
-  }
+    if(query.q) {
+        qwhere.$or = {};
+        qwhere.$or.title = {};
+        qwhere.$or.title.$like = '%'+query.q+'%';
+        qwhere.$or.channel_number = {};
+        qwhere.$or.channel_number.$like = '%'+query.q+'%';
+    }
 
-  //start building where
-  final_where.where = qwhere;
+    //start building where
+    final_where.where = qwhere;
     if(parseInt(query._end) !== -1){
         if(parseInt(query._start)) final_where.offset = parseInt(query._start);
         if(parseInt(query._end)) final_where.limit = parseInt(query._end)-parseInt(query._start);
     }
-  if(query._orderBy) final_where.order = query._orderBy + ' ' + query._orderDir;
-  else final_where.order = [['channel_number', 'ASC']];
+    if(query._orderBy) final_where.order = query._orderBy + ' ' + query._orderDir;
+    else final_where.order = [['channel_number', 'ASC']];
 
-  if (query.genre_id) qwhere.genre_id = query.genre_id;
+    if (query.genre_id) qwhere.genre_id = query.genre_id;
+    if(query.isavailable === 'true') qwhere.isavailable = true;
+    else if(query.isavailable === 'false') qwhere.isavailable = false;
 
     DBModel.count(final_where).then(function(totalrecord) {
 
@@ -260,29 +266,29 @@ exports.list = function(req, res) {
  */
 exports.dataByID = function(req, res, next, id) {
 
-  if ((id % 1 === 0) === false) { //check if it's integer
-    return res.status(404).send({
-      message: 'Data is invalid'
-    });
-  }
-
-  DBModel.find({
-    where: {
-      id: id
-    },
-    include: [{model: db.genre}, {model: db.packages_channels}]
-  }).then(function(result) {
-    if (!result) {
-      return res.status(404).send({
-        message: 'No data with that identifier has been found'
-      });
-    } else {
-      req.channels = result;
-      next();
-      return null;
+    if ((id % 1 === 0) === false) { //check if it's integer
+        return res.status(404).send({
+            message: 'Data is invalid'
+        });
     }
-  }).catch(function(err) {
-    return next(err);
-  });
+
+    DBModel.find({
+        where: {
+            id: id
+        },
+        include: [{model: db.genre}, {model: db.packages_channels}]
+    }).then(function(result) {
+        if (!result) {
+            return res.status(404).send({
+                message: 'No data with that identifier has been found'
+            });
+        } else {
+            req.channels = result;
+            next();
+            return null;
+        }
+    }).catch(function(err) {
+        return next(err);
+    });
 
 };

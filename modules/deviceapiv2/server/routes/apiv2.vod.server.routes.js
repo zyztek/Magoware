@@ -86,7 +86,7 @@ module.exports = function(app) {
 
     //testing api returning new/modified data
     app.route('/apiv2/vod/listnewdata/:pagenumber')
-        //   .all(authpolicy.isAllowed)
+        .all(authpolicy.isAllowed)
         .get(vodController.list_get_newdata);
 
 
@@ -108,4 +108,9 @@ module.exports = function(app) {
         .all(authpolicy.isAllowed)
         .post(vodController.resume_movie);
 
+    app.route('/apiv2/vod/get_tv_series_data')
+        .all(authpolicy.isAllowed)
+        .get(vodController.get_tv_series_data)
+
 };
+

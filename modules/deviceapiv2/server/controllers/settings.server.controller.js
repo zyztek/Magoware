@@ -4,6 +4,7 @@ var path = require('path'),
     response = require(path.resolve("./config/responses.js")),
     vod = require(path.resolve("./modules/deviceapiv2/server/controllers/vod.server.controller.js")),
     schedule = require(path.resolve("./modules/deviceapiv2/server/controllers/schedule.server.controller.js")),
+    winston = require(path.resolve('./config/lib/winston')),
     dateFormat = require('dateformat'),
     moment = require('moment'),
     async = require('async'),
@@ -267,8 +268,8 @@ exports.settings = function(req, res) {
             var livetvrefresh = (req.body.activity === 'livetv') ? refresh : false;
 
             //return images based on appid
-            var logo_url = (req.auth_obj.appid == 1 || req.auth_obj.appid == 4 || req.auth_obj.appid == 5) ?  req.app.locals.settings.box_logo_url :  req.app.locals.settings.mobile_logo_url;
-            var background_url = (req.auth_obj.appid == 1|| req.auth_obj.appid == 4 || req.auth_obj.appid == 5) ?  req.app.locals.settings.box_background_url :  req.app.locals.settings.mobile_background_url;
+            var logo_url = (req.auth_obj.screensize === 1) ?  req.app.locals.settings.box_logo_url :  req.app.locals.settings.mobile_logo_url;
+            var background_url = (req.auth_obj.screensize === 1) ?  req.app.locals.settings.box_background_url :  req.app.locals.settings.mobile_background_url;
             var vod_background_url = (req.auth_obj.appid == 1) ?  req.app.locals.settings.vod_background_url :  req.app.locals.settings.vod_background_url;
 
             //days_left message is empty if user still has subscription
@@ -283,7 +284,8 @@ exports.settings = function(req, res) {
                 "vodrefresh": vodrefresh,
                 "mainmenurefresh": mainmenurefresh,
                 "daysleft": daysleft,
-                "seconds_left": seconds_left,
+                "seconds_left": Math.min(req.app.locals.settings.activity_timeout, login_data.activity_timeout, seconds_left),
+                "online_payment_url": req.app.locals.settings.online_payment_url,
                 "days_left_message": days_left_message,
                 "record_count": Math.ceil(record_count / req.app.locals.settings.vod_subset_nr),
                 "resume_movie": resume_vod,
@@ -299,7 +301,9 @@ exports.settings = function(req, res) {
                 "timezone": login_data.timezone,
                 "auto_timezone": login_data.auto_timezone,
                 "iptimezone": offset,
-                "available_upgrade": available_upgrade
+                "available_upgrade": available_upgrade,
+                "get_ads": (req.thisuser.get_ads && (req.thisuser.get_ads === true) ) ? 1 : 0,
+                "vast_ad_url": "https://servedbyadbutler.com/vast.spark?setID=5291&ID=173381&pid=57743" //todo: get value from database
             }];
             response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=43200');
         }
@@ -308,6 +312,10 @@ exports.settings = function(req, res) {
     });
 
 };
+
+
+
+
 
 //API GETS APPID, APP VERSION AND API VERSION OF THE DEVICE AND DECIDES IF THERE ARE ANY UPGRADES WHOSE REQUIREMENTS ARE FULLFILL BY THIS DEVICE
 exports.upgrade = function(req, res) {
@@ -363,4 +371,134 @@ function isvalidoffset(offset){
         else return false; //offset out of range, so invalid
     }
     else return false; //offset of invalid datatype, so invalid
+}
+
+
+
+
+
+/**
+ * @api {get} /apiv2/settings/settings/:username /apiv2/settings/settings/
+ * @apiVersion 0.2.0
+ * @apiName GetSettings
+ * @apiGroup DeviceAPI
+ *
+ * @apiHeader {String} auth Users unique access-key.
+ * @apiParam {String} activity {login or livetv or vod} Mandatory value.
+ * @apiParam {Number} mainmenutimestamp Timestamp in milliseconds, mandatory value coming from frontend
+ * @apiParam {Number} livetvtimestamp Timestamp in milliseconds, mandatory value coming from frontend
+ * @apiParam {Number} vodtimestamp Timestamp in milliseconds, mandatory value coming from frontend
+ * @apiDescription Get user settings, subscription, etc
+ */
+
+exports.get_settings = function(req, res) {
+
+    var login_data = req.thisuser;
+    var activity = 'livetv';
+
+    models.subscription.findAll({
+        attributes: ['end_date'], where: {login_id: login_data.id}, limit: 1,  order: [[ 'end_date', 'DESC' ]],
+        include: [{
+            model: models.package, required: true, attributes: ['id'], include: [
+                {model: models.package_type, required: true, attributes: ['id'], where:{app_group_id: req.auth_obj.screensize}, include: [
+                    {model: models.activity, required: true, attributes: ['id'], where: {description: activity}}
+                ]}
+            ]}
+        ]
+    }).then(function (enddate) {
+        //res.send(enddate);
+        var end_date = (enddate[0]) ? moment(enddate[0].end_date, "YYYY-M-DD HH:mm:ss") : moment(new Date(), "YYYY-M-DD HH:mm:ss");  //if no subscription found, enddate set as current time to return 0 days left
+        var current_date = moment(new Date(), "YYYY-M-DD HH:mm:ss");
+        var seconds_left = end_date.diff(current_date, 'seconds');
+
+        //re-evaluating push task for subscription end. All current tasks of this screen size are deleted, a new task is created
+
+        if(req.auth_obj.appid === '2' || req.auth_obj.appid === '3'){
+            if(livetv_s_subscription_end[req.thisuser.id]){
+                //destroy push task for live tv small screen for this user
+                clearTimeout(livetv_s_subscription_end[req.thisuser.id]);
+                delete livetv_s_subscription_end[req.thisuser.id];
+            }
+            if(vod_s_subscription_end[req.thisuser.id]){
+                //destroy push task for vod small screen for this user
+                clearTimeout(vod_s_subscription_end[req.thisuser.id]);
+                delete vod_s_subscription_end[req.thisuser.id];
+            }
+        }
+        else {
+            if(livetv_l_subscription_end[req.thisuser.id]){
+                //destroy push task for live tv large screen for this user
+                clearTimeout(livetv_l_subscription_end[req.thisuser.id]);
+                delete livetv_l_subscription_end[req.thisuser.id];
+            }
+            if(vod_l_subscription_end[req.thisuser.id]){
+                //destroy push task for vod large screen for this user
+                clearTimeout(vod_l_subscription_end[req.thisuser.id]);
+                delete vod_l_subscription_end[req.thisuser.id];
+            }
+        }
+
+
+        if(seconds_left > 0){
+            schedule.end_subscription(req.thisuser.id, seconds_left*1000, [req.auth_obj.appid], req.auth_obj.screensize, req.body.activity, req.app.locals.settings.firebase_key); //create push task for the ending of this type of subscription
+        }
+
+        var daysleft = Math.ceil(Number(Math.ceil(seconds_left / 86400).toFixed(0)));
+
+    }).catch(function(error) {
+        winston.error('error getting subscriptin status ',error);
+        res.send(error);
+    });
+
+
+
+    var daysleft = 1;
+    var seconds_left = 199999;
+
+    var mainmenurefresh = (req.body.activity === 'login') ? refresh : false;
+    var vodrefresh = (req.body.activity === 'vod') ? refresh : false;
+    var livetvrefresh = (req.body.activity === 'livetv') ? refresh : false;
+
+    //return images based on appid
+    var logo_url = (req.auth_obj.screensize === 1) ?  req.app.locals.settings.box_logo_url :  req.app.locals.settings.mobile_logo_url;
+    var background_url = (req.auth_obj.screensize === 1) ?  req.app.locals.settings.box_background_url :  req.app.locals.settings.mobile_background_url;
+    var vod_background_url = (req.auth_obj.appid == 1) ?  req.app.locals.settings.vod_background_url :  req.app.locals.settings.vod_background_url;
+
+    //days_left message is empty if user still has subscription
+    var lang = (languages[req.body.language]) ? req.body.language : 'eng'; //handle missing language variables, serving english as default
+    var days_left_message = (daysleft > 0) ? "" : languages[lang].language_variables['NO_SUBSCRIPTION'];
+
+    var response_data = [{
+        "logo_url": req.app.locals.settings.assets_url+""+logo_url,
+        "background_url": req.app.locals.settings.assets_url+""+background_url,
+        "vod_background_url": req.app.locals.settings.assets_url+""+vod_background_url,
+        "livetvrefresh": livetvrefresh,
+        "vodrefresh": vodrefresh,
+        "mainmenurefresh": mainmenurefresh,
+        "daysleft": daysleft,
+        "seconds_left": Math.min(req.app.locals.settings.activity_timeout, login_data.activity_timeout, seconds_left),
+        "online_payment_url": req.app.locals.settings.online_payment_url,
+        "days_left_message": days_left_message,
+        //"record_count": Math.ceil(record_count / req.app.locals.settings.vod_subset_nr),
+        //"resume_movie": resume_vod,
+        //"movie_url": movie_url.toString(),
+        //"resume_position": resume_position,
+        "company_url": req.app.locals.settings.company_url,
+        "log_event_interval":  req.app.locals.settings.log_event_interval,
+        "channel_log_time":  req.app.locals.settings.channel_log_time,
+        "activity_timeout":  Math.min(req.app.locals.settings.activity_timeout, login_data.activity_timeout),
+        "player": login_data.player,
+        "pin": login_data.pin,
+        "showadult": login_data.show_adult,
+        "timezone": login_data.timezone,
+        "auto_timezone": login_data.auto_timezone,
+        //"iptimezone": offset,
+        //"available_upgrade": available_upgrade,
+        "get_ads": (req.thisuser.get_ads && (req.thisuser.get_ads === true) ) ? 1 : 0,
+        "vast_ad_url": "https://servedbyadbutler.com/vast.spark?setID=5291&ID=173381&pid=57743" //todo: get value from database
+    }];
+
+    response.send_res_get(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=43200');
+
+
 }

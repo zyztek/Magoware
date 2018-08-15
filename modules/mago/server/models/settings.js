@@ -60,6 +60,11 @@ module.exports = function(sequelize, DataTypes) {
             defaultValue: '/help_and_support',
             allowNull: false
         },
+        online_payment_url: {
+            type: DataTypes.STRING(255),
+            defaultValue: '',
+            allowNull: false
+        },
         vod_subset_nr: {
             type: DataTypes.INTEGER(11),
             defaultValue: 200,
@@ -87,6 +92,16 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING,
             allowNull: false
         },
+        smtp_host: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            defaultValue: 'smtp.gmail.com:465'
+        },
+        smtp_secure: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: true
+        },
         analytics_id: {
             type: DataTypes.STRING
         },
@@ -102,6 +117,16 @@ module.exports = function(sequelize, DataTypes) {
         company_url: {
             type: DataTypes.STRING,
             defaultValue: 'https://magoware.tv'
+        },
+        company_logo: {
+            type: DataTypes.STRING(255),
+            defaultValue: "/admin/images/mago.png",
+            allowNull: false
+        },
+        company_name: {
+            type: DataTypes.STRING(45),
+            defaultValue: "MAGOWARE",
+            allowNull: false
         },
         vodlastchange :{
             type: DataTypes.BIGINT(13),

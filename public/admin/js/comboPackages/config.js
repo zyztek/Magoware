@@ -57,7 +57,7 @@ export default function (nga, admin) {
 				}))
 				.perPage(-1)
 				.validation({ required: true })
-                .attributes({ placeholder: 'Select Packages' })
+                .attributes({ placeholder: 'Select packages' })
 				.label('Package'),
             nga.field('template')
             	.label('')

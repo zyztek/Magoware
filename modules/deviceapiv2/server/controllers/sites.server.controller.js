@@ -1,23 +1,25 @@
 'use strict';
 var path = require('path'),
-    db = require(path.resolve('./config/lib/sequelize')).models,
-	crypto = require('crypto'),
-	async = require('async'),
-	nodemailer = require('nodemailer'),
-	response = require(path.resolve("./config/responses.js")),
-	authentication = require(path.resolve('./modules/deviceapiv2/server/controllers/authentication.server.controller.js')),
-	subscription = db.subscription,
-    Combo = db.combo,
-    login_data = db.login_data,
-    SalesData = db.salesreport,
-    dateFormat = require('dateformat'),
-    customer_data = db.customer_data;
+		db = require(path.resolve('./config/lib/sequelize')).models,
+		crypto = require('crypto'),
+		async = require('async'),
+		nodemailer = require('nodemailer'),
+		response = require(path.resolve("./config/responses.js")),
+		authentication = require(path.resolve('./modules/deviceapiv2/server/controllers/authentication.server.controller.js')),
+		subscription = db.subscription,
+		Combo = db.combo,
+		login_data = db.login_data,
+		SalesData = db.salesreport,
+		dateFormat = require('dateformat'),
+		email_templates = db.email_templates,
+		customer_data = db.customer_data;
+
 
 exports.createaccount = function(req,res) {
 	var smtpConfig = {
-		host: 'smtp.gmail.com',
-		port: 465,
-		secure: true, // use SSL
+		host: (req.app.locals.settings.smtp_host) ? req.app.locals.settings.smtp_host.split(':')[0] : 'smtp.gmail.com',
+		port: (req.app.locals.settings.smtp_host) ? Number(req.app.locals.settings.smtp_host.split(':')[1]) : 465,
+		secure: (req.app.locals.settings.smtp_secure === false) ? req.app.locals.settings.smtp_secure : true,
 		auth: {
 			user: req.app.locals.settings.email_username,
 			pass: req.app.locals.settings.email_password
@@ -115,20 +117,34 @@ exports.createaccount = function(req,res) {
 			}
 		},
 		//todo: remove this part and it's template?
-		function(token, new_customer, done) {
-			res.render(path.resolve('modules/deviceapiv2/server/templates/new-account'), {
-				name: new_customer.firstname + ' ' + new_customer.lastname,
-				appName: req.app.locals.title, //todo: remains from old api???
-				url: req.app.locals.originUrl + '/apiv2/sites/confirm-account/' + token
 
-			}, function(err, emailHTML) {
-				done(err, emailHTML, new_customer.email);
+
+		function(token, new_customer, done) {
+
+			email_templates.findOne({
+				attributes:['title','content'],
+				where: {template_id: 'new-account', language: req.body.language }
+			}).then(function (result,err) {
+				if(!result){
+					res.render(path.resolve('modules/deviceapiv2/server/templates/new-account'), {
+						name: new_customer.firstname + ' ' + new_customer.lastname,
+						appName: req.app.locals.title, //todo: remains from old api???
+						url: req.app.locals.originUrl + '/apiv2/sites/confirm-account/' + token
+
+					}, function(err, emailHTML) {
+						done(err, emailHTML, new_customer.email);
+					});
+				} else {
+					var response = result.content;
+					var emailHTML = response.replace(new RegExp('{{name}}', 'gi'), new_customer.firstname + ' ' + new_customer.lastname).replace(new RegExp('{{appName}}', 'gi'),req.app.locals.title).replace(new RegExp('{{url}}', 'gi'),req.app.locals.originUrl + '/apiv2/sites/confirm-account/' + token);
+					done(err,emailHTML, new_customer.email);
+				}
 			});
 		},
 		function(emailHTML, email, done) {
 			var mailOptions = {
 				to: email, //user.email,
-				from: req.app.locals.settings.email_username, //the from field matches the account username
+				from: req.app.locals.settings.email_address, //the from field matches the account username
 				subject: 'Account confirmation',
 				html: emailHTML
 			};
@@ -139,6 +155,7 @@ exports.createaccount = function(req,res) {
 					response.send_res(req, res, [], 200, 1, 'EMAIL_SENT_DESCRIPTION', 'CONFIRM_ACCOUNT', 'no-store');
 
 				} else {
+					console.log(err);
 					response.send_res(req, res, [], 200, 1, 'EMAIL_NOT_SENT_DESCRIPTION', 'EMAIL_NOT_SENT_DATA', 'no-store');
 				}
 				done(err);
@@ -161,84 +178,81 @@ exports.confirmNewAccountToken = function(req, res) {
 		}
 	}).then(function(user) {
 		if (!user) {
-			return res.send('This link is no longer valid. Could not confirm account.');
+			return res.send('This link has expired. Unable to confirm account.');
 		}
 		user.resetPasswordExpires = 0;
 		user.account_lock = 0;
 		user.save().then(function (result) {
-            add_default_subscription(result.id);
-			res.send('Account confirmed, you can now login');
+			add_default_subscription(result.id);
 		});
 	});
 
 
-    //Adds a default package
+	//Adds a default package
 	function add_default_subscription(account_id){
 
-        // Loading Combo with All its packages
-        Combo.findOne({
-            where: {
-                id: 1
-            }, include: [{model:db.combo_packages,include:[db.package]}]
-        }).then(function(combo) {
-            if (!combo)
-                return res.status(404).send({message: 'No Product with that identifier has been found'});
-            else {
-                // Load Customer by LoginID
-                login_data.findOne({
-                    where: {
-                        id: account_id
-                    }, include: [{model:db.customer_data},{model:db.subscription}]
-                }).then(function(loginData) {
-                    if (!loginData) return res.status(404).send({message: 'No Login with that identifier has been found'});
+		// Loading Combo with All its packages
+		Combo.findOne({
+			where: {
+				product_id: "free_combo"
+			}, include: [{model:db.combo_packages,include:[db.package]}]
+		}).then(function(combo) {
+			if (!combo)
+				return res.status(404).send('Account confirmed, you can proceed to login. Contact Magoware support to get your first subscription for free.');
+			else {
+				// Load Customer by LoginID
+				login_data.findOne({
+					where: {
+						id: account_id
+					}, include: [{model:db.customer_data},{model:db.subscription}]
+				}).then(function(loginData) {
+					if (!loginData) return res.status(404).send('Account confirmed, you can proceed to login. Unable to add default subscription to your user.');
 
-                    // Subscription Processing
-                    // For Each package in Combo
-                    combo.combo_packages.forEach(function(item,i,arr){
-                        var startDate = Date.now();
-                        var sub = {
-                            login_id: loginData.id,
-                            package_id: item.package_id,
-                            customer_username: loginData.username,
-                            user_username: 'registration' //live
-                        };
+					// Subscription Processing
+					// For Each package in Combo
+					combo.combo_packages.forEach(function(item,i,arr){
+						var startDate = Date.now();
+						var sub = {
+							login_id: loginData.id,
+							package_id: item.package_id,
+							customer_username: loginData.username,
+							user_username: 'registration' //live
+						};
 
-                        sub.start_date = Date.now();
-                        sub.end_date =  addDays(Date.now(), combo.duration);
+						sub.start_date = Date.now();
+						sub.end_date =  addDays(Date.now(), combo.duration);
 
-                        // Saving Subscription
-                        subscription.create(sub).then(function(savedSub) {
-                            if (!savedSub) return res.status(400).send({message: 'fail create data'});
-                        })
+						// Saving Subscription
+						subscription.create(sub).then(function(savedSub) {
+							if (!savedSub) return res.status(400).send('Account confirmed, you can proceed to login. Contact Magoware support to get your first subscription for free.');
+						})
+					});
 
-                    });
-
-                    // Insert Into SalesData
-                    var sData = {
-                        user_id: 1,
-                        user_username: loginData.username,
-                        login_data_id: loginData.id,
-                        distributorname: 'admin',
-                        saledate: new Date(),
-                        combo_id: combo.id
-                    };
-                    SalesData.create(sData)
-                        .then(function(salesData){
-                            if (!salesData) return res.status(400).send({message: 'fail create sales data'});
-                        });
-
-
-                });
-                return null;
-            }
-        });
+					// Insert Into SalesData
+					var sData = {
+						user_id: 1,
+						user_username: loginData.username,
+						login_data_id: loginData.id,
+						distributorname: 'admin',
+						saledate: new Date(),
+						combo_id: combo.id
+					};
+					SalesData.create(sData)
+							.then(function(salesData){
+								if (!salesData) return res.status(400).send('Account confirmed, you can proceed to login. Check with Magoware support to make sure you are subscribed to our free packages');
+								else return res.status(400).send('Account confirmed, you can proceed to login.');
+							});
+				});
+				return null;
+			}
+		});
 	}
 
 
-    function addDays(startdate_ts, duration) {
-        var end_date_ts = startdate_ts + duration * 86400000; //add duration in number of seconds
-        var end_date =  dateFormat(end_date_ts, "yyyy-mm-dd hh:MM:ss"); // convert enddate from timestamp to datetime
-        return end_date;
-    }
+	function addDays(startdate_ts, duration) {
+		var end_date_ts = startdate_ts + duration * 86400000; //add duration in number of seconds
+		var end_date =  dateFormat(end_date_ts, "yyyy-mm-dd hh:MM:ss"); // convert enddate from timestamp to datetime
+		return end_date;
+	}
 
 };

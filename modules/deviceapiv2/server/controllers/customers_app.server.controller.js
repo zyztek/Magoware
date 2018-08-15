@@ -104,30 +104,46 @@ exports.update_user_data = function(req, res) {
                 where: {id: req.thisuser.customer_id}
             }
         ).then(function (result) {
-            if(result && customer_data.email !== req.body.email){
-                var email_body = 'Dear '+customer_data.firstname+' '+customer_data.lastname+', the email address associated to your Magoware account has been changed to '+req.body.email;
-                var smtpConfig = {
-                    host: 'smtp.gmail.com',
-                    port: 465,
-                    secure: true, // use SSL
-                    auth: {
-                        user: req.app.locals.settings.email_username,
-                        pass: req.app.locals.settings.email_password
-                    }
-                };
-                var smtpTransport = nodemailer.createTransport(smtpConfig);
-                var mailOptions = {
-                    from: req.app.locals.settings.email_username,
-                    to: customer_data.email,
-                    subject: 'Email changed', // Subject line
-                    text: email_body, // plaintext body
-                    html: '<b>'+email_body+'</b>' // html body
-                };
-                smtpTransport.sendMail(mailOptions, function(error, info){
-                    if(error) console.log(error);
-                });
-            }
-            response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
+
+            models.email_templates.findOne({
+                attributes:['title','content'],
+                where: {template_id: 'new-email', language: req.body.language }
+            }).then(function(template_result) {
+
+                if(!template_result){
+                    var email_body = 'Dear '+customer_data.firstname+' '+customer_data.lastname+', the email address associated to your Magoware account has been changed to '+req.body.email;
+                }else {
+                    var content_from_ui = template_result.content;
+                    var email_body = content_from_ui.replace(new RegExp('{{customer_data.firstname}}', 'gi'), customer_data.firstname).replace(new RegExp('{{customer_data.lastname}}', 'gi'), customer_data.lastname).replace(new RegExp('{{req.body.email}}', 'gi'), req.body.email);
+                }
+
+                if(result && customer_data.email !== req.body.email){
+                    var smtpConfig = {
+                        host: (req.app.locals.settings.smtp_host) ? req.app.locals.settings.smtp_host.split(':')[0] : 'smtp.gmail.com',
+                        port: (req.app.locals.settings.smtp_host) ? Number(req.app.locals.settings.smtp_host.split(':')[1]) : 465,
+                        secure: (req.app.locals.settings.smtp_secure === false) ? req.app.locals.settings.smtp_secure : true,
+                        auth: {
+                            user: req.app.locals.settings.email_username,
+                            pass: req.app.locals.settings.email_password
+                        }
+                    };
+                    var smtpTransport = nodemailer.createTransport(smtpConfig);
+                    var mailOptions = {
+                        from: req.app.locals.settings.email_address,
+                        to: customer_data.email,
+                        subject: 'Email changed', // Subject line
+                        // text: email_body, // plaintext body
+                        html: '<b>'+email_body+'</b>' // html body
+                    };
+                    smtpTransport.sendMail(mailOptions, function(error, info){
+                        if(error) console.log(error);
+                    });
+                }
+                response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
+
+            }).catch(function(error){
+                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+            });
         }).catch(function(error) {
             if(error.name === "SequelizeUniqueConstraintError" && error.errors[0].path === "email"){
                 response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'EMAIL_ALREADY_EXISTS', 'no-store');
@@ -190,32 +206,47 @@ exports.change_password = function(req, res) {
 };
 
 exports.reset_pin = function(req, res) {
+
     models.customer_data.findOne({
         attributes:['firstname', 'lastname', 'email'],
         where: {id: req.thisuser.customer_id}
     }).then(function (result) {
-        var email_body = 'Dear '+result.firstname+' '+result.lastname+', your current pin is '+req.thisuser.pin;
-        var smtpConfig = {
-            host: 'smtp.gmail.com',
-            port: 465,
-            secure: true, // use SSL
-            auth: {
-                user: req.app.locals.settings.email_username,
-                pass: req.app.locals.settings.email_password
+
+        models.email_templates.findOne({
+            attributes:['title','content'],
+            where: {template_id: 'code-pin-email', language: req.body.language }
+        }).then(function(template_result) {
+            var email_body;
+            if(!template_result){
+                email_body = 'Dear '+result.firstname+' '+result.lastname+', your current pin is '+req.body.pin;
+            }else {
+                var content_from_ui = template_result.content;
+                email_body = content_from_ui.replace(new RegExp('{{result.firstname}}', 'gi'), result.firstname).replace(new RegExp('{{result.lastname}}', 'gi'), result.lastname).replace(new RegExp('{{req.body.pin}}', 'gi'), req.body.pin);
             }
-        };
-        var smtpTransport = nodemailer.createTransport(smtpConfig);
-        var mailOptions = {
-            from: req.app.locals.settings.email_username,
-            to: result.email,
-            subject: 'Pin information', // Subject line
-            text: email_body, // plaintext body
-            html: '<b>'+email_body+'</b>' // html body
-        };
-        smtpTransport.sendMail(mailOptions, function(error, info){
-            if(error) console.log(error);
+            var smtpConfig = {
+                host: (req.app.locals.settings.smtp_host) ? req.app.locals.settings.smtp_host.split(':')[0] : 'smtp.gmail.com',
+                port: (req.app.locals.settings.smtp_host) ? Number(req.app.locals.settings.smtp_host.split(':')[1]) : 465,
+                secure: (req.app.locals.settings.smtp_secure === false) ? req.app.locals.settings.smtp_secure : true,
+                auth: {
+                    user: req.app.locals.settings.email_username,
+                    pass: req.app.locals.settings.email_password
+                }
+            };
+            var smtpTransport = nodemailer.createTransport(smtpConfig);
+            var mailOptions = {
+                from: req.app.locals.settings.email_address,
+                to: result.email,
+                subject: 'Pin information', // Subject line
+                // text: email_body, // plaintext body
+                html: '<b>'+email_body+'</b>' // html body
+            };
+            smtpTransport.sendMail(mailOptions, function(error, info){
+                if(error) console.log(error);
+            });
+            response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'RESET_PIN_DATA', 'no-store');
+        }).catch(function(error){
+            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
-        response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'RESET_PIN_DATA', 'no-store');
     }).catch(function(error) {
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });

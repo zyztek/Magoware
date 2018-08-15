@@ -16,14 +16,6 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.INTEGER(11),
             allowNull: false,
             unique: 'packagevod'
-        },
-        createdAt: {
-            type: DataTypes.DATE,
-            allowNull: false
-        },
-        updatedAt: {
-            type: DataTypes.DATE,
-            allowNull: false
         }
     }, {
         tableName: 'package_vod',

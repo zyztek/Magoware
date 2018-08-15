@@ -52,6 +52,7 @@
     "REQUEST_FAILED": "RICHIESTA_FALLITA",
     "REQUEST_FAILED_DESC": "Errore durante l'esecuzione della richiesta",
     "UNKNOWN_STREAM_FORMAT": "Il flusso catchup richiesto non può essere servito",
-    "DEVICE_NOT_FOUND": "Impossibile trovare alcun dispositivo con le specifiche richieste"
+    "DEVICE_NOT_FOUND": "Impossibile trovare alcun dispositivo con le specifiche richieste",
+    "NO_DATA_FOUND": "L'elenco di articoli richiesto è vuoto"
   }
 }

@@ -7,27 +7,38 @@ var path = require('path'),
     DBModel = db.commands,
     DBDevices = db.devices;
 
-/*
- function save_messages(obj, messagein, ttl, action, callback){
- console.log("at save message")
+/**
+ * @api {post} /api/ads Push messages - Send ads
+ * @apiVersion 0.2.0
+ * @apiName Send ads
+ * @apiGroup Backoffice
+ * @apiHeader {String} authorization Token string acquired from login api.
+ *
+ * @apiParam {String} type Field type. Value set [one, all].
+ * @apiParam {Number} username  Field username.  If all_users is true, username can be left empty and is ignored.
+ * @apiParam {Number[]} appid  Mandatory field appid. Cannot be an empty array.
+ * @apiParam {boolean} sendtoactivedevices  Optional field sendtoactivedevices. If checked, send commands only to active devices.
+ * @apiParam {String[]} command  Mandatory field command.
+ * @apiParam {String} parameter1  Mandatory field parameter1. Represents target directory for command. When not needed, set it as empty string
+ * @apiParam {String} parameter2  Optional field parameter2. Represents destination directory for command. When not needed, set it as empty string
+ * @apiParam {String} parameter3  Optional field parameter3. Represents other command options. When not needed, set it as empty string
+ *
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "message": "Message sent"
+ *      }
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 400 OK
+ *     {
+ *       "message": "Error message" //for the actual message refer to list below
+ *     }
+ *
+ *      "You did not select any devices" //User type was set to 'One user' but no user was selected
+ *      "You did not select any device types" //appid is missing, empty or invalid
+ *      "No devices found with these filters" //no device or username fullfills the filters
+ *
 
- DBModel.create({
- username: obj.username,
- googleappid: obj.googleappid,
- title: messagein,
- message: messagein,
- action: action
- }).then(function(result) {
- if (!result) {
- console.log('Fail to create data')
- } else {
- console.log('Messages saved')
- }
- }).catch(function(err) {
-
- });
-
- }
  */
 
 /**

@@ -14,7 +14,7 @@ var path = require('path'),
 
 exports.create = function(req, res) {
 
-    DBModel.create(req.body).then(function(result) {
+    DBModel.bulkCreate(req.body, {ignoreDuplicates: true}).then(function(result) {
         if (!result) {
             return res.status(400).send({message: 'fail create data'});
         } else {
@@ -32,27 +32,27 @@ exports.create = function(req, res) {
  * Show current
  */
 /*
-exports.read = function(req, res) {
-    res.json(req.packageChannel);
-};
-*/
+ exports.read = function(req, res) {
+ res.json(req.packageChannel);
+ };
+ */
 
 /**
  * Update
  */
 /*
-exports.update = function(req, res) {
-    var updateData = req.packageChannel;
+ exports.update = function(req, res) {
+ var updateData = req.packageChannel;
 
-    updateData.updateAttributes(req.body).then(function(result) {
-        res.json(result);
-    }).catch(function(err) {
-        return res.status(400).send({
-            message: errorHandler.getErrorMessage(err)
-        });
-    });
-};
-*/
+ updateData.updateAttributes(req.body).then(function(result) {
+ res.json(result);
+ }).catch(function(err) {
+ return res.status(400).send({
+ message: errorHandler.getErrorMessage(err)
+ });
+ });
+ };
+ */
 
 /**
  * Delete
@@ -121,29 +121,29 @@ exports.list = function(req, res) {
  * middleware
  */
 /*
-exports.dataByID = function(req, res, next, id) {
-    if ((id % 1 === 0) === false) { //check if it's integer
-        return res.status(404).send({ message: 'Data is invalid' });
-    }
+ exports.dataByID = function(req, res, next, id) {
+ if ((id % 1 === 0) === false) { //check if it's integer
+ return res.status(404).send({ message: 'Data is invalid' });
+ }
 
-    DBModel.find({
-        where: {
-            id: id
-        },
-        include: [{model: db.vod, required: true}]
-    }).then(function(result) {
-        if (!result) {
-            return res.status(404).send({
-                message: 'No data with that identifier has been found'
-            });
-        } else {
-            req.packageChannel = result;
-            next();
-            return null;
-        }
-    }).catch(function(err) {
-        return next(err);
-    });
+ DBModel.find({
+ where: {
+ id: id
+ },
+ include: [{model: db.vod, required: true}]
+ }).then(function(result) {
+ if (!result) {
+ return res.status(404).send({
+ message: 'No data with that identifier has been found'
+ });
+ } else {
+ req.packageChannel = result;
+ next();
+ return null;
+ }
+ }).catch(function(err) {
+ return next(err);
+ });
 
-};
-*/
+ };
+ */

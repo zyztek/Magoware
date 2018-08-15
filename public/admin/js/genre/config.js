@@ -67,7 +67,7 @@ export default function (nga, admin) {
                         }
                     }
                 })
-                .label('icon *'),
+                .label('Icon *'),
             nga.field('template')
                 .label('')
                 .template(edit_button),

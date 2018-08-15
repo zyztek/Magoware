@@ -13,7 +13,7 @@ export default function (nga, admin) {
 					.isDetailLink(true)
 					.label('Title'),
 			nga.field('epg_map_id', 'string')
-					.label('EPG Map ID'),
+					.label('EPG MAP ID'),
             nga.field('genre_id', 'reference')
                 .targetEntity(admin.getEntity('Genres'))
                 .targetField(nga.field('description'))
@@ -50,6 +50,12 @@ export default function (nga, admin) {
         .sortDir("ASC")
         .sortField("channel_number")
         .filters([
+            nga.field('isavailable', 'boolean')
+                .filterChoices([
+                    { value: true, label: 'Available' },
+                    { value: false, label: 'Not Available' }
+                ])
+                .label('Available'),
           nga.field('q')
               .label('')
               .template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>')
@@ -75,11 +81,7 @@ export default function (nga, admin) {
             return false;
         }])
         .onSubmitError(['error', 'form', 'progression', 'notification', function(error, form, progression, notification) {
-            // stop the progress bar
-            progression.done();
-            // add a notification
-            //notification.log(`This channel number exists`, { addnCls: 'humane-flatty-error' });
-            // cancel the default action (default error messages)
+            progression.done(); // stop the progress bar
             return false;
         }])
         .fields([
@@ -88,7 +90,9 @@ export default function (nga, admin) {
                 .validation({ required: true })
                 .label('Title'),
             nga.field('epg_map_id', 'string')
-                .label('EPG Map ID'),
+                .template('<ma-input-field field="field" value="entry.values.epg_map_id"></ma-input-field>'+
+                    '<small id="emailHelp" class="form-text text-muted">Identifier used to match epg files with the respective channel</small>')
+                .label('EPG MAP ID'),
             nga.field('channel_number', 'string')
                 .validation({ required: true })
                 .label('Number'),
@@ -112,6 +116,7 @@ export default function (nga, admin) {
 
             nga.field('packages_channels','reference_many')
                 .targetEntity(admin.getEntity('Packages'))
+                .permanentFilters({ package_type_id: [1,2] })
                 .targetField(nga.field('package_name'))
                 .label('Packages')
                 .attributes({ placeholder: 'Select packages' })
@@ -165,12 +170,12 @@ export default function (nga, admin) {
                     .targetReferenceField('channel_id')
                     .targetFields([
 		                nga.field('stream_url')
-								.map(function truncate(value) {
-									if (!value) {
-										return '';
-									}
-									return value.length > 25 ? value.substr(0, 25) + '...' : value;
-								})
+								// .map(function truncate(value) {
+								// 	if (!value) {
+								// 		return '';
+								// 	}
+								// 	return value.length > 25 ? value.substr(0, 25) + '...' : value;
+								// })
 								.label('Stream Url'),
 		                nga.field('stream_source_id', 'reference')
 		                    .targetEntity(admin.getEntity('ChannelStreamSources'))

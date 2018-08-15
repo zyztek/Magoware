@@ -23,7 +23,12 @@ exports.read = function(req, res) {
 };
 
 exports.env_settings = function(req, res) {
-    res.json(config.seanjs.version+' '+config.seanjs.db_migration_nr); //returns the version number for the middleware
+    var env_settings = {
+        "backoffice_version" : config.seanjs.version+' '+config.seanjs.db_migration_nr,
+        "company_name": req.app.locals.settings.company_name,
+        "company_logo": req.app.locals.settings.assets_url+req.app.locals.settings.company_logo
+    };
+    res.json(env_settings); //returns version number and other middleware constants
 };
 
 /**

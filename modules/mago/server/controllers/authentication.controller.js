@@ -47,11 +47,12 @@ exports.authenticate = function(req, res) {
             });
         } else {
 
-            if((authBody.password !== result.password) && (!result.authenticate(authBody.password)))
+            if(!result.authenticate(authBody.password)) {
                 return res.status(401).send({
                     message: 'UserName or Password does not match'
                 });
 
+            }
             var group = {};
             if(result.group){
                 group = result.group.code;
@@ -135,7 +136,6 @@ exports.changepassword1 = function(req, res, next) {
                 if (user) {
                     if (user.authenticate(passwordDetails.currentPassword)) {
                         if (passwordDetails.newPassword === passwordDetails.verifyPassword) {
-                            user.password = passwordDetails.newPassword;
                             user.hashedpassword = user.encryptPassword(passwordDetails.newPassword,user.salt);
                             user.save()
                                 .then(function() {
@@ -183,12 +183,12 @@ exports.changepassword1 = function(req, res, next) {
 exports.forgot = function(req, res, next) {
 
     var smtpConfig = {
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true, // use SSL
+        host: (req.app.locals.settings.smtp_host) ? req.app.locals.settings.smtp_host.split(':')[0] : 'smtp.gmail.com',
+        port: (req.app.locals.settings.smtp_host) ? Number(req.app.locals.settings.smtp_host.split(':')[1]) : 465,
+        secure: (req.app.locals.settings.smtp_secure === false) ? req.app.locals.settings.smtp_secure : true,
         auth: {
             user: req.app.locals.settings.email_username,
-            pass: "info@magoware"
+            pass: req.app.locals.settings.email_password
         }
     };
 
@@ -249,7 +249,7 @@ exports.forgot = function(req, res, next) {
         function(emailHTML, user, done) {
             var mailOptions = {
                 to: user.email,
-                from: config.mailer.from,
+                from: req.app.locals.settings.email_address,
                 subject: 'Password Reset',
                 html: emailHTML
             };

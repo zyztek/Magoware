@@ -52,6 +52,7 @@
     "REQUEST_FAILED": "KËRKESË_DËSHTOI",
     "REQUEST_FAILED_DESC": "Gabim gjatë ekzekutimit të kërkesës",
     "UNKNOWN_STREAM_FORMAT": "Nuk mund të shërbehet stream i kërkuar",
-    "DEVICE_NOT_FOUND": "Nuk mund të gjehej asnje pajisje me specifikat e kërkuara"
+    "DEVICE_NOT_FOUND": "Nuk mund të gjehej asnje pajisje me specifikat e kërkuara",
+    "NO_DATA_FOUND": "Lista e kërkuar është e bosh"
   }
 }

@@ -7,24 +7,26 @@ var path = require('path'),
     DBCombos = db.combo,
     DBpayment_transactions = db.payment_transactions,
     async = require('async'),
+    winston = require(path.resolve('./config/lib/winston')),
+    stripe = require("stripe")(req.app.locals.paymenttokens.STRIPE.API_KEY),
     whiteilst_IPs =['54.187.174.169',
-                    '54.187.205.235',
-                    '54.187.216.72',
-                    '54.241.31.99',
-                    '54.241.31.102',
-                    '54.241.34.107'];
+        '54.187.205.235',
+        '54.187.216.72',
+        '54.241.31.99',
+        '54.241.31.102',
+        '54.241.34.107'];
 
 /*
-* @api {get} /apiv2/payments/stripe/getkey Get Stripe Token Key
-* @apiVersion 0.2.0
-* @apiName Get Stripe Key
-* @apiGroup DeviceAPI
-*/
+ * @api {get} /apiv2/payments/stripe/getkey Get Stripe Token Key
+ * @apiVersion 0.2.0
+ * @apiName Get Stripe Key
+ * @apiGroup DeviceAPI
+ */
 exports.stripe_get_key = function(req,res) {
     var thisresponse = new response.OK();
-        thisresponse.response_object = [{
-            stripekey:req.app.locals.paymenttokens.STRIPE.API_KEY
-        }]
+    thisresponse.response_object = [{
+        stripekey:req.app.locals.paymenttokens.STRIPE.API_KEY
+    }]
     res.send(thisresponse);
 };
 
@@ -47,7 +49,7 @@ exports.stripe_get_key = function(req,res) {
  *
  */
 
-//stripe one off charge
+//stripe one off charge - depricated
 exports.stripe_one_off_charge = function(req,res) {
     var thisresponse = new response.OK();
     var sale_or_refund = 1;
@@ -101,11 +103,11 @@ exports.stripe_one_off_charge = function(req,res) {
             return null;
         }
     }).catch(function(error) {
-       console.log(error);
+        console.log(error);
     });
 };
 
-//stripe subscription charge
+//stripe subscription charge - depricated
 exports.stripe_subscription_charge = function(req,res) {
     var thisresponse = new response.OK();
     var stripe = require("stripe")(req.app.locals.paymenttokens.STRIPE.API_KEY);
@@ -146,9 +148,9 @@ exports.stripe_subscription_charge = function(req,res) {
                         stripe.subscriptions.create({
                                 customer: customer.id,
                                 items: [
-                                   {
-                                     plan: req.body.product_id
-                                   }
+                                    {
+                                        plan: req.body.product_id
+                                    }
                                 ],
                                 metadata: {
                                     firstname: req.body.firstname,
@@ -175,7 +177,7 @@ exports.stripe_subscription_charge = function(req,res) {
                     }
                 }
             );
-        return null;
+            return null;
         }
     }).catch(function(error) {
         console.log('some error',error);
@@ -187,25 +189,26 @@ exports.stripe_subscription_charge = function(req,res) {
 //incoming webhook from stripe
 exports.stripe_add_subscription = function(req,res) {
 
-    var stripe = require("stripe")(req.app.locals.paymenttokens.STRIPE.API_KEY);
+    //todo: validate ip whitelist
+
     var transaction_id = req.body.data.object.id;
     var stripeinvoiceid = req.body.data.object.invoice; //
     var sale_or_refund = 1; //sale
     var transaction_object = {};
-        transaction_object.transaction_id = req.body.id;
-        transaction_object.transaction_type = req.body.type;
-        transaction_object.transaction_token = req.body.data.object.source.id;
-        transaction_object.refunds_info = req.body.data.object.refunds.url;
-        transaction_object.message = req.body.data.object.outcome.seller_message;
-        transaction_object.payment_provider = 'stripe';
-        transaction_object.date = Date.now();
-        transaction_object.full_log = JSON.stringify(req.body);
-        transaction_object.amount = req.body.data.object.amount;
-        transaction_object.payment_success = true;
+    transaction_object.transaction_id = req.body.id;
+    transaction_object.transaction_type = req.body.type;
+    transaction_object.transaction_token = req.body.data.object.source.id;
+    transaction_object.refunds_info = req.body.data.object.refunds.url;
+    transaction_object.message = req.body.data.object.outcome.seller_message;
+    transaction_object.payment_provider = 'stripe';
+    transaction_object.date = Date.now();
+    transaction_object.full_log = JSON.stringify(req.body);
+    transaction_object.amount = req.body.data.object.amount;
+    transaction_object.payment_success = true;
 
     async.waterfall([
         function(callback) {
-            //if invoice available then it is a subscription
+            //if invoice available then it is a subscription, else it is a on off charge.
             if (stripeinvoiceid) {
                 stripe.invoices.retrieve(
                     stripeinvoiceid,
@@ -227,6 +230,7 @@ exports.stripe_add_subscription = function(req,res) {
                                 );
                             }
                             else {
+                                //get username and product_id from metadata
                                 req.body.username = invoice.lines.data[0].metadata.username;
                                 req.body.product_id = invoice.lines.data[0].plan.id;
                                 callback(null,{status:true});
@@ -259,10 +263,13 @@ exports.stripe_add_subscription = function(req,res) {
         }
 
     ], function (err, result) {
-        console.log(err,result);
+        //console.log(err,result);
+
         if(result.status) {
             subscription_functions.add_subscription_transaction(req, res, sale_or_refund, transaction_id).then(function(result) {
                 if (result.status) {
+
+                    //confirm successful response.
                     res.send(result);
 
                     //enter record into database regardless of results
@@ -270,10 +277,12 @@ exports.stripe_add_subscription = function(req,res) {
                     transaction_object.product_id = req.body.product_id;
                     DBpayment_transactions.upsert(transaction_object)
                         .then(function (result) {
-                            //
-                        }).catch(function (err) {
-                        console.error(err);
-                    });
+                            return true;
+                        })
+                        .catch(function (err) {
+                            return false;
+                            winston.error('error saving transction: ',err);
+                        });
                 }
                 else {
                     res.status(300).send(result);
@@ -281,6 +290,7 @@ exports.stripe_add_subscription = function(req,res) {
             });
         }
         else{
+            winston.error('error proccessing stripe transaction: ',err);
             res.status(300).send(result);
         }
 
@@ -294,18 +304,18 @@ exports.stripe_refund = function(req,res) {
     var transaction_id = req.body.data.object.id;
 
     var transaction_object = {};
-        transaction_object.transaction_id = req.body.id;
-        transaction_object.transaction_type = req.body.type;
-        transaction_object.transaction_token = req.body.data.object.source.id;
-        transaction_object.refunds_info = req.body.data.object.refunds.url;
-        transaction_object.message = req.body.data.object.outcome.seller_message;
-        transaction_object.payment_provider = 'stripe';
-        transaction_object.date = Date.now();
-        transaction_object.full_log = JSON.stringify(req.body);
-        transaction_object.amount = req.body.data.object.amount_refunded;
-        transaction_object.payment_success = true;
-        transaction_object.customer_username = req.body.data.object.metadata.username;
-        transaction_object.product_id = req.body.data.object.metadata.product_id;
+    transaction_object.transaction_id = req.body.id;
+    transaction_object.transaction_type = req.body.type;
+    transaction_object.transaction_token = req.body.data.object.source.id;
+    transaction_object.refunds_info = req.body.data.object.refunds.url;
+    transaction_object.message = req.body.data.object.outcome.seller_message;
+    transaction_object.payment_provider = 'stripe';
+    transaction_object.date = Date.now();
+    transaction_object.full_log = JSON.stringify(req.body);
+    transaction_object.amount = req.body.data.object.amount_refunded;
+    transaction_object.payment_success = true;
+    transaction_object.customer_username = req.body.data.object.metadata.username;
+    transaction_object.product_id = req.body.data.object.metadata.product_id;
 
     db.salesreport.findOne({
         where: {transaction_id: transaction_id}
@@ -331,10 +341,10 @@ exports.stripe_refund = function(req,res) {
     //enter record into database regardless of results
     DBpayment_transactions.upsert(transaction_object)
         .then(function (result) {
-            //console.log('*************** refund result :',result);
+            return true; // ??
         }).catch(function (err) {
         // That's what really happens
-        console.error(err);
+        winston.error('error upserting transaction during stripe refund: ', err);
     });
 
 };
@@ -391,20 +401,20 @@ exports.stripe_order_charge = function (req,res) {
     };
 
     stripe.orders.create(
-            stripeobject
+        stripeobject
         , function(err, order) {
-        if(order) {
-            stripe.orders.pay(order.id, {
-                source: req.body.stripetoken
-            }, function(err, orderstatus) {
-                if(orderstatus)
-                    res.send(orderstatus);
-                else
-                    res.send(err);
-            });
-        }
-        else {
-            res.send(err);
-        }
-    });
+            if(order) {
+                stripe.orders.pay(order.id, {
+                    source: req.body.stripetoken
+                }, function(err, orderstatus) {
+                    if(orderstatus)
+                        res.send(orderstatus);
+                    else
+                        res.send(err);
+                });
+            }
+            else {
+                res.send(err);
+            }
+        });
 };

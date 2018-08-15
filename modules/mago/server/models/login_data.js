@@ -72,6 +72,11 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false,
             defaultValue: true
         },
+        get_ads: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: true
+        },
         resetPasswordToken: {
             type: DataTypes.STRING(128),
             defaultValue: ' ',
@@ -92,7 +97,6 @@ module.exports = function(sequelize, DataTypes) {
             defaultValue: Date.now(),
             allowNull: true
         },
-
         account_lock: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
@@ -103,7 +107,6 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false,
             defaultValue: false
         }
-
     }, {
         tableName: 'login_data',
         associate: function(models) {

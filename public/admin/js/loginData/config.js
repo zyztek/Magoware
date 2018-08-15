@@ -142,7 +142,7 @@ export default function (nga, admin) {
             .label('Timezone'),
 
         nga.field('get_messages', 'choice')
-            .defaultValue(true)
+            .defaultValue(false)
             .choices([
                 { value: false, label: 'Disabled' },
                 { value: true, label: 'Enabled' }
@@ -150,6 +150,15 @@ export default function (nga, admin) {
             .attributes({ placeholder: 'Choose from dropdown list' })
             .validation({ required: true})
             .label('Get messages'),
+        nga.field('get_ads', 'choice')
+            .defaultValue(false)
+            .choices([
+                { value: false, label: 'Disabled' },
+                { value: true, label: 'Enabled' }
+            ])
+            .attributes({ placeholder: 'Choose from dropdown list' })
+            .validation({ required: true})
+            .label('Receive ads'),
         nga.field('show_adult', 'choice')
             .defaultValue(false)
             .choices([
@@ -186,9 +195,10 @@ export default function (nga, admin) {
             ])
             .label('Is tester')
             .validation({ required: true}),
+
         nga.field('template')
             .label('')
-            .template(edit_button),
+            .template(edit_button)
 ]);
 
     logindata.editionView()
@@ -272,6 +282,15 @@ export default function (nga, admin) {
             .attributes({ placeholder: 'Choose from dropdown list' })
             .validation({ required: true})
             .label('Get messages'),
+        nga.field('get_ads', 'choice')
+            .defaultValue(false)
+            .choices([
+                { value: false, label: 'Disabled' },
+                { value: true, label: 'Enabled' }
+            ])
+            .attributes({ placeholder: 'Choose from dropdown list' })
+            .validation({ required: true})
+            .label('Receive ads'),
         nga.field('show_adult', 'choice')
             .choices([
                 { value: false, label: 'Disabled' },
@@ -304,7 +323,6 @@ export default function (nga, admin) {
             .attributes({ placeholder: 'Choose from dropdown list' })
             .label('Is tester')
             .validation({ required: true}),
-
         nga.field('template')
             .label('')
             .template(edit_button),
@@ -349,7 +367,7 @@ export default function (nga, admin) {
                                 return ng_vlera_start.fontcolor("red").bold();
                             }
                         })
-                        .label('Start Date'),
+                        .label('Start date'),
                     nga.field('end_date', 'date')
                         .cssClasses('hidden-xs')
                         .template(function (entry) {
@@ -362,7 +380,7 @@ export default function (nga, admin) {
                                 return ng_vlera_end.fontcolor("red").bold();
                             }
                         })
-                        .label('End Date'),
+                        .label('End date'),
                 ]),
 
             nga.field('')
@@ -401,24 +419,30 @@ export default function (nga, admin) {
                 ])
                 .listActions(['edit']),
 
-            nga.field('Salesreports', 'referenced_list')
-                .label('Sale Reports')
-                .targetEntity(nga.entity('Salesreports'))
-                .targetReferenceField('login_data_id')
-                .targetFields([
-                    nga.field('user_username', 'string')
-                        .label('User Username'),
-                    nga.field('distributorname', 'string')
-                        .cssClasses('hidden-xs')
-                        .label('Distributor Name'),
-                    nga.field('saledate', 'date')
-                        .cssClasses('hidden-xs')
-                        .label('Sale Date'),
-                    nga.field('combo_id', 'reference')
-                        .targetEntity(admin.getEntity('Combos'))
-                        .targetField(nga.field('name'))
-                        .label('Product')
-                ]),
+        nga.field('Salesreports', 'referenced_list')
+            .label('Sale Reports')
+            .targetEntity(nga.entity('Salesreports'))
+            .targetReferenceField('login_data_id')
+            .targetFields([
+                nga.field('user_id', 'reference')
+                    .targetEntity(admin.getEntity('Users'))
+                    .targetField(nga.field('username'))
+                    .cssClasses('hidden-xs')
+                    .label('User'),
+                nga.field('on_behalf_id','reference')
+                    .targetEntity(admin.getEntity('Users'))
+                    .targetField(nga.field('username'))
+                    .cssClasses('hidden-xs')
+                    .label('On Behalf of'),
+                nga.field('saledate', 'date')
+                    .cssClasses('hidden-xs')
+                    .label('Sale Date'),
+                nga.field('combo_id', 'reference')
+                    .targetEntity(admin.getEntity('Combos'))
+                    .targetField(nga.field('name'))
+                    .label('Product')
+            ])
+            .listActions(['<ma-edit-button entry="entry" entity="entity" label="Cancel Subscription" size="xs"></ma-edit-button>']),
     nga.field('custom_action')
         .label('')
         .template('<show-invoice post="entry" class="pull-right"></show-invoice>'),

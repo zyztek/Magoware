@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head>
+    <title>Simple Invoicing - Built with AngularJS</title>
+    <meta charset='utf-8'>
+    <meta name="description" content="AngularJS and Angular Code Example for creating Invoices and Invoicing Application">
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+    <style>
+        /*MAGO-INVOICE*/
+        body{
+
+            zoom: 74%;
+        }
+        .slide-down-enter,
+        .slide-down-leave
+        {
+            -webkit-transition:200ms cubic-bezier(0.250, 0.250, 0.750, 0.750) all;
+            -moz-transition:200ms cubic-bezier(0.250, 0.250, 0.750, 0.750) all;
+            -ms-transition:200ms cubic-bezier(0.250, 0.250, 0.750, 0.750) all;
+            -o-transition:200ms cubic-bezier(0.250, 0.250, 0.750, 0.750) all;
+            transition:200ms cubic-bezier(0.250, 0.250, 0.750, 0.750) all;
+            display:block;
+            overflow:hidden;
+            position:relative;
+        }
+
+        .items-table .row {
+            border-bottom:1px solid #ddd;
+            line-height:3em;
+        }
+        .items-table .row:last-child {
+            border-bottom:none;
+            line-height:3em;
+        }
+
+        .slide-down-enter.slide-down-enter-active,
+        .slide-down-leave {
+            opacity:1;
+            height:46px;
+        }
+
+        .slide-down-leave.slide-down-leave-active,
+        .slide-down-enter {
+            opacity:0;
+            height:0px;
+        }
+
+
+        .invoice-number-container * {
+            font-weight:bold;
+        }
+
+        .items-table .row:nth-child(even) {
+            background:#f9f9f9;
+        }
+        .items-table input {
+            line-height:1.5em;
+        }
+        .actions {
+            padding-top:1em;
+        }
+        input:focus {
+            outline: 0;
+        }
+
+        .heading {
+            background-color:#357EBD;
+            color:#FFF;
+            margin-bottom:1em;
+            text-align:center;
+            line-height:2.5em;
+        }
+        .branding {
+            padding-bottom:2em;
+            border-bottom:1px solid #ddd;
+        }
+        .logo-container {
+            text-align:right;
+        }
+        .infos .right {
+            text-align:right;
+        }
+        .infos .right input {
+            text-align:right;
+        }
+        .infos .input-container {
+            padding:3px 0;
+        }
+
+        .header.row {
+            font-weight:bold;
+            border-bottom:1px solid #ddd;
+            border-top:1px solid #ddd;
+        }
+
+        input, textarea{
+            border: 1px solid #FFF;
+        }
+
+        .container input:hover, .container textarea:hover,
+        .table-striped > tbody > tr:nth-child(2n+1) > td input:hover,
+        .container input:focus, .container textarea:focus,
+        .table-striped > tbody > tr:nth-child(2n+1) > td input:focus{
+            border: 1px solid #CCC;
+        }
+
+        .table-striped > tbody > tr:nth-child(2n+1) > td input{
+            background-color: #F9F9F9;
+            border: 1px solid #F9F9F9;
+        }
+
+
+
+        @media print {
+            .noPrint {
+                display:none;
+            }
+        }
+
+        body{
+            padding:20px;
+        }
+
+        .infos input{
+            width: 300px;
+        }
+
+        .align-right input{
+            text-align:right;
+            width: 300px;
+        }
+
+        div.container{
+            width: 800px;
+        }
+
+        #imgInp{
+            display: none;
+        }
+
+        .copy {
+            font-family: "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Geneva, Verdana, sans-serif;
+            width: 100%;
+            margin: 40px 0 20px 0;
+            font-size: 10px;
+            color: rgba(0, 0, 0, 0.5);
+            text-align: center;
+            color: #404040;
+            cursor: default;
+            line-height: 1.4em;
+        }
+
+        .copy .love {
+            display: inline-block;
+            position: relative;
+            color: #ce0c15;
+        }
+
+        img#company_logo{
+            margin-top: -60px;
+            margin-bottom: -100px;
+        }
+        .input-container{
+            font-weight: bold;
+        }
+
+        .col-md-12.footer {
+            margin-top: 154px;
+            font-weight: bold;
+            font-size: 10px;
+        }
+        .move{
+            margin-bottom: 3px;
+            margin-top: 5px;
+            font-size: 15px;
+        }
+        /*./MAGO-INVOICE*/    </style>
+</head>
+<body>
+<div class="container" width="800px">
+    <div class="row">
+        <div class="col-xs-12 heading">
+            PACKAGE INVOICE
+        </div>
+    </div><!-- row -->
+
+    <div class="row branding">
+        <div class="col-xs-6">
+            <div class="invoice-number-container">
+                <label for="invoice-number">Invoice #</label><input type="text" id="invoice-number" ng-model="invoice.invoice_number" />
+            </div>
+        </div>
+        <div class="col-xs-6 logo-container">
+            <input type="file" id="imgInp" />
+            <img id="company_logo" src="<%= image %>" alt="your image" width="300" />
+        </div>
+    </div><!-- row branding -->
+
+    <div class="row infos" ng-controller="InvoiceCtrl">
+        <div class="col-xs-6">
+            <div class="input-container"><i class="fa fa-address-card fa-md"></i> Name/Lastname:<br/>
+                <p class="move"><i class="fa fa-angle-double-right fa-lg"></i>&nbsp;&nbsp;<%= firstname %>&nbsp;<%= lastname %></p>
+            </div>
+            <div class="input-container"><i class="fa fa-map-marker fa-md"></i> Address:<br/>
+                <p class="move"><i class="fa fa-angle-double-right fa-lg"></i>&nbsp;&nbsp;<%= address %></p>
+            </div>
+            <div class="input-container"><i class="fa fa-phone fa-md"></i> Distributor:<br/>
+                <p class="move"><i class="fa fa-angle-double-right fa-lg"></i>&nbsp;&nbsp;<%= distributorname %></p>
+            </div>
+            <div class="input-container"><i class="fa fa-user fa-mdmd"></i> User Type:<br/>
+                <p class="move"><i class="fa fa-angle-double-right fa-lg"></i>&nbsp;&nbsp;<%= user_type %></p>
+            </div>
+        </div>
+        <div class="col-xs-6 right">
+            <div class="input-container">www.magoware.tv</div>
+            <div class="input-container">info@magoware.tv</div>
+            <div class="input-container">Headquarters: Gjergj Fishta Blv., G & P building, 2nd Floor, Tirana, Albania</div>
+            <div class="input-container">Phone Albania +355 445 043 50</div>
+            <div class="input-container">USA +1 646 630 8976</div>
+            <div class="input-container">United Kingdom +44 203 740 4877</div>
+            <div class="input-container">Australia +61 285 181 274</div>
+        </div>
+    </div><br/><!-- row infos -->
+
+    <div class="items-table" ng-controller="InvoiceCtrl">
+        <div class="row header">
+            <div class="col-xs-4">Product</div>
+            <div class="col-xs-4">Sale Date</div>
+            <div class="col-xs-4">Sale Type</div>
+        </div>
+        <div class="row invoice-item">
+            <div class="col-xs-4 input-container">
+                <%= product %>
+            </div>
+            <div class="col-xs-4 input-container">
+                <%= saledate %>
+            </div>
+            <div class="col-xs-2 input-container">
+                <%= sale_type %>
+            </div>
+        </div>
+    </div>
+</div>
+</body></html>

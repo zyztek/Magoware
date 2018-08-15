@@ -30,8 +30,8 @@ module.exports = function(sequelize, DataTypes) {
             if(models.packages_channels){
                 Package.hasMany(models.packages_channels, {foreignKey: 'package_id'});
             }
-            if(models.vod){
-                Package.hasMany(models.vod, {foreignKey: 'package_id'});
+            if(models.package_vod){
+                Package.hasMany(models.package_vod, {foreignKey: 'package_id'});
             }
         }
     });

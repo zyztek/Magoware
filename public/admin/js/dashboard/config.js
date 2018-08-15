@@ -59,9 +59,9 @@ export default function (nga, admin) {
 					nga.field('auto_timezone', 'boolean')
 						.cssClasses('hidden-xs')
 						.label('Auto Timezone'),
-					nga.field('vodlastchange', 'boolean')
-						.cssClasses('hidden-xs')
-						.label('Update Vod Data'),
+                    nga.field('createdAt', 'date')
+                        .cssClasses('hidden-xs')
+                        .label('Created At'),
                 ])
                 .listActions(['edit'])
                 .perPage(10)

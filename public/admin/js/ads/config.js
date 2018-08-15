@@ -69,7 +69,7 @@ export default function (nga, admin) {
                 ])
                 .validation({required: true})
                 .attributes({ placeholder: 'Select from dropdown list filter values' })
-                .label('Display:'),
+                .label('Display'),
 
             nga.field('title', 'string')
                 .attributes({ placeholder: 'Title' })
@@ -107,7 +107,7 @@ export default function (nga, admin) {
 
             nga.field('delivery_time', 'datetime')
                 .attributes({ placeholder: 'Choose date' })
-                .label('Send ad at:'),
+                .label('Send ad at'),
 
             nga.field('template')
                 .label('')

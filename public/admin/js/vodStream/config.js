@@ -15,12 +15,12 @@ export default function (nga, admin) {
                 .targetField(nga.field('description'))
 				.label('Stream Source'),
 			nga.field('url', 'string')
-				.map(function truncate(value) {
-                 	if (!value) {
-                            return '';
-                      	}
-                            return value.length > 25 ? value.substr(0, 25) + '...' : value;
-                      	})
+				// .map(function truncate(value) {
+                 // 	if (!value) {
+                 //            return '';
+                 //      	}
+                 //            return value.length > 25 ? value.substr(0, 25) + '...' : value;
+                 //      	})
 				.label('Url'),
 			nga.field('token', 'boolean')
 				.label('Token'),
@@ -50,19 +50,34 @@ export default function (nga, admin) {
                 .targetEntity(admin.getEntity('Vods'))
                 .targetField(nga.field('title'))
                 .attributes({ placeholder: 'Choose from dropdown list VOD Movie' })
-                .validation({ required: true })
+                .validation({validator: function(value) {
+                        if(value === null){
+                            throw new Error('Please Select Vod');
+                        }
+                    }
+                })
                 .perPage(-1)
                 .label('Vod'),
             nga.field('stream_source_id', 'reference')
                 .targetEntity(admin.getEntity('VodStreamSources'))
                 .targetField(nga.field('description'))
                 .attributes({ placeholder: 'Stream Source' })
-                .validation({ required: true })
+                .validation({validator: function(value) {
+                        if(value === null){
+                            throw new Error('Please Select Stream Source');
+                        }
+                    }
+                })
                 .perPage(-1)
                 .label('Stream Source'),
             nga.field('url', 'string')
                 .attributes({ placeholder: 'Movie Stream Url' })
-                .validation({ required: true })
+                .validation({validator: function(value) {
+                        if(value === null){
+                            throw new Error('Please Select Url');
+                        }
+                    }
+                })
                 .label('Url'),
             nga.field('stream_format', 'choice')
                 .attributes({ placeholder: 'Stream Format' })
@@ -72,7 +87,12 @@ export default function (nga, admin) {
                     { value: 2, label: 'HLS' },
                     { value: 3, label: 'OTHER' }
                 ])
-                .validation({ required: true })
+                .validation({validator: function(value) {
+                        if(value === null){
+                            throw new Error('Please Select Stream Format');
+                        }
+                    }
+                })
                 .label('Stream Format'),
             nga.field('token', 'boolean')
                 .attributes({ placeholder: 'Token' })
@@ -90,6 +110,22 @@ export default function (nga, admin) {
                 .defaultValue('Encryption url')
                 .validation({ required: false })
                 .label('Encryption url'),
+            nga.field('drm_platform', 'choice')
+                .attributes({ placeholder: 'Select from dropdown list' })
+                .defaultValue('none')
+                .choices([
+                    { value: 'none', label: 'None' },
+                    { value: 'pallycon', label: 'Pallycon' },
+                    { value: 'verimatrix', label: 'Verimatrix' },
+                    { value: 'widevine', label: 'Widevine' }
+                ])
+                .validation({validator: function(value) {
+                        if(value === null){
+                            throw new Error('Please Select DRM Platform');
+                        }
+                    }
+                })
+                .label('DRM Platform'),
             nga.field('template')
                 .label('')
                 .template(edit_button),

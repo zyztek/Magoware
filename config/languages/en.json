@@ -52,6 +52,7 @@
         "REQUEST_FAILED": "REQUEST_FAILED",
         "REQUEST_FAILED_DESC": "Error processing request",
         "UNKNOWN_STREAM_FORMAT": "The requested catchup stream cannot be served",
-        "DEVICE_NOT_FOUND": "Unable to find any device with the required specifications"
+        "DEVICE_NOT_FOUND": "Unable to find any device with the required specifications",
+        "NO_DATA_FOUND": "The requested list of items was empty"
     }
 }

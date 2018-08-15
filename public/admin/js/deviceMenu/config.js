@@ -3,7 +3,7 @@ import edit_button from '../edit_button.html';
 
 export default function (nga, admin) {
 	var devicemenu = admin.getEntity('DeviceMenus');
-	var appids = {1: 'Android Set Top Box', 2: 'Android Smart Phone',3: 'IOS', 4: 'Android Smart TV', 5: 'Samsung Smart TV'};
+	var appids = {1: 'Android Set Top Box', 2: 'Android Smart Phone',3: 'IOS', 4: 'Android Smart TV', 5: 'Samsung Smart TV', 6: 'Apple TV'};
 
 	devicemenu.listView()
 
@@ -135,7 +135,8 @@ export default function (nga, admin) {
                     { value: 2, label: 'Android Smart Phone' },
                     { value: 3, label: 'IOS' },
                     { value: 4, label: 'Android Smart TV' },
-                    { value: 5, label: 'Samsung Smart TV' }
+                    { value: 5, label: 'Samsung Smart TV' },
+					{ value: 6, label: 'Apple TV' }
                 ])
                 .label('Applications IDs'),
             nga.field('position', 'string')

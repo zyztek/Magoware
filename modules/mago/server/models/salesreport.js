@@ -11,11 +11,16 @@ module.exports = function(sequelize, DataTypes) {
         },
         transaction_id: {
             type: DataTypes.STRING(128),
-            allowNull: false
+            allowNull: true,
+            defaultValue: ''
         },
         user_id: {
             type: DataTypes.INTEGER(11),
             allowNull: false
+        },
+        on_behalf_id : {
+            type: DataTypes.INTEGER(11),
+            allowNull: true
         },
         combo_id: {
             type: DataTypes.INTEGER(11),

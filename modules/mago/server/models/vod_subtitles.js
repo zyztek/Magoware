@@ -27,5 +27,11 @@ module.exports = function(sequelize, DataTypes) {
             vodSubtitles.belongsTo(models.vod, {foreignKey: 'vod_id'});
         }
     });
+    vodSubtitles.beforeDestroy(function(vod_subtitles, options) {
+        //if a subtitle record is deleted, remove references from vod.default_subtitle_id
+        sequelize.models.vod.update({default_subtitle_id: 0}, {where: {default_subtitle_id: vod_subtitles.id}}).catch(function(error){});
+        return null;
+    });
+
     return vodSubtitles;
 };

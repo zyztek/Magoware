@@ -24,6 +24,7 @@ module.exports = function(sequelize, DataTypes) {
         },
         epg_map_id: {
             type: DataTypes.STRING(32),
+            defaultValue: '',
             allowNull: true
         },
         title: {

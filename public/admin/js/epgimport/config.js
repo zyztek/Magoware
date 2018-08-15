@@ -1,4 +1,4 @@
-import edit_button from '../edit_button.html';
+import epg_logs from '../epg_logs.html';
 
 export default function (nga, admin) {
     var epgImport = admin.getEntity('epgimport');
@@ -45,15 +45,7 @@ export default function (nga, admin) {
 
     epgImport.creationView()
         .onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
-            // stop the progress bar
-            // progression.done();
-            //redirect to another view, another entity
-            //  $state.go($state.get('list'), {entity: entity.name('EpgData')},{});
-            //need to show list with another entity.name
-            // setTimeout(function(){
-            //      window.location.reload(1);
-            //  }, 1000);
-            return true;
+            return false;
         }])
         .title('<h4>Epg Data <i class="fa fa-angle-right" aria-hidden="true"></i> Import EPG</h4>')
         .fields([
@@ -73,7 +65,7 @@ export default function (nga, admin) {
                         if(value<-12 || value>12) throw new Error('Timezone should be in the range of [-12:12]');
                     }
                 })
-                .label('Generated with timezone: '),
+                .label('Generated with timezone:'),
             nga.field('encoding', 'choice')
                 .attributes({ placeholder: 'utf-8' })
                 .choices([
@@ -85,18 +77,10 @@ export default function (nga, admin) {
             nga.field('epg_file','file')
                 .uploadInformation({ 'url': '/file-upload/single-file/epg/epg_file', 'accept': 'image/*, .csv, text/xml, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'apifilename': 'result', multiple: true})
                 .template('<div class="row">'+
-                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.epg_file }}" height="40" width="40" /></div>'+
                     '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.epg_file"></ma-file-field></div>'+
+                    '<div class="col-xs-12 col-sm-1" style="display: none;"><img src="{{ entry.values.epg_file }}"/></div>'+
                     '</div>'+
                     '<div class="row"><small id="emailHelp" class="form-text text-muted">Expected file types: csv and xml</small></div>')
-                /*
-                 .validation({
-                 validator: function(value) {
-                 if (value == null) {
-                 throw new Error('Please, choose file');
-                 }
-                 }
-                 })*/
                 .label('File input *'),
             nga.field('epg_url', 'string')
                 .attributes({ placeholder: 'Url of the epg file' })
@@ -104,7 +88,7 @@ export default function (nga, admin) {
                 .label('Enter the url for the epg file'),
             nga.field('template')
                 .label('')
-                .template(edit_button),
+                .template(epg_logs),
         ]);
 
     return epgImport;

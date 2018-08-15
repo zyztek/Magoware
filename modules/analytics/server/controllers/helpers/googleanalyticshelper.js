@@ -5,10 +5,8 @@ var path = require('path'),
     response = require(path.resolve("./config/responses.js")),
     winston = require(path.resolve('./config/lib/winston')),
     therequest = require('request'),
-    vod = require(path.resolve("./modules/deviceapiv2/server/controllers/vod.server.controller.js")),
-    models = db.models;
+    vod = require(path.resolve("./modules/deviceapiv2/server/controllers/vod.server.controller.js"));
 
-//var
 
 function getlogtime(){
     var d = new Date();
@@ -44,7 +42,7 @@ function trackobject(object_data,req, cb) {
     );
 }
 
-exports.event = function(req, res) {
+exports.trackevent = function(req, res) {
     res.setHeader('cache-control', 'no-store');
     if(req.body.event_category === 'vod' && req.body.event_action === 'movie start') vod.add_click(req.body.event_label); //increment clicks for a movie everythime it plays
 
@@ -68,10 +66,10 @@ exports.event = function(req, res) {
         if (err) {console.log(err)}
     });
     var lang = (languages[req.body.language]) ? req.body.language : 'eng'; //handle missing language variables, serving english as default
-    res.send(languages[lang].language_variables['OK']);
+    //res.send(languages[lang].language_variables['OK']);
 };
 
-exports.screen = function(req, res) {
+exports.trackscreen = function(req, res) {
     res.setHeader('cache-control', 'no-store');
     var object_data = {
         t:'screenview',
@@ -86,10 +84,10 @@ exports.screen = function(req, res) {
         if (err) {winston.info(err)}
     });
     var lang = (languages[req.body.language]) ? req.body.language : 'eng'; //handle missing language variables, serving english as default
-    res.send(languages[lang].language_variables['OK']);
+    //res.send(languages[lang].language_variables['OK']);
 };
 
-exports.timing = function(req, res) {
+exports.tracktiming = function(req, res) {
     res.setHeader('cache-control', 'no-store');
     var object_data = {
         t:'timing',
@@ -105,5 +103,5 @@ exports.timing = function(req, res) {
     });
 
     var lang = (languages[req.body.language]) ? req.body.language : 'eng'; //handle missing language variables, serving english as default
-    res.send(languages[lang].language_variables['OK']);
+   // res.send(languages[lang].language_variables['OK']);
 };

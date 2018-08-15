@@ -164,27 +164,52 @@ exports.get_catchup_events =  function(req, res) {
 };
 
 
+/**
+ * @api {post} /apiv2/channels/catchup_stream Get Channels Catchup Stream
+ * @apiName CatchupEvents
+ * @apiGroup Catchup
+ * @apiParam {String} auth Encrypted authentication token string.
+ * @apiParam {Number} channelNumber Channel number
+ * @apiParam {Number} timestart Unix timestamp where te stream should start.
+ * @apiDescription Returns catchup stream url for the requested channel.
+ *
+ */
 
 
 exports.catchup_stream =  function(req, res) {
     var channel_number = req.body.channelNumber;
-    var stream_mode = 'catchup'; //filter streams based on device resolution
+    var stream_mode = 'catchup';
+    var stream_resolution = (req.auth_obj.screensize === 1) ? {like: '%large%'} : {like: '%small%'}; //filter streams based on device resolution
 
     models.channels.findOne({
         attributes: ['id'],
-        include: [{model: models.channel_stream, required: true,  where: {stream_source_id: req.thisuser.channel_stream_source_id, stream_mode: stream_mode}}],
+        include: [{model: models.channel_stream, required: true,  where: {stream_source_id: req.thisuser.channel_stream_source_id, stream_mode: stream_mode, stream_resolution: stream_resolution}}],
         where: {channel_number: channel_number}
     }).then(function (catchup_streams) {
 
+        //if timestamp is missing milisecconds
+        if(req.body.timestart.toString().length == 10) {
+            req.body.timestart = req.body.timestart * 1000;
+        }
+
         var thestream = catchup_streams.channel_streams[0].stream_url;
 
-        //if timestamp is bigger than 2.5 ours
-        if((Date.now()/1000 - req.body.timestart) > 9000) {
-          thestream = thestream.replace('timeshift_abs','index');
-          thestream = thestream.replace('[epochtime]',req.body.timestart + '-9000');
+        //check recording engine
+        if(catchup_streams.channel_streams[0].recording_engine == 'wowza') {
+            var date = new Date(req.body.timestart);
+            var catchup_moment = date.getFullYear() + (("0" + date.getMonth()).slice(-2)) + (("0" + date.getDay()).slice(-2)) + (("0" + date.getHours()).slice(-2)) + (("0" + date.getMinutes()).slice(-2)) + (("0" + date.getSeconds()).slice(-2));
+            thestream = thestream.replace('[epochtime]', catchup_moment);
         }
-        else {
-          thestream = thestream.replace('[epochtime]', req.body.timestart);
+        else {  //assume it is flussonic
+
+            //if timestamp is bigger than 2.5 ours
+            if((Date.now()/1000 - req.body.timestart) > 9000) {
+                thestream = thestream.replace('timeshift_abs','index');
+                thestream = thestream.replace('[epochtime]',req.body.timestart + '-9000');
+            }
+            else {
+                thestream = thestream.replace('[epochtime]', req.body.timestart);
+            }
         }
 
         var response_data = [{
@@ -199,7 +224,7 @@ exports.catchup_stream =  function(req, res) {
         response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
 
     }).catch(function(error) {
+        winston.error('error catchup_stream',error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
-
 };

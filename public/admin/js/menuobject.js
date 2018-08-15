@@ -142,7 +142,15 @@ export default [{
             "icon":'<span class="fa fa-television fa-fw"></span>',
             "link":'/Channels/list',
             "group_roles":["admin","administrator","customercare","management","guest"]
-        },{
+        },
+        {
+            "entity":"Channels",
+            "title":"Not Active Channels",
+            "icon":'<span class="fa fa-times-circle-o fa-fw"></span>',
+            "link":'/Channels/list?search=%7B"isavailable":false%7D',
+            "group_roles":["admin","administrator","customercare","management","guest"]
+        },
+        {
             "entity":"ChannelStreamSources",
             "title":"Live TV Stream Source",
             "icon":'<span class="fa fa-signal fa-fw"></span>',
@@ -172,7 +180,15 @@ export default [{
             "icon":'<span class="fa fa-film fa-fw"></span>',
             "link":'/Vods/list?search=%7B"pin_protected":"0"%7D',
             "group_roles":["admin","administrator","vod","management","guest"]
-        },{
+        },
+        {
+            "entity":"Vods",
+            "title":"Not Active VOD Movies",
+            "icon":'<span class="fa fa-times-circle-o fa-fw"></span>',
+            "link":'/Vods/list?search=%7B"isavailable":false%7D',
+            "group_roles":["admin","administrator","vod","management","guest"]
+        },
+        {
             "entity":"VodStreamSources",
             "title":"VOD Stream Source",
             "icon":'<span class="fa fa-signal fa-fw"></span>',
@@ -238,6 +254,14 @@ export default [{
     },
     {
         "template":'<div class="menu_space">Other</div>',
+        "group_roles":["admin","administrator","customercare","management","guest"],
+        "children": []
+    },
+    {
+        "entity":"EmailTemplate",
+        "title":"Email Template",
+        "icon":'<span class="fa fa-envelope fa-fw"></span>',
+        "link":'/EmailTemplate/list',
         "group_roles":["admin","administrator","customercare","management","guest"],
         "children": []
     },

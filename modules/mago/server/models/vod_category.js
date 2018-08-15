@@ -45,10 +45,11 @@ module.exports = function(sequelize, DataTypes) {
     }, {
         tableName: 'vod_category',
         associate: function(models) {
-            if (models.vod){
-                vodCategory.hasMany(models.vod, {foreignKey: 'category_id'});
+            if (models.vod_vod_categories){
+                vodCategory.hasMany(models.vod_vod_categories, {foreignKey: 'category_id'});
             }
         }
     });
     return vodCategory;
 };
+

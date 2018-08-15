@@ -53,7 +53,7 @@ export default function (nga, admin) {
                 .perPage(10) // limit the number of results to 10
                 .label('Username'),
             nga.field('appid', 'choices')
-                .attributes({ placeholder: 'Send to device type:' })
+                .attributes({ placeholder: 'Send to device type' })
                 .choices([
                     { value: 1, label: 'Android Set Top Box' },
                     { value: 2, label: 'Android Smart Phone' },

@@ -6,6 +6,14 @@ export default function (nga, admin) {
 	settings.listView()
 		.batchActions([])
 		.fields([
+			nga.field('smtp_host')
+				.validation({ required: true })
+				.label('Smtp host')
+				.template('<div class="form-group">'+
+					'<ma-input-field field="field" value="entry.values.smtp_host"></ma-input-field>'+
+					'<small id="emailHelp" class="form-text text-muted">Smtp host and port (smtp_host:port)</small>'+
+					'</div>')
+				.attributes({ placeholder: 'smtp.gmail.com:465' }),
 			nga.field('email_username')
 				.validation({ required: true })
 				.label('Email Username')
@@ -19,15 +27,29 @@ export default function (nga, admin) {
 				.label('Email Password')
 				.template('<div class="form-group">'+
 				    '<ma-input-field field="field" type="password" value="entry.values.email_password"></ma-input-field>'+
-				    '<small id="emailHelp" class="form-text text-muted">Passowrd for outgoing smtp mail server.</small>'+
+				    '<small id="emailHelp" class="form-text text-muted">Password for outgoing smtp mail server.</small>'+
 				  '</div>')
 				.attributes({ placeholder: 'Password' }),
+            nga.field('smtp_secure', 'choice')
+                .defaultValue(true)
+                .choices([
+                    { value: false, label: 'Disable secure connection with Smtp server' },
+                    { value: true, label: 'Enable secure connection with Smtp server' }
+                ])
+                .validation({ required: true})
+                .template('<div class="form-group">'+
+                    '<ma-choice-field field="field" value="entry.values.smtp_secure"></ma-choice-field>'+
+                    '<small id="emailHelp" class="form-text text-muted">Consider your Smtp host configurations for this setting </small>'+
+                    '</div>')
+                .label('Secure connection'),
+
+
 			nga.field('email_address')
 				.validation({ required: true })
 				.label('Email Address')
 				.template('<div class="form-group">'+
 				    '<ma-input-field field="field" value="entry.values.email_address"></ma-input-field>'+
-				    '<small id="emailHelp" class="form-text text-muted">Email address for outboing smtp mail server.</small>'+
+				    '<small id="emailHelp" class="form-text text-muted">Email address appearing in the email details.</small>'+
 				  '</div>')
 				.attributes({ placeholder: 'Address' }),
 			nga.field('activity_timeout' ,'number')
@@ -159,10 +181,30 @@ export default function (nga, admin) {
                     }
                 }),
 
-
-
-
-
+			nga.field('company_name', 'string')
+					.validation({ required: true })
+					.label('Company name')
+					.template('<div class="form-group">'+
+							'<ma-input-field field="field" value="entry.values.company_name"></ma-input-field>'+
+							'<small id="emailHelp" class="form-text text-muted">Set your company name (By default - MAGOWARE)</small>'+
+							'</div>'),
+			nga.field('company_logo', 'file')
+					.label('Company logo')
+					.template('<div class="row">'+
+							'<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.company_logo }}" height="40" width="40" /></div>'+
+							'<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.company_logo"></ma-file-field></div>'+
+							'</div>'+
+							'<div class="row"><small id="emailHelp" class="form-text text-muted">1920x1080 px, not larger than 1 MB</small></div>')
+					.uploadInformation({ 'url': '/file-upload/single-file/settings/company_logo','apifilename': 'result'})
+					.validation({ required: true, validator: function() {
+						var company_logo = document.getElementById('company_logo');
+						if (company_logo.value.length > 0) {
+							if(company_logo.files[0].size > 1048576 ){
+								throw new Error('Your company logo is too Big, not larger than 1 MB');
+							}
+						}
+					}
+			}),
 
 			nga.field('locale', 'string')
 				.validation({ required: true })
@@ -178,6 +220,13 @@ export default function (nga, admin) {
 						'<ma-input-field field="field" value="entry.values.help_page"></ma-input-field>'+
 						'<small id="emailHelp" class="form-text text-muted">Configure application help page (By default /help_and_support)</small>'+
 						'</div>'),
+			nga.field('online_payment_url', 'string')
+					.validation({ required: true })
+					.label('Online payment web page')
+					.template('<div class="form-group">'+
+							'<ma-input-field field="field" value="entry.values.online_payment_url"></ma-input-field>'+
+							'<small id="emailHelp" class="form-text text-muted">Configure web page for online payments from application</small>'+
+							'</div>'),
 			nga.field('assets_url', 'string')
 				.validation({ required: true })
 				.label('Assets URL')

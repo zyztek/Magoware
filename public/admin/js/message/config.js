@@ -23,7 +23,7 @@ export default function (nga, admin) {
 				nga.field('action')
 						.label('Action'),
 				nga.field('createdAt', 'datetime')
-						.label('Created'),
+						.label('Created at'),
 			])
 			.listActions(['edit'])
 			.exportFields([

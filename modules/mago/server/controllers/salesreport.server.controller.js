@@ -12,6 +12,9 @@ var path = require('path'),
     dateFormat = require('dateformat'),
     moment = require('moment'),
     async = require('async'),
+    fs = require('fs'),
+    ejs = require('ejs'),
+    pdf = require('html-pdf'),
     DBModel = db.salesreport;
 
 /**
@@ -45,7 +48,6 @@ exports.update = function(req, res) {
 
     var sale_or_refund = -1;
     var transaction_id = req.body.transaction_id;
-    req.body.product_id = req.body.combo_id;
 
     subscription_functions.add_subscription_transaction(req,res,sale_or_refund,transaction_id).then(function(result) {
         if(result.status) {
@@ -475,16 +477,16 @@ exports.sales_monthly_expiration = function(req, res) {
     if (req.query.endsaledate) expiration_frame = expiration_frame+"AND `end_date` < DATE_FORMAT('"+req.query.endsaledate+"', '%Y-%m-01 00:00:00') ";
 
     var thequery = "SELECT subscription_expirations.id, count(subscription_expirations.login_id) as count, DATE_FORMAT(subscription_expirations.end_date, '%Y-%m')as enddate "+
-    "FROM ( "+
+        "FROM ( "+
         "SELECT `subscription`.`id`, `subscription`.`login_id`, max(`subscription`.`end_date`) AS `end_date` "+
         "FROM `subscription` AS `subscription` "+
         account_filter+
         expiration_frame+
         "GROUP BY `login_id` "+
-    ") as subscription_expirations "+
-    "GROUP BY enddate "+
-    "ORDER BY enddate "+order+" " +
-    limit+";";
+        ") as subscription_expirations "+
+        "GROUP BY enddate "+
+        "ORDER BY enddate "+order+" " +
+        limit+";";
 
     sequelizes.sequelize.query(
         thequery
@@ -667,3 +669,73 @@ exports.invoice = function(req, res) {
     }
 
 };
+
+//download_invoice
+
+exports.download_invoice = function(req, res) {
+
+    DBModel.findOne({
+        attributes: ['saledate'],
+        where: {id: req.params.invoiceID},
+        include: [
+            {model: db.users, attributes: ['username'], required: true},
+            {model: db.combo, attributes: ['name'], required: true},
+            {
+                model: db.login_data, attributes: ['username','password','pin'], required: true,
+                include: [
+                    {model: db.customer_data, required: true
+
+                    }
+                ]
+
+            }
+        ]
+    }).then(function (results) {
+        if (!results) {
+            return res.status(404).send({message: 'No data found'});
+        } else {
+
+            var compiled = ejs.compile(fs.readFileSync('modules/mago/server/templates/salesreport-invoice.html', 'utf8'));
+
+            if (fs.existsSync('public/files/settings/mago.png')) {
+                var url= 'https://backoffice.magoware.tv';
+                var images = '/files/settings/mago.png' ;
+            }else {
+
+                images = req.app.locals.settings.box_logo_url;
+                url = req.app.locals.settings.assets_url;
+            }
+
+
+            var html = compiled({
+                image: url+images,
+                username: results.login_datum.username,
+                pin: results.login_datum.pin,
+                password: 1234,
+                firstname: results.login_datum.customer_datum.firstname,
+                lastname: results.login_datum.customer_datum.lastname,
+                email: results.login_datum.customer_datum.email,
+                address: results.login_datum.customer_datum.address,
+                country: results.login_datum.customer_datum.country,
+                telephone: results.login_datum.customer_datum.telephone,
+                user_type: 'Klient',
+                saledate: dateFormat(results.saledate,'yyyy-mm-dd HH:MM:ss'),
+                product: results.combo.name,
+                distributorname: results.user.username,
+                sale_type: (results.length > 1) ? "Ri-abonim" : "Aktivizim",
+            });
+            var options = { format: 'Letter'};
+            var filename = 'Invoice for '+results.login_datum.username+req.params.invoiceID+'.pdf';
+
+            pdf.create(html, options).toFile('./public/tmp/'+filename, function(err,pdfres) {
+                res.setHeader('x-filename', filename);
+                res.sendFile(pdfres.filename);
+            });
+        }
+    }).catch(function (err) {
+        res.jsonp(err);
+    });
+
+};
+
+//./download_invoice

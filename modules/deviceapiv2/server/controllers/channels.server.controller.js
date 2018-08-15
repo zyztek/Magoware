@@ -67,12 +67,14 @@ exports.list = function(req, res) {
     if(req.auth_obj.appid === 3) stream_qwhere.stream_format = 2; // send only hls streams for ios application
     stream_qwhere.stream_source_id = req.thisuser.channel_stream_source_id; // streams come from the user's stream source
     stream_qwhere.stream_mode = 'live'; //filter streams based on device resolution
+    stream_qwhere.stream_resolution = (req.auth_obj.screensize === 1) ? {like: '%large%'} : {like: '%small%'};
 
     // requisites for catchup streams
     var catchupstream_where = {stream_source_id: req.thisuser.channel_stream_source_id};
     if(req.thisuser.player.toUpperCase() === 'default'.toUpperCase()) catchupstream_where.stream_format = {$not: 0}; //don't send mpd streams for default player
     if(req.auth_obj.appid === 3) catchupstream_where.stream_format = 2; // send only hls streams for ios application
     catchupstream_where.stream_mode = 'catchup'; //filter streams based on device resolution
+    catchupstream_where.stream_resolution = (req.auth_obj.screensize === 1) ? {like: '%large%'} : {like: '%small%'};
 
 //find user channels and subscription channels for the user
     models.my_channels.findAll({
@@ -179,9 +181,9 @@ exports.list = function(req, res) {
 
 //RETURNS LIST OF CHANNELS AVAILABLE TO THE USER FOR THIS DEVICE USING GET METHOD
 /**
- * @api {GET} /apiv2/channels/list Channels - Livetv and personal channel list
- * @apiName channel_list
- * @apiGroup DeviceAPI
+ * @api {GET} /apiv2/channels/list Get LiveTV Channels List
+ * @apiName GetChannelsList
+ * @apiGroup Channels
  *
  * @apiHeader {String} auth Encrypted string composed of username, password, appid, boxid and timestamp.
  *
@@ -206,6 +208,7 @@ exports.list = function(req, res) {
  *          "pin_protected": "false", //"true" / "false" values
  *          "stream_source_id": 1,
  *          "stream_format": "0", //current values include 0 (mpd), 1 (smooth streaming), 2 (hls), 3 (other)
+ *          "drm_platform": "none", //none, pallycon, verimatrix, widevine
  *          "token": 1, // values 0 / 1
  *          "token_url": "token url",
  *          "encryption": 0, // values 0 / 1
@@ -215,6 +218,8 @@ exports.list = function(req, res) {
  *       }, ....
  *       ]
  *   }
+ * @apiDescription Copy paste this auth for testing purposes
+ * auth=/ihCuMthnmY7pV3WLgC68i70zwLp6DUrLyFe9dOUEkxUBFH9WrUcA95GFAecSJH9HG9tvymreMOFlBviVd3IcII4Z/SiurlGoz9AMtE5KGFZvCl1FQ3FKZYP3LeFgzVs\r\nDQjxaup3sKRljj4lmKUDTA==
  */
 
 exports.list_get = function(req, res) {
@@ -233,14 +238,16 @@ exports.list_get = function(req, res) {
     if(req.auth_obj.appid === 3) stream_qwhere.stream_format = 2; // send only hls streams for ios application
     stream_qwhere.stream_source_id = req.thisuser.channel_stream_source_id; // streams come from the user's stream source
     stream_qwhere.stream_mode = 'live'; //filter streams based on device resolution
+    stream_qwhere.stream_resolution = (req.auth_obj.screensize === 1) ? {like: '%large%'} : {like: '%small%'};
 
     // requisites for catchup streams
     var catchupstream_where = {stream_source_id: req.thisuser.channel_stream_source_id};
     if(req.thisuser.player.toUpperCase() === 'default'.toUpperCase()) catchupstream_where.stream_format = {$not: 0}; //don't send mpd streams for default player
     if(req.auth_obj.appid === 3) catchupstream_where.stream_format = 2; // send only hls streams for ios application
     catchupstream_where.stream_mode = 'catchup'; //filter streams based on device resolution
+    catchupstream_where.stream_resolution = (req.auth_obj.screensize === 1) ? {like: '%large%'} : {like: '%small%'};
 
-//find user channels and subscription channels for the user
+    //find user channels and subscription channels for the user
     models.my_channels.findAll({
         attributes: ['id', 'channel_number', 'genre_id', 'title', 'description', 'stream_url'],
         where: userstream_qwhere,
@@ -260,7 +267,7 @@ exports.list_get = function(req, res) {
                 include: [
                     {model: models.channel_stream,
                         required: true,
-                        attributes: ['stream_source_id','stream_url','stream_format','token','token_url','is_octoshape','encryption','encryption_url'],
+                        attributes: ['stream_source_id','stream_url','stream_format','token','token_url','is_octoshape','drm_platform','encryption','encryption_url'],
                         where: stream_qwhere
                     },
                     { model: models.genre, required: true, attributes: [], where: {is_available: true} },
@@ -306,6 +313,7 @@ exports.list_get = function(req, res) {
                     temp_obj.token_url = 'http://tibomanager4.tibo.tv/unsecured/token/apiv2/Akamai_token.aspx';
                     temp_obj.encryption = 0;
                     temp_obj.encryption_url = "0";
+                    temp_obj.drm_platform = "none";
                     temp_obj.is_octoshape = 0;
                     temp_obj.favorite_channel = "0";
                     user_channel_list.push(temp_obj)
@@ -322,6 +330,7 @@ exports.list_get = function(req, res) {
                     result[i].token_url = result[i]["channel_streams.token_url"]; delete result[i]["channel_streams.token_url"];
                     result[i].encryption = result[i]["channel_streams.encryption"]; delete result[i]["channel_streams.encryption"];
                     result[i].encryption_url = result[i]["channel_streams.encryption_url"]; delete result[i]["channel_streams.encryption_url"];
+                    result[i].drm_platform = result[i]["channel_streams.drm_platform"]; delete result[i]["channel_streams.drm_platform"];
                     result[i].is_octoshape = result[i]["channel_streams.is_octoshape"]; delete result[i]["channel_streams.is_octoshape"];
                     result[i].favorite_channel = result[i]["favorite_channels.id"] ? "1":"0"; delete result[i]["favorite_channels.id"];
                 }
@@ -351,7 +360,6 @@ exports.list_get = function(req, res) {
  * @apiGroup DeviceAPI
  *
  * @apiParam {String} auth Encrypted string composed of username, password, appid, boxid and timestamp.
- *
  *
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
@@ -536,7 +544,8 @@ exports.favorites = function(req, res) {
  *   }
  */
 exports.program_info = function(req, res) {
-    var stream_mode = 'catchup'
+    var stream_mode = 'catchup';
+    var stream_resolution = (req.auth_obj.screensize === 1) ? {like: '%large%'} : {like: '%small%'};
     models.epg_data.findOne({
         attributes: ['title', 'long_description', 'program_start', 'program_end'],
         where: {id: req.body.program_id},
@@ -545,7 +554,7 @@ exports.program_info = function(req, res) {
                 model: models.channels, required: true, attributes: ['title', 'description'],
                 include: [
                     {model: models.genre, required: true, attributes: [ 'description']},
-                    {model: models.channel_stream, required: false, attributes: [ 'id'], where: {stream_mode: stream_mode}}
+                    {model: models.channel_stream, required: false, attributes: [ 'id'], where: {stream_mode: stream_mode, stream_resolution: stream_resolution}}
                 ]
             },
             {model: models.program_schedule,

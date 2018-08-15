@@ -31,7 +31,8 @@ module.exports = function(sequelize, DataTypes) {
         },
         position: {
             type: DataTypes.INTEGER(11),
-            allowNull: false
+            allowNull: false,
+            unique: true
         },
         locale: {
             type: DataTypes.STRING(16),

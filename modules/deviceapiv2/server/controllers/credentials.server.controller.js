@@ -11,16 +11,6 @@ var async = require("async");
 /**
  * @api {post} /apiv2/credentials/login /apiv2/credentials/login
  * @apiVersion 0.2.0
- * @apiName DeviceCheckLogin
- * @apiGroup DeviceAPI
- *
- * @apiHeader {String} auth Users unique access-key.
- * @apiDescription If token is present, it is used to check login
- */
-
-/**
- * @api {post} /apiv2/credentials/login /apiv2/credentials/login
- * @apiVersion 0.2.0
  * @apiName DeviceLogin
  * @apiGroup DeviceAPI
  *

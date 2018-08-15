@@ -32,11 +32,17 @@ module.exports = function(app) {
         .get(tokenGenerators.flussonic_token_generator)
         .post(tokenGenerators.flussonic_token_generator);
 
+    app.route('/apiv2/token/nimble/*')
+        //.all(authpolicy.isAllowed)
+        .get(tokenGenerators.nimble_token_generator)
+        .post(tokenGenerators.nimble_token_generator);
+
+
     app.route('/apiv2/catchup/flussonic')
         //.all(authpolicy.isAllowed)
         .post(catchupfunctions.flussonic_catchup_stream);
 
-/*=================== encryption api URLs =================== */
+    /*=================== encryption api URLs =================== */
 
     app.route('/apiv2/encryption/key1')
         //.all(authpolicy.isAllowed)

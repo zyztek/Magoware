@@ -12,7 +12,6 @@ var path = require('path'),
     models = db.models;
 
 
-
 //RETURNS 12 hours of future Epg for a given channel
 /**
  * @api {POST} /apiv2/channels/event Channels - 12 hour epg
@@ -354,6 +353,7 @@ exports.current_epgs =  function(req, res) {
     if(req.auth_obj.appid === 3) stream_qwhere.stream_format = 2; // send only hls streams for ios application
     stream_qwhere.stream_source_id = req.thisuser.channel_stream_source_id; // streams come from the user's stream source
     stream_qwhere.stream_mode = 'live';
+    stream_qwhere.stream_resolution = (req.auth_obj.screensize === 1) ? {like: '%large%'} : {like: '%small%'};
 
     models.my_channels.findAll({
         attributes: ['channel_number', 'title'], order: [[ 'channel_number', 'ASC' ]], where: userstream_qwhere,
@@ -398,8 +398,8 @@ exports.current_epgs =  function(req, res) {
                 raw_obj.number =  channels[i].channel_number;
                 raw_obj.id = (channels[i].epg_data[0]) ? channels[i].epg_data[0].id : -1;
                 raw_obj.scheduled = false;
-                raw_obj.shortname = (channels[i].epg_data[0]) ? channels[i].epg_data[0].short_description  : "Program of "+ channels[i].title;
-                raw_obj.description = (channels[i].epg_data[0]) ?  channels[i].epg_data[0].long_description  : 'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
+                raw_obj.shortname = (channels[i].epg_data[0]) ? channels[i].epg_data[0].short_description : "Program of "+ channels[i].title;
+                raw_obj.description = (channels[i].epg_data[0]) ?  channels[i].epg_data[0].long_description : 'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
                 raw_obj.programstart = (channels[i].epg_data[0]) ? channels[i].epg_data[0].program_start : "01/01/1970 00:00:00";
                 raw_obj.programend = (channels[i].epg_data[0]) ? channels[i].epg_data[0].program_end : "01/01/1970 00:00:00";
                 raw_obj.duration = (channels[i].epg_data[0]) ? channels[i].epg_data[0].duration_seconds : 0;
@@ -492,6 +492,7 @@ exports.get_current_epgs =  function(req, res) {
     if(req.auth_obj.appid === 3) stream_qwhere.stream_format = 2; // send only hls streams for ios application
     stream_qwhere.stream_source_id = req.thisuser.channel_stream_source_id; // streams come from the user's stream source
     stream_qwhere.stream_mode = 'live';
+    stream_qwhere.stream_resolution = (req.auth_obj.screensize === 1) ? {like: '%large%'} : {like: '%small%'};
 
     models.my_channels.findAll({
         attributes: ['channel_number', 'title'], order: [[ 'channel_number', 'ASC' ]], where: userstream_qwhere,
@@ -536,8 +537,8 @@ exports.get_current_epgs =  function(req, res) {
                 raw_obj.number =  channels[i].channel_number;
                 raw_obj.id = (channels[i].epg_data[0]) ? channels[i].epg_data[0].id : -1;
                 raw_obj.scheduled = false;
-                raw_obj.shortname = (channels[i].epg_data[0]) ? channels[i].epg_data[0].short_description  : "Program of "+ channels[i].title;
-                raw_obj.description = (channels[i].epg_data[0]) ?  channels[i].epg_data[0].long_description  : 'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
+                raw_obj.shortname = (channels[i].epg_data[0]) ? channels[i].epg_data[0].short_description : "Program of "+ channels[i].title;
+                raw_obj.description = (channels[i].epg_data[0]) ?  channels[i].epg_data[0].long_description : 'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
                 raw_obj.programstart = (channels[i].epg_data[0]) ? channels[i].epg_data[0].program_start : "01/01/1970 00:00:00";
                 raw_obj.programend = (channels[i].epg_data[0]) ? channels[i].epg_data[0].program_end : "01/01/1970 00:00:00";
                 raw_obj.duration = (channels[i].epg_data[0]) ? channels[i].epg_data[0].duration_seconds : 0;
@@ -1081,7 +1082,7 @@ exports.get_daily_epg =  function(req, res) {
 };
 
 
-
+// to be remove, replaced by function get_epg_data
 exports.test_get_epg_data = function(req, res) {
 
     var timeshift = 0;
@@ -1100,14 +1101,14 @@ exports.test_get_epg_data = function(req, res) {
     var final_where = {};
 
     final_where.attributes = [ 'id', 'channel_number', 'title',[db.sequelize.fn("concat", req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'icon_url']],
-    final_where.include = [{
-                                model: models.epg_data, attributes: ['title', 'short_name', 'short_description', 'long_description', 'program_start','program_end','duration_seconds', 'long_description'],
-                                required: false,
-                                where: Sequelize.and(
-                                    {program_start: {gte:starttime}},
-                                    {program_start: {lte:endtime}}
-                                )
-                            }];
+        final_where.include = [{
+            model: models.epg_data, attributes: ['title', 'short_name', 'short_description', 'long_description', 'program_start','program_end','duration_seconds', 'long_description'],
+            required: false,
+            where: Sequelize.and(
+                {program_start: {gte:starttime}},
+                {program_start: {lte:endtime}}
+            )
+        }];
 
     if(channelnumbers.length > 0) final_where.where = {channel_number: {in: channelnumbers}}; //limit data only for this list of channels
 
@@ -1121,6 +1122,68 @@ exports.test_get_epg_data = function(req, res) {
         res.send(error);
     });
 };
+
+
+
+
+/**
+ * @api {get} /apiv2/channels/epgdata Request Channels EPG Data
+ * @apiName epgdata
+ * @apiGroup EPG
+ *
+ * @apiHeader {String} auth End User auth token.
+ *
+ * @apiParam {Number} [_start]  Optional start time in minutes. If missing equals -180
+ * @apiParam {Number} [_end] Optional end time in minutes. If missing equals 1440
+ * @apiParam {String[]} [channelnumbers] Optional channel number separated by comma
+ *
+ *@apiDescription Copy paste this auth for testing purposes
+ *auth=/ihCuMthnmY7pV3WLgC68i70zwLp6DUrLyFe9dOUEkxUBFH9WrUcA95GFAecSJH9HG9tvymreMOFlBviVd3IcII4Z/SiurlGoz9AMtE5KGFZvCl1FQ3FKZYP3LeFgzVs\r\nDQjxaup3sKRljj4lmKUDTA==
+ *
+ */
+
+exports.get_epg_data = function(req, res) {
+
+    var timeshift = 0;
+    var minusminutes = isNaN(parseInt(req.query._start)) ? -180: parseInt(req.query._start);
+    var plusminutes = isNaN(parseInt(req.query._end)) ? 1440: parseInt(req.query._end);
+    var starttime = (Date.now() +  minusminutes * 60000);
+    var endtime   = (Date.now() +  plusminutes * 60000);
+
+    if(req.query.channelnumbers) {
+        var channelnumbers = req.query.channelnumbers.toString().split(',');
+    }
+    else {
+        var channelnumbers = [];
+    }
+
+    var final_where = {};
+
+    final_where.attributes = [ 'id', 'channel_number', 'title',[db.sequelize.fn("concat", req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'icon_url']],
+        final_where.include = [{
+            model: models.epg_data, attributes: ['id','title', 'short_name', 'short_description', 'long_description', 'program_start','program_end','duration_seconds', 'long_description'],
+            required: false,
+            where: Sequelize.and(
+                {program_start: {gte:starttime}},
+                {program_start: {lte:endtime}}
+            ),
+            include: [{model:models.program_schedule, attributes:['id'], required:false, where: {login_id:req.thisuser.id}}]
+        }];
+
+    if(channelnumbers.length > 0) final_where.where = {channel_number: {in: channelnumbers}}; //limit data only for this list of channels
+
+    final_where.order = ['channel_number'];
+
+    models.channels.findAll(
+        final_where
+    ).then(function (result) {
+        res.send(result);
+    }).catch(function(error) {
+        winston.error('error reading epg data: ',error);
+        res.send(error);
+    });
+};
+
 
 function program_status(programstart, programend){
     if(programstart < Date.now() && programend < Date.now()){

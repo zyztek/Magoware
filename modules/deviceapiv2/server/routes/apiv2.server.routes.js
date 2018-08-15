@@ -11,7 +11,7 @@ var path = require('path'),
 //vodController = require(path.resolve('./modules/deviceapiv2/server/controllers/vod.server.controller')),
     settingsController = require(path.resolve('./modules/deviceapiv2/server/controllers/settings.server.controller')),
     networkController = require(path.resolve('./modules/deviceapiv2/server/controllers/network.server.controller')),
-    eventlogsController = require(path.resolve('./modules/deviceapiv2/server/controllers/eventlogs.server.controller')),
+//eventlogsController = require(path.resolve('./modules/deviceapiv2/server/controllers/eventlogs.server.controller')),
     passwordController = require(path.resolve('./modules/deviceapiv2/server/controllers/password.server.controller')),
     mainController = require(path.resolve('./modules/deviceapiv2/server/controllers/main.server.controller')),
     customersAppController = require(path.resolve('./modules/deviceapiv2/server/controllers/customers_app.server.controller')),
@@ -102,7 +102,8 @@ module.exports = function(app) {
     //settings
     app.route('/apiv2/settings/settings')
         .all(authpolicy.isAllowed)
-        .post(settingsController.settings);
+        .post(settingsController.settings)
+        .get(settingsController.get_settings);
 
     app.route('/apiv2/settings/upgrade')
         .all(authpolicy.isAllowed)
@@ -135,20 +136,6 @@ module.exports = function(app) {
     app.route('/apiv2/command/response')
         .all(authpolicy.isAllowed)
         .post(networkController.command_response);
-
-    //event logs
-    app.route('/apiv2/events/event')
-        .all(authpolicy.isAllowed)
-        .post(eventlogsController.event);
-
-    app.route('/apiv2/events/screen')
-        .all(authpolicy.isAllowed)
-        .post(eventlogsController.screen);
-
-    app.route('/apiv2/events/timing')
-        .all(authpolicy.isAllowed)
-        .post(eventlogsController.timing);
-
 
     /*******************************************************************
      User personal data for application
@@ -254,7 +241,7 @@ module.exports = function(app) {
 
     app.route('/apiv2/channels/epgdata')
         .all(authpolicy.isAllowed)
-        .get(deviceepgController.test_get_epg_data)
+        .get(deviceepgController.get_epg_data)
 
 
 };

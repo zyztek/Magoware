@@ -1,9 +1,11 @@
 'use strict'
-var myApp = angular.module('myApp', ['ng-admin','ng-admin.jwt-auth', 'ngVis', 'pascalprecht.translate', 'ngCookies']);
+var myApp = angular.module('myApp', ['ng-admin','ng-admin.jwt-auth', 'ngVis', 'pascalprecht.translate', 'ngCookies','dndLists']);
 
 myApp.controller('envVariablesCtrl', ['$scope', '$http', function ($scope, $http) {
     $http.get('../api/env_settings').then(function(response) {
-        $scope.version_number = "Version: "+response.data;
+        $scope.version_number = "Version: "+response.data.backoffice_version;
+        $scope.company_name = response.data.company_name;
+        $scope.company_logo = response.data.company_logo;
     });
 }]);
 
@@ -12,13 +14,6 @@ myApp.controller('main', function ($scope, $rootScope, $location, notification) 
         $scope.displayBanner = $location.$$path === '/dashboard';
     });
 });
-//checkboxController
-myApp.controller('checkboxController', function($scope) {
-    $scope.checkboxModel = {
-        value1 : false,
-    };
-});
-//./checkboxController
 
 //subscription export
 //Takes user details
@@ -60,8 +55,162 @@ myApp.directive('showInvoice', ['$location', function ($location) {
 }]);
 //./subscription export
 
+//EPG LOGS
+myApp.directive('seeLogs', ['$location','$http', function ($location,$http) {
+    return {
+        restrict: 'E',
+        scope: {
+            fromDirectiveFn: '=method',
+            post: '&'
+        },
+        link: function(scope, elm, attrs) {
+
+            scope.see = function () {
+                var currentlog = scope.post().values.epg_file;
+                scope.filenames = currentlog;
+                scope.fromDirectiveFn(scope.filenames);
+            };
+        },
+        template: '<ma-submit-button class="pull-right" ng-click="see()" label="Submit"></ma-submit-button>'
+    };
+}]);
+
+
+myApp.controller("logsCtrl", ['$scope','$http', function($scope,$http) {
+    $scope.ctrlFn = function(arg) {
+        var Indata = {'epg_file': arg};
+        $http.post("../api/epgimport", Indata).then(function (response,data, status, headers, config,file) {
+            // alert("success");
+            $scope.records = response.data;
+            $scope.records1 = [
+                "File Name",
+                "Saved Records",
+                "Non Saved Records",
+                "Error Log"
+            ];
+        },function (data, status, headers, config) {
+            console.log("error");
+        });
+    };
+}]);
+//./EPG LOGS
+
+//downloadInvoice
+
+myApp.directive('downloadInvoice', ['$location','$http', function ($location,$http) {
+    return {
+        restrict: 'E',
+        scope: { post: '&' },
+        link: function (scope) {
+            scope.sendsale = function () {
+                var currentIDD = scope.post().values.id;
+                $http.get('../api/invoice/download/'+ currentIDD, {responseType: 'blob'}).then(function(response) {
+                    var data = response.data,
+                        blob = new Blob([data], { type: 'application/pdf' });
+                    var filename=response.headers('x-filename');
+                    FileSaver.saveAs(blob, filename);
+                });
+
+            };
+        },
+        template: '<a class="btn btn-default btn-xs" ng-click="sendsale()"><i class="fa fa-print fa-lg"></i>&nbsp;Download</a>'
+    };
+}]);
+//./downloadInvoice
+
+//Drag_and_drop_package
+
+myApp.directive('seeDrag', ['$location','$http', function ($location,$http) {
+    return {
+        restrict: 'E',
+        scope: {
+            fromDirectiveFn: '=method',
+            post: '&'
+        },
+        link: function(scope, elm, attrs) {
+
+            scope.see = function () {
+                var package_name = scope.post().values.id;
+                var package_type_id = scope.post().values.package_type_id;
+                scope.fromDirectiveFn([package_name,package_type_id]);
+            };
+        },
+        template: '<a type="buton" class="btn btn-default" ng-click="see()"><i class="fa fa-plus fa-lg"></i>&nbsp;&nbsp;ADD CHANNELS</a>'
+    };
+}]);
+
+
+myApp.controller('dragdropctrl', ['$scope','$http','$stateParams','notification', function ($scope,$http,$stateParams,notification) {
+    $scope.models = [
+        {listName: "Available", items: [], dragging: false},
+        {listName: "Selected", items: [], dragging: false}
+    ];
+
+    $scope.getSelectedItemsIncluding = function(list, item) {
+        item.selected = true;
+        return list.items.filter(function(item) { return item.selected; });
+    };
+
+    $scope.onDrop = function(list, items, index) {
+        angular.forEach(items, function(item) { item.selected = false; });
+        list.items = list.items.slice(0, index)
+            .concat(items)
+            .concat(list.items.slice(index));
+        return true;
+    };
+
+    $scope.onMoved = function(list) {
+        list.items = list.items.filter(function(item) { return !item.selected; });
+    };
+
+    $http.get('../api/channels').then(function(response) {
+
+        $scope.array = response.data;
+        var id_pakete = $stateParams.id;
+
+        for(var j=0;j<$scope.array.length;j++){
+            const index = $scope.array[j].packages_channels.findIndex(function (todo,index){
+                return todo.package_id == id_pakete;
+            })
+
+            if(index > -1){
+                var lista = $scope.models[1];
+                lista.items.push({label:$scope.array[j].title,id:$scope.array[j].id,nr:$scope.array[j].channel_number});
+            }else if(index <= -1){
+                var lista1 = $scope.models[0];
+                lista1.items.push({label:$scope.array[j].title,id:$scope.array[j].id,nr:$scope.array[j].channel_number});
+            }
+
+        }
+    });
+
+    $scope.ctrlFn = function(arg) {
+        var name= arg[0];
+        var id = arg[1];
+        var selected = $scope.models[1].items;
+        var channels_list = [];
+
+        for (var k = 0; k < selected.length; k++) {
+            channels_list.push(selected[k].id);
+        }
+
+        var data = {'package_id': name,'channel_id': channels_list};
+        $http.post("../api/packagechannels", data).then(function (response,data, status, headers, config,file) {
+
+            notification.log('Channels successfully added', { addnCls: 'humane-flatty-success' });
+
+        },function (data, status, headers, config) {
+            notification.log('Something Wrong', { addnCls: 'humane-flatty-error' });
+        });
+    };
+
+}]);
+
+//./Drag_and_drop_package
+
 // Pagination & Sort
 var apiFlavor = require('./api_flavor');
+var FileSaver = require('./filesaver');
 myApp.config(['RestangularProvider', apiFlavor.requestInterceptor]);
 
 myApp.controller('username', ['$scope', '$window', function($scope, $window) {
@@ -227,6 +376,7 @@ myApp.directive('graph', require('./dashboard/graphs'));
 myApp.directive('sendpush', require('./smsbatch/sendpush'));
 myApp.directive('sale', require('./smsbatch/sale'));
 myApp.directive('vod', require('./smsbatch/vod'));
+myApp.directive('move', require('./smsbatch/move'));
 myApp.directive('approveReview', require('./groups/approveReview'));
 
 //myApp.directive('roles', require('./grouprights/radioRoles'));
@@ -294,9 +444,11 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     admin.addEntity(nga.entity('VodStreamSources'));
     admin.addEntity(nga.entity('vodsubtitles'));
     admin.addEntity(nga.entity('PaymentTransactions'));
+    admin.addEntity(nga.entity('EmailTemplate'));
 
     //Config
 
+    require('./emailTemplate/config')(nga, admin);
     require('./channels/config')(nga, admin);
     require('./channelStream/config')(nga, admin);
     require('./channelStreamSource/config')(nga, admin);

@@ -34,13 +34,13 @@ export default function (nga, admin) {
 				.targetEntity(admin.getEntity('Groups'))
                 .targetField(nga.field('name'))
                 .validation({ required: true })
-                .attributes({ placeholder: 'Select Group' })
+                .attributes({ placeholder: 'Select group' })
 				.label('Group'),
 			nga.field('username', 'string')
 				.attributes({ placeholder: 'Username must be at least 3 character long' })
 				.validation({ required: true, minlength: 3 })
 				.label('Username'),
-			nga.field('password', 'password')
+			nga.field('hashedpassword', 'password')
 				.attributes({ placeholder: 'Password must be at least 4 character long' })
 				.validation({ required: true, minlength: 4})
 				.label('Password'),
@@ -52,6 +52,8 @@ export default function (nga, admin) {
 				.attributes({ placeholder: 'Telephone' })
 				.validation({ required: true })
 				.label('Telephone'),
+			nga.field('third_party_api_token', 'string')
+					.label('Third party token'),
 			nga.field('isavailable', 'boolean')
 				.validation({ required: true })
 				.label('Is Available'),

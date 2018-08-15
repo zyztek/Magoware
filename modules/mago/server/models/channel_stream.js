@@ -23,10 +23,19 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING(255),
             allowNull: false
         },
+        recording_engine: {
+            type: DataTypes.STRING(20),
+            allowNull: false
+        },
         stream_mode:{
             type: DataTypes.STRING(20),
             allowNull: false,
             unique: 'channelid_channelstream'
+        },
+        stream_resolution: {
+            type: DataTypes.STRING(30),
+            allowNull: false,
+            defaultValue: "small,large"
         },
         stream_format: {
             type: DataTypes.STRING(2),
@@ -52,6 +61,10 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultvalue: false
+        },
+        drm_platform: {
+            type: DataTypes.STRING(20),
+            allowNull: false
         }
     }, {
         tableName: 'channel_stream',

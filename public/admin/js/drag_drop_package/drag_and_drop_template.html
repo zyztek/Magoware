@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Drag &amp; Drop Lists for angular.js</title>
+</head>
+<body ng-app="myApp">
+
+<div ng-controller="dragdropctrl">
+    <div class="multiDemo row">
+
+        <p class="text-center bg-default paragraph">You can select or multiselect Channels from Available list to Selected list and back.</p>
+
+        <div class="col-md-12">
+            <div class="row">
+
+                <div ng-repeat="list in models" class="col-md-6">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title text-center">{{list.listName}}</h3>
+                        </div>
+                        <div class="panel-body">
+                            <input type="text" id="usr" ng-model="searchText" placeholder="Search Channel by name or by number..." />
+                            <ul dnd-list dnd-drop="onDrop(list, item, index)">
+                                <li ng-repeat="item in list.items | filter:searchText"
+                                    dnd-draggable="getSelectedItemsIncluding(list, item)"
+                                    dnd-dragstart="onDragstart(list, event)"
+                                    dnd-moved="onMoved(list)"
+                                    dnd-dragend="list.dragging = false"
+                                    dnd-selected="item.selected = !item.selected"
+                                    ng-class="{'selected': item.selected}"
+                                    ng-hide="list.dragging && item.selected"
+                                >
+                                    <div style="display: none;">{{item.id}}</div> &nbsp;{{item.nr}}&nbsp;-&nbsp;{{item.label}}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div><!--row-->
+            <div class="row">
+                <div class="btn-group inline pull-right">
+                    <div class="btn btn-small"><see-drag post="entry" class="pull-right" data-method="ctrlFn"></see-drag></div>
+                    <!--<div class="btn btn-small"><ma-filtered-list-button entity-name="packagechannels" class="pull-right" label="SEE ALL CHANNELS" filter="{ package_id: entry.values.id }"></ma-filtered-list-button></div>-->
+                </div>
+            </div><!--row-->
+            <hr><br/><br/><br/><br/>
+        </div><!--col-md-12-->
+    </div>
+
+
+
+
+
+
+</div>
+</body>
+</html>
