@@ -26,7 +26,7 @@ var
     const default_api_group = require(path.resolve("./config/defaultvalues/api_group.json"));
     const default_api_url = require(path.resolve("./config/defaultvalues/api_url.json"));
     const admin_group = {name: 'Administrator', code: 'admin', isavailable: 1};
-    const admin_user = {username: 'admin', password: 'admin', hashedpassword: authentication.encryptPassword('admin', salt), salt: salt, isavailable: 1, group_id: 1};
+    const admin_user = {username: 'admin', password: 'admin', hashedpassword: 'admin', salt: salt, isavailable: 1, group_id: 1};
     const settings_values = {
         id: 1,
         email_address: 'noreply@demo.com',
