@@ -6,95 +6,40 @@
 var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     db = require(path.resolve('./config/lib/sequelize')).models,
-    sequelize_t = require(path.resolve('./config/lib/sequelize')),
-    DBModel = db.packages_channels;
-
-
-
-//function link_channel_with_packages(channel_id,array_package_ids) {
-function link_channels_with_package(array_channel_ids, package_id) {
-
-    var transactions_array = [];
-
-    return DBModel.destroy({
-        where: {
-            package_id: package_id,
-            channel_id: {$notIn: array_channel_ids}
-        }
-    }).then(function (result) {
-        return sequelize_t.sequelize.transaction(function (t) {
-            for (var i = 0; i < array_channel_ids.length; i++) {
-                transactions_array.push(
-                    DBModel.upsert({
-                        channel_id: array_channel_ids[i],
-                        package_id: package_id,
-                    }, {transaction: t})
-                )
-            }
-            return Promise.all(transactions_array, {transaction: t}); //execute transaction
-        }).then(function (result) {
-            return {status: true, message:'transaction executed correctly'};
-        }).catch(function (err) {
-            return {status: false, message:'error executing transaction'};
-        })
-    }).catch(function (err) {
-        return {status: false, message:'error deleteting existing packages'};
-    })
-}
-
-
-
-
-
-
-
-
-
+    refresh = require(path.resolve('./modules/mago/server/controllers/common.controller.js')),
+    DBModel = db.channel_stream;
 
 /**
  * Create
  */
-
-
 exports.create = function(req, res) {
-
-    return link_channels_with_package(req.body.channel_id, req.body.package_id).then(function(t_result) {
-        if (t_result.status) {
-            return res.jsonp(t_result);
+    req.body.stream_resolution = req.body.stream_resolution.toString(); //convert array into comma-separated string
+    DBModel.create(req.body).then(function(result) {
+        if (!result) {
+            return res.status(400).send({message: 'fail create data'});
+        } else {
+            return res.jsonp(result);
         }
-        else {
-            return res.send(t_result);
-        }
-    })
-
-    /*
-     DBModel.create(req.body).then(function(result) {
-     if (!result) {
-     return res.status(400).send({message: 'fail create data'});
-     } else {
-     return res.jsonp(result);
-     }
-     }).catch(function(err) {
-     return res.status(400).send({
-     message: errorHandler.getErrorMessage(err)
-     });
-     });
-     */
-
+    }).catch(function(err) {
+        return res.status(400).send({
+            message: errorHandler.getErrorMessage(err)
+        });
+    });
 };
 
 /**
  * Show current
  */
 exports.read = function(req, res) {
-    res.json(req.packageChannel);
+    res.json(req.channelStream);
 };
 
 /**
  * Update
  */
 exports.update = function(req, res) {
-    var updateData = req.packageChannel;
+    var updateData = req.channelStream;
+    req.body.stream_resolution = req.body.stream_resolution.toString(); //convert array into comma-separated string
 
     updateData.updateAttributes(req.body).then(function(result) {
         res.json(result);
@@ -109,11 +54,12 @@ exports.update = function(req, res) {
  * Delete
  */
 exports.delete = function(req, res) {
-    var deleteData = req.packageChannel;
+    var deleteData = req.channelStream;
 
+    // Find the article
     DBModel.findById(deleteData.id).then(function(result) {
         if (result) {
-
+            // Delete the article
             result.destroy().then(function() {
                 return res.json(result);
             }).catch(function(err) {
@@ -121,6 +67,7 @@ exports.delete = function(req, res) {
                     message: errorHandler.getErrorMessage(err)
                 });
             });
+            return null;
         } else {
             return res.status(400).send({
                 message: 'Unable to find the Data'
@@ -139,17 +86,24 @@ exports.delete = function(req, res) {
  */
 exports.list = function(req, res) {
 
-    var query = req.query;
-    var offset_start = parseInt(query._start);
-    var records_limit = query._end - query._start;
-    var qwhere = {};
-    if(query.package_id) qwhere.package_id = query.package_id;
+    var qwhere = {},
+        final_where = {},
+        query = req.query;
 
-    DBModel.findAndCountAll({
-        where: qwhere,
-        offset: offset_start,
-        limit: records_limit,
-    }).then(function(results) {
+    //start building where
+    final_where.where = qwhere;
+    if(parseInt(query._start)) final_where.offset = parseInt(query._start);
+    if(parseInt(query._end)) final_where.limit = parseInt(query._end)-parseInt(query._start);
+    if(query._orderBy) final_where.order = query._orderBy + ' ' + query._orderDir;
+    final_where.include = [db.channels, db.channel_stream_source];
+
+    if(query.channel_id) qwhere.channel_id = query.channel_id;
+
+    DBModel.findAndCountAll(
+
+        final_where
+
+    ).then(function(results) {
         if (!results) {
             return res.status(404).send({
                 message: 'No data found'
@@ -168,21 +122,31 @@ exports.list = function(req, res) {
  * middleware
  */
 exports.dataByID = function(req, res, next, id) {
+
     if ((id % 1 === 0) === false) { //check if it's integer
-        return res.status(404).send({ message: 'Data is invalid' });
+        return res.status(404).send({
+            message: 'Data is invalid'
+        });
     }
 
     DBModel.find({
         where: {
             id: id
         },
+        include: [{
+            model: db.channels
+        },
+            {
+                model: db.channel_stream_source
+            }]
     }).then(function(result) {
         if (!result) {
             return res.status(404).send({
                 message: 'No data with that identifier has been found'
             });
         } else {
-            req.packageChannel = result;
+            req.channelStream = result;
+            req.channelStream.stream_resolution = req.channelStream.stream_resolution.split(','); //convert comma-separated string into array
             next();
             return null;
         }
