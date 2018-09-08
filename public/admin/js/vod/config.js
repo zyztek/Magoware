@@ -138,13 +138,6 @@ export default function (nga, admin) {
                 .targetField(nga.field('name'))
                 .label('Genres')
                 .attributes({ placeholder: 'Select genre' })
-                .map(function getpckgid(value, entry) {
-                    var return_object = [];
-                    for (var i = 0; i < value.length; i++) {
-                        return_object[i] = value[i].category_id;
-                    }
-                    return return_object;
-                })
                 .singleApiCall(function (category_id) {
                     return { 'category_id[]': category_id };
                 }),
@@ -154,13 +147,6 @@ export default function (nga, admin) {
                 .targetField(nga.field('package_name'))
                 .label('Packages')
                 .attributes({ placeholder: 'Select packages' })
-                .map(function getpckgid(value, entry) {
-                    var return_object = [];
-                    for (var i = 0; i < value.length; i++) {
-                        return_object[i] = value[i].package_id;
-                    }
-                    return return_object;
-                })
                 .singleApiCall(function (package_id) {
                     return { 'package_id[]': package_id };
                 }),
@@ -175,9 +161,9 @@ export default function (nga, admin) {
             nga.field('rate', 'number')
                 .attributes({ placeholder: 'Movie rated. Must be greater than 0, smaller or equal to 10' })
                 .validation({ required: true, validator: function(value){
-                    if(value<=0) throw  new Error ('Rate must be greater than 0');
-                    if(value>10) throw  new Error ('Rate cannot be greater than 10');
-                }})
+                        if(value<=0) throw  new Error ('Rate must be greater than 0');
+                        if(value>10) throw  new Error ('Rate cannot be greater than 10');
+                    }})
                 .label('Rate'),
             nga.field('clicks', 'number')
                 .attributes({ placeholder: 'Movie clicks' })
@@ -216,11 +202,11 @@ export default function (nga, admin) {
                 .validation({
                     validator: function(value) {
                         var vod_preview_url = document.getElementById('vod_preview_url');
-                            if (vod_preview_url.value.length > 0) {
-                                if(vod_preview_url.files[0].size > 1048576 ){
-                                    throw new Error('Your File of Video scrubbing url is too Big, not larger than 1MB');
-                                }
+                        if (vod_preview_url.value.length > 0) {
+                            if(vod_preview_url.files[0].size > 1048576 ){
+                                throw new Error('Your File of Video scrubbing url is too Big, not larger than 1MB');
                             }
+                        }
 
                     }
                 })
@@ -277,10 +263,10 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'Is Available' })
                 .validation({ required: true })
                 .label('Is Available'),
-			nga.field('expiration_time','datetime')
+            nga.field('expiration_time','datetime')
                 .validation({ required: true })
                 .defaultValue(new Date())
-                .label('Expiration date'),	
+                .label('Expiration date'),
             nga.field('template')
                 .label('')
                 .template(edit_button),
@@ -344,9 +330,9 @@ export default function (nga, admin) {
             nga.field('rate', 'number')
                 .attributes({ placeholder: 'Movie rated. Must be greater than 0, smaller or equal to 10' })
                 .validation({ required: true, validator: function(value){
-                    if(value<=0) throw  new Error ('Rate must be greater than 0');
-                    if(value>10) throw  new Error ('Rate cannot be greater than 10');
-                }})
+                        if(value<=0) throw  new Error ('Rate must be greater than 0');
+                        if(value>10) throw  new Error ('Rate cannot be greater than 10');
+                    }})
                 .label('Rate'),
             nga.field('clicks', 'number')
                 .attributes({ placeholder: 'Movie clicks' })
@@ -384,11 +370,11 @@ export default function (nga, admin) {
                 .validation({
                     validator: function(value) {
                         var vod_preview_url = document.getElementById('vod_preview_url');
-                            if (vod_preview_url.value.length > 0) {
-                                if(vod_preview_url.files[0].size > 1048576 ){
-                                    throw new Error('Your File of Video scrubbing url is too Big, not larger than 1MB');
-                                }
+                        if (vod_preview_url.value.length > 0) {
+                            if(vod_preview_url.files[0].size > 1048576 ){
+                                throw new Error('Your File of Video scrubbing url is too Big, not larger than 1MB');
                             }
+                        }
 
                     }
                 })
@@ -445,10 +431,10 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'Is Available' })
                 .validation({ required: true })
                 .label('Is Available'),
-			nga.field('expiration_time','datetime')
+            nga.field('expiration_time','datetime')
                 .validation({ required: true })
                 .defaultValue(new Date())
-                .label('Expires in'),	
+                .label('Expires in'),
             //default subtitle field is exclusive to the edition view
             nga.field('default_subtitle_id', 'choice')
                 .choices(function(entry) {
@@ -481,12 +467,12 @@ export default function (nga, admin) {
                 .targetReferenceField('vod_id')
                 .targetFields([
                     nga.field('url')
-                        // .map(function truncate(value) {
-                        //     if (!value) {
-                        //         return '';
-                        //     }
-                        //     return value.length > 35 ? value.substr(0, 35) + '...' : value;
-                        // })
+                    // .map(function truncate(value) {
+                    //     if (!value) {
+                    //         return '';
+                    //     }
+                    //     return value.length > 35 ? value.substr(0, 35) + '...' : value;
+                    // })
                         .label('Vod URL'),
                 ])
                 .listActions(['edit', 'delete']),

@@ -82,6 +82,7 @@ exports.delete = function(req, res) {
                 message: 'Unable to find the Data'
             });
         }
+        return null;
     }).catch(function(err) {
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)

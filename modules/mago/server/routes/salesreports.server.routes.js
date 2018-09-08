@@ -9,6 +9,11 @@ module.exports = function(app) {
 
 
     /* ===== salesreports the table ===== */
+
+    app.route('/api/MySales')
+        .get(salesReports.list);
+
+
     app.route('/api/salesreports')
         .get(salesReports.list);
 

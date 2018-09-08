@@ -143,26 +143,26 @@ export default [{
             "link":'/Channels/list',
             "group_roles":["admin","administrator","customercare","management","guest"]
         },
-        {
-            "entity":"Channels",
-            "title":"Not Active Channels",
-            "icon":'<span class="fa fa-times-circle-o fa-fw"></span>',
-            "link":'/Channels/list?search=%7B"isavailable":false%7D',
-            "group_roles":["admin","administrator","customercare","management","guest"]
-        },
-        {
-            "entity":"ChannelStreamSources",
-            "title":"Live TV Stream Source",
-            "icon":'<span class="fa fa-signal fa-fw"></span>',
-            "link":'/ChannelStreamSources/list',
-            "group_roles":["admin","administrator","customercare","management","guest"]
-        },{
-            "entity":"livepackages",
-            "title":"Channel Packages",
-            "icon":'<span class="fa fa-th fa-fw"></span>',
-            "link":'/livepackages/list',
-            "group_roles":["admin","administrator","customercare","management","guest"]
-        }]
+            {
+                "entity":"Channels",
+                "title":"Not Active Channels",
+                "icon":'<span class="fa fa-times-circle-o fa-fw"></span>',
+                "link":'/Channels/list?search=%7B"isavailable":false%7D',
+                "group_roles":["admin","administrator","customercare","management","guest"]
+            },
+            {
+                "entity":"ChannelStreamSources",
+                "title":"Live TV Stream Source",
+                "icon":'<span class="fa fa-signal fa-fw"></span>',
+                "link":'/ChannelStreamSources/list',
+                "group_roles":["admin","administrator","customercare","management","guest"]
+            },{
+                "entity":"livepackages",
+                "title":"Channel Packages",
+                "icon":'<span class="fa fa-th fa-fw"></span>',
+                "link":'/livepackages/list',
+                "group_roles":["admin","administrator","customercare","management","guest"]
+            }]
     },
     {
         "title":"VOD",
@@ -181,26 +181,26 @@ export default [{
             "link":'/Vods/list?search=%7B"pin_protected":"0"%7D',
             "group_roles":["admin","administrator","vod","management","guest"]
         },
-        {
-            "entity":"Vods",
-            "title":"Not Active VOD Movies",
-            "icon":'<span class="fa fa-times-circle-o fa-fw"></span>',
-            "link":'/Vods/list?search=%7B"isavailable":false%7D',
-            "group_roles":["admin","administrator","vod","management","guest"]
-        },
-        {
-            "entity":"VodStreamSources",
-            "title":"VOD Stream Source",
-            "icon":'<span class="fa fa-signal fa-fw"></span>',
-            "link":'/VodStreamSources/list',
-            "group_roles":["admin","administrator","vod","management","guest"]
-        },{
-            "entity":"vodPackages",
-            "title":"VOD Packages",
-            "icon":'<span class="fa fa-th fa-fw"></span>',
-            "link":'/vodPackages/list',
-            "group_roles":["admin","administrator","vod","management","guest"]
-        }]
+            {
+                "entity":"Vods",
+                "title":"Not Active VOD Movies",
+                "icon":'<span class="fa fa-times-circle-o fa-fw"></span>',
+                "link":'/Vods/list?search=%7B"isavailable":false%7D',
+                "group_roles":["admin","administrator","vod","management","guest"]
+            },
+            {
+                "entity":"VodStreamSources",
+                "title":"VOD Stream Source",
+                "icon":'<span class="fa fa-signal fa-fw"></span>',
+                "link":'/VodStreamSources/list',
+                "group_roles":["admin","administrator","vod","management","guest"]
+            },{
+                "entity":"vodPackages",
+                "title":"VOD Packages",
+                "icon":'<span class="fa fa-th fa-fw"></span>',
+                "link":'/vodPackages/list',
+                "group_roles":["admin","administrator","vod","management","guest"]
+            }]
     },
     {
         "title":"EPG",
@@ -328,5 +328,33 @@ export default [{
         "link":'/dashboard',
         "group_roles":["admin","administrator","customercare","management","guest"],
         "children": []
+    },
+    {
+        "title":"My Dashboard",
+        "icon":'<span class="fa fa-tachometer fa-fw"></span>',
+        "group_roles":["resellers"],
+        "children": [],
+        "link":'/dashboard'
+    },
+    {
+        "title":"My Subscription",
+        "icon":'<span class="fa fa-calendar-check-o fa-fw"></span>',
+        "group_roles":["resellers"],
+        "children": [],
+        "link":'/MySubscription/create'
+    },
+    {
+        "title":"My New Customer",
+        "icon":'<span class="fa fa-users fa-fw"></span>',
+        "group_roles":["resellers"],
+        "children": [],
+        "link":'/NewCustomer/create'
+    },
+    {
+        "title":"My Sales",
+        "icon":'<span class="fa fa-list fa-fw"></span>',
+        "group_roles":["resellers"],
+        "children": [],
+        "link":'/MySales/list?search=%7B"distributorname":"'+localStorage.userName+'"%7D'
     }
 ];

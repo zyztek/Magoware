@@ -183,25 +183,39 @@ exports.update = function(req, res) {
  */
 exports.delete = function(req, res) {
     var deleteData = req.vod;
-    DBModel.findById(deleteData.id).then(function(result) {
-        if (result) {
-            result.destroy().then(function() {
-                return res.json(result);
-            }).catch(function(err) {
-                return res.status(400).send({
-                    message: errorHandler.getErrorMessage(err)
+    return sequelize_t.sequelize.transaction(function (t){
+        return db.vod_vod_categories.destroy({where: {vod_id: req.vod.id}}).then(function(deleted_categories){
+            return db.package_vod.destroy({where: {vod_id: req.vod.id}}).then(function(deleted_packages){
+                return DBModel.findById(deleteData.id).then(function(result) {
+                    if (result) {
+                        result.destroy().then(function() {
+                            return res.json(result);
+                        }).catch(function(err) {
+                            return res.status(400).send({
+                                message: errorHandler.getErrorMessage(err)
+                            });
+                        });
+                        return null;
+                    } else {
+                        return res.status(400).send({
+                            message: 'Unable to find the Data'
+                        });
+                    }
+                }).catch(function(err) {
+                    return res.status(400).send({
+                        message: errorHandler.getErrorMessage(err)
+                    });
                 });
-            });
-            return null;
-        } else {
+            }).catch(function(err_deleting_packages){
+                return res.status(400).send({
+                    message: errorHandler.getErrorMessage(err_deleting_packages)
+                });
+            })
+        }).catch(function(err_deleting_categories){
             return res.status(400).send({
-                message: 'Unable to find the Data'
+                message: errorHandler.getErrorMessage(err_deleting_categories)
             });
-        }
-    }).catch(function(err) {
-        return res.status(400).send({
-            message: errorHandler.getErrorMessage(err)
-        });
+        })
     });
 
 };

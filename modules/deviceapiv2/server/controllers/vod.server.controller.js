@@ -798,7 +798,7 @@ exports.related = function(req, res) {
 
         var related_query = "SELECT DISTINCT vod.id, "+
             " ( "+
-                //" IF( (category_id = "+result[0].category_id+"), 1, 0) + "+ //category matching score
+            //" IF( (category_id = "+result[0].category_id+"), 1, 0) + "+ //category matching score
             " ( "+director_matching_score+" ) + "+ //director matching score
             " ( "+actor_matching_score+" ) "+ //actor matching score
             " ) AS matching_score "+
@@ -970,7 +970,7 @@ exports.categoryfilms_get = function(req, res) {
 };
 
 //get single vod item data
-exports.get_vod_item = function(req, res) {
+exports.get_vod_item_details = function(req, res) {
     var vodID = req.params.vodID;
     models.vod.find({
         where: {
@@ -1017,6 +1017,71 @@ exports.get_vod_item = function(req, res) {
 
 };
 
+
+/**
+ * @api {get} /apiv2/vod/tvshow_details/{vodID}/{seasonNumber} GET TV Show details
+ * @apiName GetTVShow Details
+ * @apiGroup VOD
+ *
+ * @apiHeader {String[]} auth Device AUTH token plus device params separated by coma ex: auth=123,mac=abcde1234 *
+ *
+ * @apiDescription Copy paste this auth for testing purposes
+ * auth=/ihCuMthnmY7pV3WLgC68i70zwLp6DUrLyFe9dOUEkxUBFH9WrUcA95GFAecSJH9HG9tvymreMOFlBviVd3IcII4Z/SiurlGoz9AMtE5KGFZvCl1FQ3FKZYP3LeFgzVs\r\nDQjxaup3sKRljj4lmKUDTA==
+ *
+ */
+exports.get_tvshow_item_details = function(req, res) {
+
+    var vodID = req.params.tvshowID;
+    var where_seasonNumber = {};
+
+    if(req.params.seasonNumber)
+        where_seasonNumber.season_number = req.params.seasonNumber
+    else
+        where_seasonNumber.season_number = 1
+
+    models.vod.find({
+        where: {
+            id: vodID,
+            expiration_time: {$gte: Date.now()}
+        },
+        include: [//{model: models.vod_subtitles},
+            {model: models.vod_vod_categories, required: true, attributes: ['category_id']},
+            //{model: models.vod_stream, where:{stream_source_id: req.thisuser.vod_stream_source}}],
+            //{model: models.vod_stream},
+            //{model: models.vod, as: 'seasons', required:false},
+            {model: models.vod, as: 'episodes', where: where_seasonNumber}
+        ]
+
+    }).then(function(result) {
+        if (!result) {
+            response.send_res_get(req, res, [], 404, -1, 'E_NOT_FOUND', 'NO DATA FOUND', 'no-store');
+        } else {
+            response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
+        }
+    }).catch(function(error) {
+        winston.error('error querying tv show:',error);
+    });
+
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //get this vod item related movies.
 exports.get_vod_item_related = function(req, res) {
 
@@ -1045,11 +1110,11 @@ exports.get_vod_item_related = function(req, res) {
         var offset = isNaN(parseInt(req.query._start)) ? 0 : parseInt(req.query._start);
         var limit =  isNaN(parseInt(req.query._end)) ?  req.app.locals.settings.vod_subset_nr: parseInt(req.query._end) - offset;
         var order_by = (req.query._orderBy) ? req.query._orderBy + ' ' + req.query._orderDir : "matching_score DESC";
-        var related_query = "SELECT DISTINCT CAST(vod.id AS CHAR) AS id, vod.title, CONCAT(vod.description, ' Director: ', vod.director, ' Starring: ', vod.starring) AS description, vod.rate, vod.duration, " +
+        var related_query = "SELECT DISTINCT CAST(vod.id AS CHAR) AS id, vod.title, vod_type, CONCAT(vod.description, ' Director: ', vod.director, ' Starring: ', vod.starring) AS description, vod.rate, vod.duration, " +
             "vod.pin_protected, vod.year, UNIX_TIMESTAMP(vod.createdAt) as dataadded, CONCAT('"+req.app.locals.settings.assets_url+"', vod.icon_url) AS icon, "+
             " concat('"+req.app.locals.settings.assets_url + "', vod.image_url) as largeimage,"+
             " ( "+
-                //" IF( (category_id = "+result[0].category_id+"), 1, 0) + "+ //category matching score
+            //" IF( (category_id = "+result[0].category_id+"), 1, 0) + "+ //category matching score
             " ( "+director_matching_score+" ) + "+ //director matching score
             " ( "+actor_matching_score+" ) "+ //actor matching score
             " ) AS matching_score "+
@@ -1082,7 +1147,7 @@ exports.get_vod_item_related = function(req, res) {
     });
 };
 
-//get this vod item related movies.
+
 exports.get_vod_items_recommended = function(req, res) {
     //find the user's active vod packages
     models.subscription.findAll({
@@ -1104,7 +1169,7 @@ exports.get_vod_items_recommended = function(req, res) {
             var qwhere  = {};
             qwhere.where = {};
 
-            qwhere.attributes = ['id', 'title', 'description', 'starring', 'director', 'rate', 'duration', 'year', 'pin_protected', 'clicks',
+            qwhere.attributes = ['id', 'title', 'description', 'vod_type','starring', 'director', 'rate', 'duration', 'year', 'pin_protected', 'clicks',
                 [db.sequelize.fn("concat", req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'icon_url'],
                 [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('image_url')), 'image_url'],
                 [db.sequelize.fn('UNIX_TIMESTAMP', db.sequelize.col('createdAt')), 'createdAt']
@@ -1543,6 +1608,5 @@ function add_click(movie_title){
 
 exports.delete_resume_movie = delete_resume_movie;
 exports.add_click = add_click;
-
 
 

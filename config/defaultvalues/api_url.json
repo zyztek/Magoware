@@ -24,6 +24,9 @@
     "api_url": "/api/subscriptions","description": "sales 1 api","api_group_id": 2
   },
   {
+    "api_url": "/api/mysubscription","description": "Resellers Subscription","api_group_id": 2
+  },
+  {
     "api_url": "/api/Packages","description": "list of packages","api_group_id": 2
   },
   {
@@ -32,7 +35,7 @@
   {
     "api_url": "/api/invoice","description": "sales report","api_group_id": 2
   },
-   {
+  {
     "api_url": "/api/vodpackages","description": "vod packages","api_group_id": 2
   },
   {

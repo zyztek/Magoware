@@ -16,12 +16,16 @@ module.exports = function(app) {
     //    .get(customerData.list);
 
     //transaction based function to creates customer and login data both at the same time.
+    app.route('/api/NewCustomer')
+    //.all(policy.isAllowed)
+        .post(customController.create_customer_with_login);
+
     app.route('/api/createcustomerlogin')
-        //.all(policy.isAllowed)
+    //.all(policy.isAllowed)
         .post(customController.create_customer_with_login);
 
     app.route('/api/accountslist')
-        //.all(policy.isAllowed)
+    //.all(policy.isAllowed)
         .get(customController.list_logins_with_customer);
 
 

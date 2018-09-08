@@ -45,8 +45,8 @@ exports.validateResetToken = function(req, res) {
                 device_active: false
             },
             {where: {
-                login_data_id:user.id
-            }}
+                    login_data_id:user.id
+                }}
         ).then(function() {
             res.send('<html><body style="background-color:">' +
                 '<div style="font-size:20px;position:absolute;margin-left:28%;padding: 35px;margin-bottom: 20px;border: 2px solid transparent; border-radius:6px;color: #3c763d;background-color: #dff0d8;border-color: #d6e9c6;">' +
@@ -168,7 +168,7 @@ exports.forgot = function(req, res, next) {
                 if (!err) {
                     response.send_res(req, res, [], 200, 1, 'EMAIL_SENT_DESCRIPTION', 'EMAIL_SENT_DATA', 'no-store');
                 } else {
-                    return res.status(801).response.send_res(req, res, [], 801, -1, 'EMAIL_NOT_SENT_DESCRIPTION', 'EMAIL_NOT_SENT_DATA', 'no-store');
+                    response.send_res(req, res, [], 801, -1, 'EMAIL_NOT_SENT_DESCRIPTION', 'EMAIL_NOT_SENT_DATA', 'no-store');
                 }
                 done(err);
             });

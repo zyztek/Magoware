@@ -17,6 +17,12 @@ module.exports = function(app) {
         .get(subscriptions.list)
         .post(subscriptions.create);
 
+    /* ===== mysubscription resellers ===== */
+    app.route('/api/mysubscription')
+        .all(policy.isAllowed)
+        .get(subscriptions.list)
+        .post(subscriptions.create);
+
     app.route('/api/subscriptions/:subscriptionId')
         .all(policy.isAllowed)
         .get(subscriptions.read)
