@@ -16,11 +16,11 @@ var path = require('path'),
         '54.241.34.107'];
 
 /*
- * @api {get} /apiv2/payments/stripe/getkey Get Stripe Token Key
- * @apiVersion 0.2.0
- * @apiName Get Stripe Key
- * @apiGroup DeviceAPI
- */
+* @api {get} /apiv2/payments/stripe/getkey Get Stripe Token Key
+* @apiVersion 0.2.0
+* @apiName Get Stripe Key
+* @apiGroup DeviceAPI
+*/
 exports.stripe_get_key = function(req,res) {
     var thisresponse = new response.OK();
     thisresponse.response_object = [{
