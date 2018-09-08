@@ -42,6 +42,7 @@ export default function (nga, admin){
         .onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
             progression.done();
             notification.log('Subscription successfully created.', { addnCls: 'humane-flatty-success' });
+            window.location.replace('#/MySales/list?search=%7B"distributorname":"'+localStorage.userName+'"%7D');
             return false;
         }]);
 

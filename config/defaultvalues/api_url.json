@@ -33,7 +33,15 @@
     "api_url": "/api/salesreports","description": "sales report","api_group_id": 2
   },
   {
+    "api_url": "/api/MySales","description": "sales report","api_group_id": 2
+  },
+
+  {
     "api_url": "/api/invoice","description": "sales report","api_group_id": 2
+  },
+
+  {
+    "api_url": "/api/invoice/download","description": "sales report","api_group_id": 2
   },
   {
     "api_url": "/api/vodpackages","description": "vod packages","api_group_id": 2

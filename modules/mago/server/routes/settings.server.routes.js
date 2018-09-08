@@ -20,6 +20,57 @@ module.exports = function(app) {
         .get(settings.read)
         .put(settings.update);
 
+    /* ===== EmailSettings ===== */
+    app.route('/api/EmailSettings')
+        .all(policy.isAllowed)
+        .get(settings.list);
+
+    app.route('/api/EmailSettings/:settingId')
+        .all(policy.isAllowed)
+        .get(settings.read)
+        .put(settings.update);
+
+    /* ===== URL ===== */
+    app.route('/api/URL')
+        .all(policy.isAllowed)
+        .get(settings.list);
+
+    app.route('/api/URL/:settingId')
+        .all(policy.isAllowed)
+        .get(settings.read)
+        .put(settings.update);
+
+    /* ===== ApiKeys ===== */
+    app.route('/api/ApiKeys')
+        .all(policy.isAllowed)
+        .get(settings.list);
+
+    app.route('/api/ApiKeys/:settingId')
+        .all(policy.isAllowed)
+        .get(settings.read)
+        .put(settings.update);
+
+    /* ===== ImagesSettings ===== */
+    app.route('/api/ImagesSettings')
+        .all(policy.isAllowed)
+        .get(settings.list);
+
+    app.route('/api/ImagesSettings/:settingId')
+        .all(policy.isAllowed)
+        .get(settings.read)
+        .put(settings.update);
+
+    /* ===== PlayerSettings ===== */
+    app.route('/api/PlayerSettings')
+        .all(policy.isAllowed)
+        .get(settings.list);
+
+    app.route('/api/PlayerSettings/:settingId')
+        .all(policy.isAllowed)
+        .get(settings.read)
+        .put(settings.update);
+
+
     app.param('settingId', settings.dataByID);
 
     app.route('/api/env_settings').get(settings.env_settings);

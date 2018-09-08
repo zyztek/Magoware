@@ -1,0 +1,143 @@
+body {
+  background-color: #262262 !important;
+}
+
+.focusable:focus {
+  border-color: #ec932f ;
+  outline: 4px solid #ec932f  !important;
+}
+
+#regForm {
+  background-color: #524e8e;
+  color: white;
+  margin: 100px auto;
+  font-family: Raleway;
+  padding: 40px;
+  width: 70%;
+  /*min-width: 300px;*/
+}
+h1 {
+  text-align: center;  
+}
+
+input {
+  padding: 10px;
+  width: 97.6%;
+  font-size: 17px;
+  font-family: Raleway;
+}
+
+.StripeElement {
+    background-color: white;
+}
+::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+    color: #ec932f;
+}
+
+:-ms-input-placeholder { /* Internet Explorer 10-11 */
+    color: #ec932f;
+}
+
+:-ms-input-placeholder { /* Microsoft Edge */
+    color: #ec932f;
+}
+
+/* Mark input boxes that gets an error on validation: */
+input.invalid {
+  background-color: #ffdddd;
+}
+
+/* Hide all steps by default: */
+.tab {
+  display: none;
+}
+
+button {
+  background-color: #4CAF50;
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 17px;
+  font-family: Raleway;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+
+#prevBtn {
+  background-color: #262262;
+  margin: 10px;
+}
+#nextBtn{
+  background-color: #262262;
+  margin: 10px;
+}
+#div2 input {
+    color: black;
+}
+
+/* Make circles that indicate the steps of the form: */
+.step {
+  height: 15px;
+  width: 15px;
+  margin: 0 2px;
+  background-color: #bbbbbb;
+  border: none;  
+  border-radius: 50%;
+  display: inline-block;
+  opacity: 0.5;
+}
+
+.step.active {
+  opacity: 1;
+}
+
+/* Mark the steps that are finished and valid: */
+.step.finish {
+  background-color: #4CAF50;
+}
+
+
+/*Package Section*/
+.cc-selector input{
+    margin:0;padding:0;
+    -webkit-appearance:none;
+       -moz-appearance:none;
+            appearance:none;
+}
+
+
+
+.visa{background-image:url(../image/Set_Top_Box.jpg);}
+.mastercard{background-image:url(../image/Set_Top_Box.jpg);}
+
+.cc-selector-2 input:active +.drinkcard-cc, .cc-selector input:active +.drinkcard-cc{opacity: .9;}
+.cc-selector-2 input:checked +.drinkcard-cc, .cc-selector input:checked +.drinkcard-cc{
+    -webkit-filter: none;
+       -moz-filter: none;
+            filter: none;
+}
+.drinkcard-cc{
+    cursor:pointer;
+    background-size:contain;
+    background-repeat:no-repeat;
+    display:inline-block;
+    /*width:108px;height:100px;*/
+        padding: 72px;
+            margin: 22px;
+    -webkit-transition: all 100ms ease-in;
+       -moz-transition: all 100ms ease-in;
+            transition: all 100ms ease-in;
+    -webkit-filter: brightness(1.8) grayscale(1) opacity(.7);
+       -moz-filter: brightness(1.8) grayscale(1) opacity(.7);
+            filter: brightness(1.8) grayscale(1) opacity(.7);
+}
+.drinkcard-cc:hover{
+    -webkit-filter: brightness(1.2) grayscale(.5) opacity(.9);
+       -moz-filter: brightness(1.2) grayscale(.5) opacity(.9);
+            filter: brightness(1.2) grayscale(.5) opacity(.9);
+}
+
+

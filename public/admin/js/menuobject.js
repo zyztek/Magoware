@@ -106,7 +106,50 @@ export default [{
     {
         "title":"Company Settings",
         "icon":'<span class="fa fa-cog fa-fw"></span>',
-        "link":'/Settings/edit/1',
+        "group_roles":["admin","administrator","customercare","management","guest"],
+        "children": [{
+            "entity":"EmailSettings",
+            "title":"Email Settings",
+            "icon":'<span class="fa fa-envelope-o fa-fw"></span>',
+            "link":'/EmailSettings/edit/1',
+            "group_roles":["admin","administrator","customercare","management","guest"]
+        },{
+            "entity":"PlayerSettings",
+            "title":"Player Settings",
+            "icon":'<span class="fa fa-play fa-fw"></span>',
+            "link":'/PlayerSettings/edit/1',
+            "group_roles":["admin","administrator","customercare","management","guest"]
+        },{
+            "entity":"LogosImages",
+            "title":"Logos and Images",
+            "icon":'<span class="fa fa-picture-o fa-fw"></span>',
+            "link":'/ImagesSettings/edit/1',
+            "group_roles":["admin","administrator","customercare","management","guest"]
+        },{
+            "entity":"URL",
+            "title":"URLs",
+            "icon":'<span class="fa fa-link fa-fw"></span>',
+            "link":'/URL/edit/1',
+            "group_roles":["admin","administrator","customercare","management","guest"]
+        },{
+            "entity":"ApiKeys",
+            "title":"Api Keys",
+            "icon":'<span class="fa fa-key fa-fw"></span>',
+            "link":'/ApiKeys/edit/1',
+            "group_roles":["admin","administrator","customercare","management","guest"]
+        },
+            {
+                "entity":"Settings",
+                "title":"Other",
+                "icon":'<span class="fa fa-cog fa-fw"></span>',
+                "link":'/Settings/edit/1',
+                "group_roles":["admin","administrator","customercare","management","guest"]
+            }]
+    },
+    {
+        "title":"Advanced Settings",
+        "icon":'<span class="fa fa-cog fa-fw"></span>',
+        "link":'/AdvancedSettings/create',
         "group_roles":["admin","administrator","customercare","management","guest"],
         "children": []
     },
@@ -115,6 +158,14 @@ export default [{
         "title":"Main Menu",
         "icon":'<span class="fa fa-align-justify fa-fw"></span>',
         "link":'/DeviceMenus/list',
+        "group_roles":["admin","administrator","customercare","management","guest"],
+        "children": []
+    },
+    {
+        "entity":"Submenu",
+        "title":"Submenu",
+        "icon":'<span class="fa fa-align-justify fa-fw"></span>',
+        "link":'/Submenu/list',
         "group_roles":["admin","administrator","customercare","management","guest"],
         "children": []
     },
@@ -186,6 +237,13 @@ export default [{
                 "title":"Not Active VOD Movies",
                 "icon":'<span class="fa fa-times-circle-o fa-fw"></span>',
                 "link":'/Vods/list?search=%7B"isavailable":false%7D',
+                "group_roles":["admin","administrator","vod","management","guest"]
+            },
+            {
+                "entity":"VodEpisode",
+                "title":"VOD Episodes",
+                "icon":'<span class="fa fa-film fa-fw"></span>',
+                "link":'/VodEpisode/list',
                 "group_roles":["admin","administrator","vod","management","guest"]
             },
             {
@@ -356,5 +414,12 @@ export default [{
         "group_roles":["resellers"],
         "children": [],
         "link":'/MySales/list?search=%7B"distributorname":"'+localStorage.userName+'"%7D'
+    },
+    {
+        "title":"Search Customers",
+        "icon":'<span class="fa fa-search fa-fw"></span>',
+        "group_roles":["resellers"],
+        "children": [],
+        "link":'/search_customer/list'
     }
 ];

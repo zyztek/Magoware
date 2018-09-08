@@ -13,49 +13,18 @@ var async = require('async');
 
 //RETURNS LIST OF VOD PROGRAMS VIA GET Request
 /**
- * @api {post} /apiv2/vod/listnewdata/:pagenumber /apiv2/vod/listnewdata/:pagenumber
- * @apiVersion 0.2.0
+ * @api {get} /apiv2/vod/listnewdata/:pagenumber GetVodNewDataList
  * @apiName GetVodNewDataList
- * @apiGroup DeviceAPI
- * @apiParam {String} auth Encrypted authentication token string.
- * @apiDescription Returns a chunk of video on demand assets/movies that have been modified
- * @apiSuccessExample Success-Response:
- *     {
- *       "status_code": 200,
- *       "error_code": 1,
- *       "timestamp": 1,
- *       "error_description": "OK",
- *       "extra_data": "LOGOUT_OTHER_DEVICES",
- *       "response_object": [
- *			    {
- *			    	"id": "2",
- *			    	"title": "Snow Queen",
- *			    	"pin_protected": 1,
- *			    	"duration": 62,
- *			    	"description": "A young woman must journey",
- *			       	"icon": "http://localhost:66/files/vod/1494845668363snowqueen.jpg",
- *			    	"largeimage": "http://localhost:66/files/vod/1494846125084snowwall.jpg",
- *			    	"categoryid": "42",
- *			    	"dataadded": 1485710820000,
- *			    	"rate": "1",
- *			    	"year": "2016",
- *			    	"token": "0",
- *			    	"TokenUrl": "",
- *			    	"encryption": "0",
- *			    	"encryption_url": "",
- *			    	"isavailable": true
- *			    }, ....
- *		    ]
- *      }
- * @apiErrorExample Error-Response:
- *     {
- *       "status_code": 706,
- *       "error_code": -1,
- *       "timestamp": 1,
- *       "error_description": "DATABASE_ERROR",
- *       "extra_data": "Error connecting to database",
- *       "response_object": []
- *     }
+ * @apiGroup VOD
+ *
+ * @apiUse header_auth
+ * @apiHeader {String[]} etag Timestamp when last successful request was made to get saved data
+ *
+ * @apiDescription Returns a chunk of video on demand assets/movies that have been modified after specifik time
+ *
+ * Copy paste this auth for testing purposes
+ *auth=%7Bapi_version%3D22%2C+appversion%3D1.1.4.2%2C+screensize%3D480x800%2C+appid%3D2%2C+devicebrand%3D+SM-G361F+Build%2FLMY48B%2C+language%3Deng%2C+ntype%3D1%2C+app_name%3DMAGOWARE%2C+device_timezone%3D2%2C+os%3DLinux%3B+U%3B+Android+5.1.1%2C+auth%3D8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A%2C+hdmi%3Dfalse%2C+firmwareversion%3DLMY48B.G361FXXU1APB1%7D
+ *
  */
 exports.list_get_newdata = function(req, res) {
     //var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
@@ -89,9 +58,9 @@ exports.list_get_newdata = function(req, res) {
 
 
             models.vod.findAll({
-                attributes: ['id', 'title', 'pin_protected', 'duration', 'description', 'director', 'starring', 'createdAt', 'rate', 'year', 'icon_url', 'image_url', 'isavailable'],
+                attributes: ['id', 'title', 'pin_protected', 'duration', 'description', 'director', 'vod_type', 'starring', 'createdAt', 'rate', 'year', 'icon_url', 'image_url', 'isavailable'],
                 include: [
-                    {model: models.vod_stream, required: true, attributes: ['url', 'encryption', 'token', 'stream_format', 'token_url'], where: {stream_source_id: req.thisuser.vod_stream_source}},
+                    {model: models.vod_stream, required: true, attributes: ['url', 'drm_platform', 'encryption', 'token', 'stream_format', 'token_url'], where: {stream_source_id: req.thisuser.vod_stream_source}},
                     {model: models.vod_vod_categories, required: true, attributes: ['category_id'], where:{is_available: true}, include: [{model: models.vod_category, attributes: ['name']}]},
                     {model: models.package_vod, required: true, attributes: [], where: {package_id: {in: package_list}}}
                 ],
@@ -114,10 +83,12 @@ exports.list_get_newdata = function(req, res) {
                                 }
                                 raw_obj.id = String(obj.id);
                                 raw_obj.title = obj.title;
+                                raw_obj.vod_type = obj.vod_type;
                                 raw_obj.pin_protected = obj.pin_protected;
                                 raw_obj.duration = obj.duration;
-                                raw_obj.stream_format = obj[k][j].stream_format;
-                                raw_obj.url = obj[k][j].url;
+                                raw_obj.stream_format = obj.vod_streams[0].stream_format;
+                                raw_obj.url = obj.vod_streams[0].url;
+                                raw_obj.drm_platform = obj.vod_streams[0].drm_platform;
                                 raw_obj.description = obj.description + ' <p><strong>Director:</strong> ' + obj.director + '</p><p><strong>Starring:</strong> ' + obj.starring+'</p>';
                                 raw_obj.icon = req.app.locals.settings.assets_url+obj.icon_url;
                                 raw_obj.largeimage = req.app.locals.settings.assets_url+obj.image_url;
@@ -127,9 +98,9 @@ exports.list_get_newdata = function(req, res) {
                                 raw_obj.rate = (raw_obj.rate > 0 && raw_obj.rate <=10) ? String(obj.rate) : "5"; // rate should be in the interval ]0:10]
                                 raw_obj.year = String(obj.year);
                                 raw_obj.token = (obj[k][j].token) ? "1" : "0";
-                                raw_obj.TokenUrl = (obj[k][j].token_url) ? obj[k][j].token_url : "";
-                                raw_obj.encryption = (obj[k][j].encryption) ? "1" : "0";
-                                raw_obj.encryption_url = (obj[k][j].encryption_url) ? obj[k][j].encryption_url : "";
+                                raw_obj.TokenUrl = (obj.vod_streams[0].token_url) ? obj.vod_streams[0].token_url : "";
+                                raw_obj.encryption = (obj.vod_streams[0].encryption) ? "1" : "0";
+                                raw_obj.encryption_url = (obj.vod_streams[0].encryption_url) ? obj.vod_streams[0].encryption_url : "";
                                 raw_obj.isavailable = obj.isavailable;
                             });
                         }
@@ -155,20 +126,24 @@ exports.list_get_newdata = function(req, res) {
         }
         return null;
     }).catch(function(error){
-        res.jsonp(error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 
 
 //RETURNS LIST OF VOD PROGRAMS VIA GET Request
 /**
- * @api {post} /apiv2/vod/list /apiv2/vod/list
- * @apiVersion 0.2.0
- * @apiName GetVodList
- * @apiGroup DeviceAPI
+ * @api {get} /apiv2/vod/list/:pagenumber VodList
+ * @apiName VodList
+ * @apiGroup VOD
  *
- * @apiHeader {String} auth Users unique access-key.
- * @apiDescription Returns video on demand assets/movies
+ * @apiUse header_auth
+ *
+ * @apiDescription Returns a chunk of video on demand items
+ *
+ * Copy paste this auth for testing purposes
+ *auth=%7Bapi_version%3D22%2C+appversion%3D1.1.4.2%2C+screensize%3D480x800%2C+appid%3D2%2C+devicebrand%3D+SM-G361F+Build%2FLMY48B%2C+language%3Deng%2C+ntype%3D1%2C+app_name%3DMAGOWARE%2C+device_timezone%3D2%2C+os%3DLinux%3B+U%3B+Android+5.1.1%2C+auth%3D8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A%2C+hdmi%3Dfalse%2C+firmwareversion%3DLMY48B.G361FXXU1APB1%7D
+ *
  */
 exports.list_get = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
@@ -178,9 +153,9 @@ exports.list_get = function(req, res) {
 
 
     models.vod.findAll({
-        attributes: ['id', 'title', 'pin_protected', 'duration', 'description', 'director', 'starring', 'createdAt', 'rate', 'year', 'icon_url', 'image_url'],
+        attributes: ['id', 'title', 'pin_protected', 'vod_type', 'duration', 'description', 'director', 'starring', 'createdAt', 'rate', 'year', 'icon_url', 'image_url'],
         include: [
-            {model: models.vod_stream, required: true, attributes: ['url', 'encryption', 'token', 'stream_format', 'token_url']},
+            {model: models.vod_stream, required: true, attributes: ['url', 'drm_platform','encryption', 'token', 'stream_format', 'token_url']},
             {model: models.vod_vod_categories, required: true, attributes: ['category_id'], where:{is_available: true},
                 include: [{
                     model: models.vod_category, required: true, attributes: ['name'], where: {password:{in: allowed_content}, isavailable: true}
@@ -212,10 +187,12 @@ exports.list_get = function(req, res) {
             }
             raw_obj.id = String(obj.id);
             raw_obj.title = obj.title;
+            raw_obj.vod_type = obj.vod_type;
             raw_obj.pin_protected = obj.pin_protected;
             raw_obj.duration = obj.duration;
             raw_obj.stream_format = obj.vod_streams[0].stream_format;
             raw_obj.url = obj.vod_streams[0].url;
+            raw_obj.drm_platform = obj.vod_streams[0].drm_platform;
             raw_obj.description = obj.description + '<p><strong>Director:</strong> ' + obj.director + '</p><p><strong>Starring:</strong> ' + obj.starring+'</p>';
             raw_obj.icon = req.app.locals.settings.assets_url+obj.icon_url;
             raw_obj.largeimage = req.app.locals.settings.assets_url+obj.image_url;
@@ -238,13 +215,17 @@ exports.list_get = function(req, res) {
 
 //RETURNS LIST OF VOD PROGRAMS
 /**
- * @api {post} /apiv2/vod/list /apiv2/vod/list
- * @apiVersion 0.2.0
- * @apiName GetVodList
- * @apiGroup DeviceAPI
+ * @api {post} /apiv2/vod/list VodCompleteList
+ * @apiName VodCompleteList
+ * @apiGroup VOD
  *
- * @apiHeader {String} auth Users unique access-key.
+ * @apiUse body_auth
+ *
  * @apiDescription Returns video on demand assets/movies
+ *
+ * Copy paste this auth for testing purposes
+ *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ *
  */
 exports.list = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
@@ -252,7 +233,7 @@ exports.list = function(req, res) {
     var limit = (!req.body.subset_number || req.body.subset_number === '-1') ? 99999999999 : req.app.locals.settings.vod_subset_nr; //for older versions of vod, set limit to 99999999999
 
     models.vod.findAll({
-        attributes: ['id', 'title', 'pin_protected', 'duration', 'description', 'director', 'starring', 'createdAt', 'rate', 'year', 'icon_url', 'image_url'],
+        attributes: ['id', 'title', 'vod_type', 'pin_protected', 'duration', 'description', 'director', 'starring', 'createdAt', 'rate', 'year', 'icon_url', 'image_url'],
         include: [
             {model: models.vod_stream, required: true, attributes: ['url', 'encryption', 'token', 'stream_format', 'token_url']},
             {model: models.vod_vod_categories, required: true, attributes: ['category_id'], where: {is_available: true}, include: [{model: models.vod_category, attributes: ['name'], where: {isavailable: true} }]},
@@ -285,6 +266,7 @@ exports.list = function(req, res) {
                         }
                         raw_obj.id = String(obj.id);
                         raw_obj.title = obj.title;
+                        raw_obj.vod_type = obj.vod_type;
                         raw_obj.pin_protected = obj.pin_protected;
                         raw_obj.duration = obj.duration;
                         raw_obj.stream_format = obj[k][j].stream_format;
@@ -315,13 +297,17 @@ exports.list = function(req, res) {
 
 //RETURNS FULL LIST OF CATEGORIES
 /**
- * @api {post} /apiv2/vod/categories /apiv2/vod/categories
- * @apiVersion 0.2.0
- * @apiName GetVodCategories
- * @apiGroup DeviceAPI
+ * @api {post} /apiv2/vod/categories VodCategories
+ * @apiName VodCategories
+ * @apiGroup VOD
  *
- * @apiHeader {String} auth Users unique access-key.
- * @apiDescription Returns full list of categories
+ * @apiUse body_auth
+ *
+ * @apiDescription Returns list of categories
+ *
+ * Copy paste this auth for testing purposes
+ *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ *
  */
 exports.categories = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
@@ -369,13 +355,17 @@ exports.categories = function(req, res) {
 
 //RETURNS FULL LIST OF CATEGORIES GET
 /**
- * @api {post} /apiv2/vod/categories /apiv2/vod/categories
- * @apiVersion 0.2.0
- * @apiName GetVodCategories
- * @apiGroup DeviceAPI
+ * @api {get} /apiv2/vod/categories VodCategoriesGet
+ * @apiName VodCategoriesGet
+ * @apiGroup VOD
  *
- * @apiHeader {String} auth Users unique access-key.
- * @apiDescription Returns full list of categories
+ * @apiUse header_auth
+ *
+ * @apiDescription Returns list of vod categories
+ *
+ * Copy paste this auth for testing purposes
+ *auth=%7Bapi_version%3D22%2C+appversion%3D1.1.4.2%2C+screensize%3D480x800%2C+appid%3D2%2C+devicebrand%3D+SM-G361F+Build%2FLMY48B%2C+language%3Deng%2C+ntype%3D1%2C+app_name%3DMAGOWARE%2C+device_timezone%3D2%2C+os%3DLinux%3B+U%3B+Android+5.1.1%2C+auth%3D8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A%2C+hdmi%3Dfalse%2C+firmwareversion%3DLMY48B.G361FXXU1APB1%7D
+ *
  */
 exports.categories_get = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
@@ -421,17 +411,35 @@ exports.categories_get = function(req, res) {
     });
 };
 
-//RETURNS ALL SUBTITLES FOR THE SELECTED PROGRAM
+//RETURNS SUBTITLE DATA FOR A ITEM IF SPECIFIED, OR FOR ALL ITEMS OTHERWISE
 /**
- * @api {post} /apiv2/vod/subtitles /apiv2/vod/subtitles
- * @apiVersion 0.2.0
- * @apiName GetVodSubtitles
- * @apiGroup DeviceAPI
+ * @api {post} /apiv2/vod/subtitles VodSubtitle
+ * @apiName VodSubtitle
+ * @apiGroup VOD
  *
- * @apiHeader {String} auth Users unique access-key.
- * @apiDescription Returns all subtitles list
+ * @apiUse body_auth
+ * @apiDescription Returns a complete subtitle list
+ *
+ * Use this token for testing purposes
+ *
+ * auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ */
+
+/**
+ * @api {post} /apiv2/vod/movie_subtitle VodSubtitles
+ * @apiName VodSubtitles
+ * @apiGroup VOD
+ *
+ * @apiUse body_auth
+ * @apiParam {Number} vod_id Specify id of vod item for subtitle
+ * @apiDescription Returns subtitles for a single vod item
+ *
+ * Use this token for testing purposes
+ *
+ * auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
  */
 exports.subtitles = function(req, res) {
+    var subtitle_where = (req.body.vod_id) ? {vod_id: req.body.vod_id} : {vod_id: {$gt: 0}};
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
 
     models.vod_subtitles.findAll({
@@ -453,7 +461,8 @@ exports.subtitles = function(req, res) {
                     }
                 ]
             }
-        ]
+        ],
+        where: subtitle_where
     }).then(function (result) {
         //type conversation of id from int to string
         var vod_subtitles = [];
@@ -470,31 +479,20 @@ exports.subtitles = function(req, res) {
     });
 };
 
-exports.movie_subtitle = function(req, res) {
-
-    models.vod_subtitles.findAll({
-        attributes: [ ['vod_id', 'vodid'], 'title', [db.sequelize.fn("concat", req.app.locals.settings.assets_url, db.sequelize.col('subtitle_url')), 'url'] ],
-        where: {vod_id: req.body.vod_id}
-    }).then(function (movie_sub) {
-        for(var i=0; i< movie_sub.length; i++){
-            movie_sub[i].toJSON().vodid = String(movie_sub[i].toJSON().vodid);
-        }
-        response.send_res(req, res, movie_sub, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
-    }).catch(function(error) {
-        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
-    });
-};
-
 
 //RETURNS ALL SUBTITLES FOR THE SELECTED PROGRAM GET METHOD
 /**
- * @api {post} /apiv2/vod/subtitles /apiv2/vod/subtitles
+ * @api {get} /apiv2/vod/subtitles VodSubtitlesGet
  * @apiVersion 0.2.0
- * @apiName GetVodSubtitles
- * @apiGroup DeviceAPI
+ * @apiName VodSubtitlesGet
+ * @apiGroup VOD
  *
- * @apiHeader {String} auth Users unique access-key.
+ * @apiUse header_auth
  * @apiDescription Returns all subtitles list
+ *
+ * Copy paste this auth for testing purposes
+ *auth=%7Bapi_version%3D22%2C+appversion%3D1.1.4.2%2C+screensize%3D480x800%2C+appid%3D2%2C+devicebrand%3D+SM-G361F+Build%2FLMY48B%2C+language%3Deng%2C+ntype%3D1%2C+app_name%3DMAGOWARE%2C+device_timezone%3D2%2C+os%3DLinux%3B+U%3B+Android+5.1.1%2C+auth%3D8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A%2C+hdmi%3Dfalse%2C+firmwareversion%3DLMY48B.G361FXXU1APB1%7D
+ *
  */
 exports.subtitles_get = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
@@ -536,14 +534,18 @@ exports.subtitles_get = function(req, res) {
 
 //RETURNS CLICKS FOR THE SELECTED PROGRAM
 /**
- * @api {post} /apiv2/vod/totalhits /apiv2/vod/totalhits
- * @apiVersion 0.2.0
- * @apiName GetVodItemHits
- * @apiGroup DeviceAPI
+ * @api {post} /apiv2/vod/totalhits VodTotalHits
+ * @apiName VodTotalHits
+ * @apiGroup VOD
  *
- * @apiHeader {String} auth Users unique access-key.
+ * @apiUse body_auth
  * @apiParam {Number} id_vod VOD item ID
- * @apiDescription Returns clicks/hits for selected vod item.
+ *
+ * @apiDescription Returns number of clicks for selected vod item
+ *
+ * Copy paste this auth for testing purposes
+ *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ *
  */
 exports.totalhits = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
@@ -598,12 +600,15 @@ exports.totalhits = function(req, res) {
 
 /**
  * @api {post} /apiv2/vod/mostwatched VodMostWatched
- * @apiVersion 0.2.0
  * @apiName VodMostWatched
- * @apiGroup DeviceAPI
+ * @apiGroup VOD
  *
- * @apiParam {String} auth Users unique access-key.
+ * @apiUse body_auth
+ *
  * @apiDescription Returns most played movies.
+ *
+ * Copy paste this auth for testing purposes
+ *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
  *
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
@@ -648,12 +653,14 @@ exports.mostwatched = function(req, res) {
 
 /**
  * @api {get} /apiv2/vod/mostwatched VodMostWatchedGet
- * @apiVersion 0.2.0
  * @apiName VodMostWatchedGet
- * @apiGroup DeviceAPI
+ * @apiGroup VOD
  *
- * @apiHeader {String} auth Users unique access-key.
+ * @apiUse header_auth
  * @apiDescription Returns most played movies.
+ *
+ * Copy paste this auth for testing purposes
+ *auth=%7Bapi_version%3D22%2C+appversion%3D1.1.4.2%2C+screensize%3D480x800%2C+appid%3D2%2C+devicebrand%3D+SM-G361F+Build%2FLMY48B%2C+language%3Deng%2C+ntype%3D1%2C+app_name%3DMAGOWARE%2C+device_timezone%3D2%2C+os%3DLinux%3B+U%3B+Android+5.1.1%2C+auth%3D8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A%2C+hdmi%3Dfalse%2C+firmwareversion%3DLMY48B.G361FXXU1APB1%7D
  *
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
@@ -696,6 +703,19 @@ exports.mostwatched_get = function(req, res) {
 
 };
 
+/**
+ * @api {post} /apiv2/vod/mostrated VodMostRated
+ * @apiName VodMostRated
+ * @apiGroup VOD
+ *
+ * @apiUse body_auth
+ *
+ * @apiDescription Returns list of most rated vod items
+ *
+ * Copy paste this auth for testing purposes
+ *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ *
+ */
 exports.mostrated = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
 
@@ -735,7 +755,19 @@ exports.mostrated = function(req, res) {
 
 };
 
-//most rated GET METHOD
+/**
+ * @api {get} /apiv2/vod/mostrated VodMostRatedGet
+ * @apiName VodMostRatedGet
+ * @apiGroup VOD
+ *
+ * @apiUse header_auth
+ *
+ * @apiDescription Returns list of most rated vod items
+ *
+ * Copy paste this auth for testing purposes
+ *auth=%7Bapi_version%3D22%2C+appversion%3D1.1.4.2%2C+screensize%3D480x800%2C+appid%3D2%2C+devicebrand%3D+SM-G361F+Build%2FLMY48B%2C+language%3Deng%2C+ntype%3D1%2C+app_name%3DMAGOWARE%2C+device_timezone%3D2%2C+os%3DLinux%3B+U%3B+Android+5.1.1%2C+auth%3D8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A%2C+hdmi%3Dfalse%2C+firmwareversion%3DLMY48B.G361FXXU1APB1%7D
+ *
+ */
 exports.mostrated_get = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
 
@@ -772,6 +804,20 @@ exports.mostrated_get = function(req, res) {
     });
 };
 
+/**
+ * @api {post} /apiv2/vod/related VodRelated
+ * @apiName VodRelated
+ * @apiGroup VOD
+ *
+ * @apiUse body_auth
+ * @apiParam {Number} vod_id Id for specidied vod item
+ *
+ * @apiDescription Returns id's of vod items related to specified item
+ *
+ * Copy paste this auth for testing purposes
+ *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ *
+ */
 exports.related = function(req, res) {
 
     models.vod.findAll({
@@ -832,7 +878,19 @@ exports.related = function(req, res) {
 
 };
 
-
+/**
+ * @api {post} /apiv2/vod/suggestions VodSuggestions
+ * @apiName VodSuggestions
+ * @apiGroup VOD
+ *
+ * @apiUse body_auth
+ *
+ * @apiDescription Returns suggestions based on user preferences
+ *
+ * Copy paste this auth for testing purposes
+ *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ *
+ */
 exports.suggestions = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
 
@@ -865,7 +923,19 @@ exports.suggestions = function(req, res) {
 
 };
 
-//sugesstions GET METHOD
+/**
+ * @api {get} /apiv2/vod/suggestions VodSuggestionsGet
+ * @apiName VodSuggestionsGet
+ * @apiGroup VOD
+ *
+ * @apiUse header_auth
+ *
+ * @apiDescription Returns suggestions based on user preferences
+ *
+ * Copy paste this auth for testing purposes
+ *auth=%7Bapi_version%3D22%2C+appversion%3D1.1.4.2%2C+screensize%3D480x800%2C+appid%3D2%2C+devicebrand%3D+SM-G361F+Build%2FLMY48B%2C+language%3Deng%2C+ntype%3D1%2C+app_name%3DMAGOWARE%2C+device_timezone%3D2%2C+os%3DLinux%3B+U%3B+Android+5.1.1%2C+auth%3D8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A%2C+hdmi%3Dfalse%2C+firmwareversion%3DLMY48B.G361FXXU1APB1%7D
+ *
+ */
 exports.suggestions_get = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
 
@@ -898,6 +968,20 @@ exports.suggestions_get = function(req, res) {
 
 };
 
+/**
+ * @api {post} /apiv2/vod/categoryfilms VodCategoryFilms
+ * @apiName VodCategoryFilms
+ * @apiGroup VOD
+ *
+ * @apiUse body_auth
+ * @apiParam {Number} category_id  Id of specified category
+ *
+ * @apiDescription Returns id's of vod items that belong to a specific category
+ *
+ * Copy paste this auth for testing purposes
+ *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ *
+ */
 exports.categoryfilms = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
 
@@ -933,7 +1017,20 @@ exports.categoryfilms = function(req, res) {
 
 };
 
-//category GET METHOD
+/**
+ * @api {get} /apiv2/vod/categoryfilms VodCategoryFilmsGet
+ * @apiName VodCategoryFilmsGet
+ * @apiGroup VOD
+ *
+ * @apiUse header_auth
+ * @apiParam {Number} category_id  Id of specified category
+ *
+ * @apiDescription Returns id's of vod items that belong to a specific category
+ *
+ * Copy paste this auth for testing purposes
+ *auth=%7Bapi_version%3D22%2C+appversion%3D1.1.4.2%2C+screensize%3D480x800%2C+appid%3D2%2C+devicebrand%3D+SM-G361F+Build%2FLMY48B%2C+language%3Deng%2C+ntype%3D1%2C+app_name%3DMAGOWARE%2C+device_timezone%3D2%2C+os%3DLinux%3B+U%3B+Android+5.1.1%2C+auth%3D8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A%2C+hdmi%3Dfalse%2C+firmwareversion%3DLMY48B.G361FXXU1APB1%7D
+ *
+ */
 exports.categoryfilms_get = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
 
@@ -969,7 +1066,19 @@ exports.categoryfilms_get = function(req, res) {
 
 };
 
-//get single vod item data
+/**
+ * @api {get} /apiv2/vod/voditem/:vodID GetVodItemDetails
+ * @apiName GetVodItemDetails
+ * @apiGroup VOD
+ *
+ * @apiUse header_auth
+ *
+ * @apiDescription Returns information for a vod item, it's stream and subtitles
+ *
+ * Copy paste this auth for testing purposes
+ *auth=%7Bapi_version%3D22%2C+appversion%3D1.1.4.2%2C+screensize%3D480x800%2C+appid%3D2%2C+devicebrand%3D+SM-G361F+Build%2FLMY48B%2C+language%3Deng%2C+ntype%3D1%2C+app_name%3DMAGOWARE%2C+device_timezone%3D2%2C+os%3DLinux%3B+U%3B+Android+5.1.1%2C+auth%3D8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A%2C+hdmi%3Dfalse%2C+firmwareversion%3DLMY48B.G361FXXU1APB1%7D
+ *
+ */
 exports.get_vod_item_details = function(req, res) {
     var vodID = req.params.vodID;
     models.vod.find({
@@ -978,7 +1087,10 @@ exports.get_vod_item_details = function(req, res) {
             expiration_time: {$gte: Date.now()}
         },
         include: [{model: models.vod_subtitles},
-            {model: models.vod_vod_categories, required: true, attributes: ['category_id'], where: {is_available: true}},
+            {
+                model: models.vod_vod_categories, required: true, attributes: ['category_id'], where: {is_available: true},
+                include: [{model: models.vod_category, required: true, attributes: ['name'], where: {isavailable: true}}]
+            },
             {model: models.vod_stream, where:{stream_source_id: req.thisuser.vod_stream_source}}],
 
     }).then(function(result) {
@@ -987,20 +1099,26 @@ exports.get_vod_item_details = function(req, res) {
         } else {
             var raw_obj = [];
             raw_obj[0] = {};
+            var category_names = "";
+            for(var i=0; i<result.vod_vod_categories.length; i++){
+                if(category_names.length > 0) category_names += ", " + result.vod_vod_categories[i].vod_category.name;
+                else category_names += result.vod_vod_categories[i].vod_category.name;
+            }
 
             raw_obj[0].id=result.id;
             raw_obj[0].title=result.title;
+            raw_obj[0].vod_type = result.vod_type;
             raw_obj[0].duration =result.duration;
             raw_obj[0].pin_protected = result.pin_protected;
             raw_obj[0].vod_subtitles = result.vod_subtitles;
-
+            raw_obj[0].drm_platform = result.vod_streams[0].drm_platform;
             raw_obj[0].stream_format = result.vod_streams[0].stream_format;
             raw_obj[0].url = result.vod_streams[0].url;
             raw_obj[0].description = result.description + '<p><strong>Director:</strong> ' + result.director + '</p><p><strong>Starring:</strong> ' + result.starring+'</p>';
             raw_obj[0].icon_url = req.app.locals.settings.assets_url+result.icon_url;
             raw_obj[0].image_url = req.app.locals.settings.assets_url+result.image_url;
             raw_obj[0].categoryid = String(result.vod_vod_categories[0].category_id);
-            //raw_obj.dataadded = obj.createdAt.getTime();
+            raw_obj[0].category_names = category_names;
             raw_obj[0].rate = (result.rate > 0 && result.rate <=10) ? String(result.rate) : "5"; // rate should be in the interval ]0:10]
             raw_obj[0].year = String(result.year);
             raw_obj[0].token = (result.vod_streams[0].token) ? "1" : "0";
@@ -1012,21 +1130,21 @@ exports.get_vod_item_details = function(req, res) {
 
         }
     }).catch(function(err) {
-        console.log(err);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
 
 
 /**
- * @api {get} /apiv2/vod/tvshow_details/{vodID}/{seasonNumber} GET TV Show details
- * @apiName GetTVShow Details
+ * @api {get} /apiv2/vod/tvshow_details/:vodID/seasonNumber GetTvShowDetails
+ * @apiName GetTvShowDetails
  * @apiGroup VOD
  *
- * @apiHeader {String[]} auth Device AUTH token plus device params separated by coma ex: auth=123,mac=abcde1234 *
+ * @apiUse header_auth
  *
  * @apiDescription Copy paste this auth for testing purposes
- * auth=/ihCuMthnmY7pV3WLgC68i70zwLp6DUrLyFe9dOUEkxUBFH9WrUcA95GFAecSJH9HG9tvymreMOFlBviVd3IcII4Z/SiurlGoz9AMtE5KGFZvCl1FQ3FKZYP3LeFgzVs\r\nDQjxaup3sKRljj4lmKUDTA==
+ * auth=%7Bapi_version%3D22%2C+appversion%3D1.1.4.2%2C+screensize%3D480x800%2C+appid%3D2%2C+devicebrand%3D+SM-G361F+Build%2FLMY48B%2C+language%3Deng%2C+ntype%3D1%2C+app_name%3DMAGOWARE%2C+device_timezone%3D2%2C+os%3DLinux%3B+U%3B+Android+5.1.1%2C+auth%3D8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A%2C+hdmi%3Dfalse%2C+firmwareversion%3DLMY48B.G361FXXU1APB1%7D
  *
  */
 exports.get_tvshow_item_details = function(req, res) {
@@ -1035,31 +1153,80 @@ exports.get_tvshow_item_details = function(req, res) {
     var where_seasonNumber = {};
 
     if(req.params.seasonNumber)
-        where_seasonNumber.season_nr = req.params.seasonNumber
+        where_seasonNumber.season_number = req.params.seasonNumber;
     else
-        where_seasonNumber.season_nr = 1
+        where_seasonNumber.season_number = 1;
 
     models.vod.find({
+        attributes: ['id', 'vod_type', 'title', 'year', 'icon_url', 'image_url', 'rate', 'trailer_url', 'pin_protected',
+            [db.sequelize.fn('concat', db.sequelize.col('vod.description'), '<p><strong>Director:</strong> ', db.sequelize.col('vod.director'),
+                '</p><p><strong>Starring:</strong> ', db.sequelize.col('vod.starring'), '</p>'), 'description'],
+            [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('vod.icon_url')), 'icon'],
+            [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('vod.image_url')), 'largeimage']
+        ],
         where: {
-            id: vodID,
-            expiration_time: {$gte: Date.now()}
+            id: vodID, expiration_time: {$gte: Date.now()}, vod_type: 'tv_series'
         },
-        include: [//{model: models.vod_subtitles},
-            {model: models.vod_vod_categories, required: true, attributes: ['category_id']},
-            //{model: models.vod_stream, where:{stream_source_id: req.thisuser.vod_stream_source}}],
-            //{model: models.vod_stream},
-            //{model: models.vod, as: 'seasons', required:false},
-            {model: models.vod, as: 'episodes', where: where_seasonNumber}
+        include: [
+            {model: models.vod, as: 'seasons', attributes: ['id', 'season_number', 'title'], where: {vod_parent_id: req.params.tvshowID, expiration_time: {$gte: Date.now()}, vod_type: 'tv_season'} },
+            {model: models.vod_vod_categories, where: {is_available: true}, attributes: ['id'],
+                include: [{model: models.vod_category, where: {isavailable: true},  attributes: ['name' ]}]
+            }
         ]
-
     }).then(function(result) {
         if (!result) {
             response.send_res_get(req, res, [], 404, -1, 'E_NOT_FOUND', 'NO DATA FOUND', 'no-store');
         } else {
-            response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
+            result = result.toJSON();
+            result.category_names = "";
+            for(var i=0; i<result.vod_vod_categories.length; i++){
+                if(result.category_names.length > 0) result.category_names += ", " + result.vod_vod_categories[i].vod_category.name;
+                else result.category_names += result.vod_vod_categories[i].vod_category.name;
+            }
+            delete result.vod_vod_categories;
+
+            var season_id = result.seasons.filter(function(obj) {return obj.season_number === Number(where_seasonNumber.season_number)})[0].id;
+
+            models.vod.findAll({
+                attributes: ["id", "vod_type", "title",  "year",  "rate", "trailer_url",
+                    [db.sequelize.fn('concat', db.sequelize.col('vod.description'), '<p><strong>Director:</strong> ', db.sequelize.col('vod.director'),
+                        '</p><p><strong>Starring:</strong> ', db.sequelize.col('vod.starring'), '</p>'), 'description'],
+                    [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('vod.icon_url')), 'icon']
+                ],
+                where: {vod_type: 'tv_episode', vod_parent_id: season_id, expiration_time: {$gte: Date.now()}},
+                include: [
+                    {model: models.vod_vod_categories, where: {is_available: true}, attributes: ['id'],
+                        include: [{model: models.vod_category, where: {isavailable: true},  attributes: ['name' ]}]
+                    },
+                    {model: models.vod_stream, where: {stream_source_id: req.thisuser.vod_stream_source}, attributes: []}
+                ]
+            }).then(function(episodes) {
+                result.season_count = result.seasons.length; //add number of seasons for the tv show
+                result.episodes = [];
+
+                async.forEach(episodes, function(episode, callback){
+                    episode = episode.toJSON(); //convert episode item to editable json object
+                    // create list of categories for episode
+                    episode.category_names = "";
+                    for(var i=0; i<episode.vod_vod_categories.length; i++){
+                        if(episode.category_names.length > 0) episode.category_names += ", " + episode.vod_vod_categories[i].vod_category.name;
+                        else episode.category_names += episode.vod_vod_categories[i].vod_category.name;
+                    }
+                    delete episode.vod_vod_categories; //delete nested category object
+                    result.episodes.push(episode);
+                    callback(null);
+                },function(error, success){
+
+                    response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
+                });
+
+            }).catch(function(error) {
+                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+            });
+            return null;
         }
-    }).catch(function(err) {
-        winston.error('error querying tv show:',error);
+    }).catch(function(error) {
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
@@ -1082,72 +1249,105 @@ exports.get_tvshow_item_details = function(req, res) {
 
 
 
-//get this vod item related movies.
+/**
+ * @api {get} /apiv2/vod/related/:vodid GetRelatedVodItems
+ * @apiName GetRelatedVodItems
+ * @apiGroup VOD
+ *
+ * @apiUse header_auth
+ *
+ * @apiDescription Returns a list of related items of the same type for the specified vod item
+ *
+ * Copy paste this auth for testing purposes
+ *auth=%7Bapi_version%3D22%2C+appversion%3D1.1.4.2%2C+screensize%3D480x800%2C+appid%3D2%2C+devicebrand%3D+SM-G361F+Build%2FLMY48B%2C+language%3Deng%2C+ntype%3D1%2C+app_name%3DMAGOWARE%2C+device_timezone%3D2%2C+os%3DLinux%3B+U%3B+Android+5.1.1%2C+auth%3D8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A%2C+hdmi%3Dfalse%2C+firmwareversion%3DLMY48B.G361FXXU1APB1%7D
+ *
+ */
 exports.get_vod_item_related = function(req, res) {
 
     models.vod.findAll({
-        attributes: [/*'category_id',*/ 'director', 'starring'], where: {id: req.params.vodID},
+        attributes: ['director', 'starring', 'vod_type'], where: {id: req.params.vodID},
         limit: 1
     }).then(function (result) {
-        var director_list = result[0].director.split(',');
-        var director_matching_score = "";
-        for(var i=0; i<director_list.length; i++){
-            if(i === director_list.length-1) director_matching_score = director_matching_score+" IF( ( director like '%"+director_list[i].trim()+"%' ), 0.5, 0)";
-            else director_matching_score = director_matching_score+" IF( ( director like '%"+director_list[i].trim()+"%' ), 0.5, 0) + "
-        }
-
-        var actor_list = result[0].starring.split(',');
-        var actor_matching_score = "";
-        for(var i=0; i<actor_list.length; i++){
-            if(i === actor_list.length-1) actor_matching_score = actor_matching_score+" IF( ( starring like '%"+actor_list[i].trim()+"%' ), 0.3, 0)";
-            else actor_matching_score = actor_matching_score+" IF( ( starring like '%"+actor_list[i].trim()+"%' ), 0.3, 0) + "
-        }
-
-        var where_condition =  " vod.id <> "+req.params.vodID+" AND vod.isavailable = true AND vod_stream.stream_source_id = "+req.thisuser.vod_stream_source+" AND expiration_time > NOW() ";
-        if(req.thisuser.show_adult === true) where_condition = where_condition + " AND pin_protected = false ";
-        where_condition += " AND subscription.login_id = "+req.thisuser.id+" and subscription.end_date > NOW() AND package.package_type_id = "+ Number(req.auth_obj.screensize + 2) +" ";
-
-        var offset = isNaN(parseInt(req.query._start)) ? 0 : parseInt(req.query._start);
-        var limit =  isNaN(parseInt(req.query._end)) ?  req.app.locals.settings.vod_subset_nr: parseInt(req.query._end) - offset;
-        var order_by = (req.query._orderBy) ? req.query._orderBy + ' ' + req.query._orderDir : "matching_score DESC";
-        var related_query = "SELECT DISTINCT CAST(vod.id AS CHAR) AS id, vod.title, CONCAT(vod.description, ' Director: ', vod.director, ' Starring: ', vod.starring) AS description, vod.rate, vod.duration, " +
-            "vod.pin_protected, vod.year, UNIX_TIMESTAMP(vod.createdAt) as dataadded, CONCAT('"+req.app.locals.settings.assets_url+"', vod.icon_url) AS icon, "+
-            " concat('"+req.app.locals.settings.assets_url + "', vod.image_url) as largeimage,"+
-            " ( "+
-            //" IF( (category_id = "+result[0].category_id+"), 1, 0) + "+ //category matching score
-            " ( "+director_matching_score+" ) + "+ //director matching score
-            " ( "+actor_matching_score+" ) "+ //actor matching score
-            " ) AS matching_score "+
-            " , GROUP_CONCAT(DISTINCT vod_category.name SEPARATOR ', ') as categories, vod_vod_categories.category_id as categoryid "+
-            " FROM vod "+
-            " INNER JOIN vod_vod_categories ON vod.id = vod_vod_categories.vod_id INNER JOIN vod_category ON vod_vod_categories.category_id = vod_category.id "+
-            " INNER JOIN vod_stream ON vod.id = vod_stream.vod_id "+
-            " INNER JOIN package_vod ON vod.id = package_vod.vod_id INNER JOIN package ON package.id = package_vod.package_id INNER JOIN subscription ON subscription.package_id = package.id   "+
-            " WHERE "+ where_condition+
-            " GROUP BY vod.id "+
-            " ORDER BY "+order_by+" " +
-            " LIMIT "+offset+", "+limit+" "+
-            ";";
-
-        sequelizes.sequelize.query(
-            related_query
-        ).then(function(related_result){
-            if (!related_result || !related_result[0]) {
-                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'NO DATA FOUND', 'no-store');
-            } else {
-                res.setHeader("X-Total-Count", related_result[0].length);
-                response.send_res_get(req, res, related_result[0], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
+        if(result && result.length > 0){
+            var vod_item_type = result[0].vod_type;
+            var director_list = result[0].director.split(',');
+            var director_matching_score = "";
+            for(var i=0; i<director_list.length; i++){
+                if(i === director_list.length-1) director_matching_score = director_matching_score+" IF( ( director like '%"+director_list[i].trim()+"%' ), 0.5, 0)";
+                else director_matching_score = director_matching_score+" IF( ( director like '%"+director_list[i].trim()+"%' ), 0.5, 0) + "
             }
-        }).catch(function(error){
-            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
-        });
+
+            var actor_list = result[0].starring.split(',');
+            var actor_matching_score = "";
+            for(var i=0; i<actor_list.length; i++){
+                if(i === actor_list.length-1) actor_matching_score = actor_matching_score+" IF( ( starring like '%"+actor_list[i].trim()+"%' ), 0.3, 0)";
+                else actor_matching_score = actor_matching_score+" IF( ( starring like '%"+actor_list[i].trim()+"%' ), 0.3, 0) + "
+            }
+
+            var where_condition =  " vod.id <> "+req.params.vodID+
+                " AND vod.isavailable = true AND vod_type = '"+vod_item_type+"' AND vod_stream.stream_source_id = "+req.thisuser.vod_stream_source+" AND expiration_time > NOW() ";
+
+            if(req.thisuser.show_adult === true) where_condition = where_condition + " AND pin_protected = false ";
+            where_condition += " AND subscription.login_id = "+req.thisuser.id+" and subscription.end_date > NOW() AND package.package_type_id = "+ Number(req.auth_obj.screensize + 2) +" ";
+
+            var offset = isNaN(parseInt(req.query._start)) ? 0 : parseInt(req.query._start);
+            var limit =  isNaN(parseInt(req.query._end)) ?  req.app.locals.settings.vod_subset_nr: parseInt(req.query._end) - offset;
+            var order_by = (req.query._orderBy) ? req.query._orderBy + ' ' + req.query._orderDir : "matching_score DESC";
+            var related_query = "SELECT DISTINCT CAST(vod.id AS CHAR) AS id, vod.title, vod_type, "+
+                "CONCAT(vod.description, '<p><strong>Director:</strong> ', vod.director, ' </p><p><strong>Starring:</strong> ', vod.starring, '</p>') AS description, vod.rate, vod.duration, " +
+                "vod.pin_protected, vod.vod_type, vod.year, UNIX_TIMESTAMP(vod.createdAt) as dataadded, CONCAT('"+req.app.locals.settings.assets_url+"', vod.icon_url) AS icon, "+
+                " concat('"+req.app.locals.settings.assets_url + "', vod.image_url) as largeimage,"+
+                " ( "+
+                //" IF( (category_id = "+result[0].category_id+"), 1, 0) + "+ //category matching score
+                " ( "+director_matching_score+" ) + "+ //director matching score
+                " ( "+actor_matching_score+" ) "+ //actor matching score
+                " ) AS matching_score "+
+                " , GROUP_CONCAT(DISTINCT vod_category.name SEPARATOR ', ') as categories, vod_vod_categories.category_id as categoryid "+
+                " FROM vod "+
+                " INNER JOIN vod_vod_categories ON vod.id = vod_vod_categories.vod_id INNER JOIN vod_category ON vod_vod_categories.category_id = vod_category.id "+
+                " INNER JOIN vod_stream ON vod.id = vod_stream.vod_id "+
+                " INNER JOIN package_vod ON vod.id = package_vod.vod_id INNER JOIN package ON package.id = package_vod.package_id INNER JOIN subscription ON subscription.package_id = package.id   "+
+                " WHERE "+ where_condition+
+                " GROUP BY vod.id "+
+                " ORDER BY "+order_by+" " +
+                " LIMIT "+offset+", "+limit+" "+
+                ";";
+
+            sequelizes.sequelize.query(
+                related_query
+            ).then(function(related_result){
+                if (!related_result || !related_result[0]) {
+                    response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'NO DATA FOUND', 'no-store');
+                } else {
+                    res.setHeader("X-Total-Count", related_result[0].length);
+                    response.send_res_get(req, res, related_result[0], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
+                }
+            }).catch(function(error){
+                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+            });
+        }
+        else response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'NO DATA FOUND', 'no-store');
         return null;
     }).catch(function(error) {
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 
-
+/**
+ * @api {get} /apiv2/vod/recommended GetRecommendedItems
+ * @apiName GetRecommendedItems
+ * @apiGroup VOD
+ *
+ * @apiUse header_auth
+ * @apiParam {Number} [_start]  Optional, record pointer start
+ * @apiParam {Number} [_end]  Optional, limit number of records
+ *
+ *@apiDescription GET recommended films and tv shows
+ *
+ * Copy paste this auth for testing purposes
+ *auth=%7Bapi_version%3D22%2C+appversion%3D1.1.4.2%2C+screensize%3D480x800%2C+appid%3D2%2C+devicebrand%3D+SM-G361F+Build%2FLMY48B%2C+language%3Deng%2C+ntype%3D1%2C+app_name%3DMAGOWARE%2C+device_timezone%3D2%2C+os%3DLinux%3B+U%3B+Android+5.1.1%2C+auth%3D8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A%2C+hdmi%3Dfalse%2C+firmwareversion%3DLMY48B.G361FXXU1APB1%7D
+ *
+ */
 exports.get_vod_items_recommended = function(req, res) {
     //find the user's active vod packages
     models.subscription.findAll({
@@ -1169,7 +1369,7 @@ exports.get_vod_items_recommended = function(req, res) {
             var qwhere  = {};
             qwhere.where = {};
 
-            qwhere.attributes = ['id', 'title', 'description', 'starring', 'director', 'rate', 'duration', 'year', 'pin_protected', 'clicks',
+            qwhere.attributes = ['id', 'title', 'description', 'vod_type','starring', 'director', 'rate', 'duration', 'year', 'pin_protected', 'clicks',
                 [db.sequelize.fn("concat", req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'icon_url'],
                 [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('image_url')), 'image_url'],
                 [db.sequelize.fn('UNIX_TIMESTAMP', db.sequelize.col('createdAt')), 'createdAt']
@@ -1179,6 +1379,7 @@ exports.get_vod_items_recommended = function(req, res) {
             qwhere.offset = isNaN(parseInt(query._start)) ? 0:parseInt(query._start);
             qwhere.limit =  isNaN(parseInt(query._end)) ?  req.app.locals.settings.vod_subset_nr: parseInt(query._end) - qwhere.offset;
             qwhere.where.expiration_time = {$gte: Date.now()};
+            qwhere.where.vod_type = {$in: ['film', 'tv_series']}; //todo: which types to include?
 
             if(query._orderBy) qwhere.order = query._orderBy + ' ' + query._orderDir;
             qwhere.include = [
@@ -1200,6 +1401,7 @@ exports.get_vod_items_recommended = function(req, res) {
                     var vod_item = {
                         "id": vod_film.id,
                         "title": vod_film.title,
+                        "vod_type": vod_film.vod_type,
                         "pin_protected": vod_film.pin_protected,
                         "rate": vod_film.rate,
                         "duration": vod_film.duration,
@@ -1218,7 +1420,7 @@ exports.get_vod_items_recommended = function(req, res) {
                     response.send_res_get(req, res, vod_list, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
                 });
             }).catch(function(err) {
-                res.jsonp(err);
+                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
         }
         else{
@@ -1226,7 +1428,7 @@ exports.get_vod_items_recommended = function(req, res) {
         }
         return null;
     }).catch(function(error){
-        res.jsonp(error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 
@@ -1239,7 +1441,7 @@ exports.get_vod_items_recommended = function(req, res) {
  * @apiName GetVodList
  * @apiGroup VOD
  *
- * @apiHeader {String[]} auth Device AUTH token plus device params separated by coma ex: auth=123,mac=abcde1234
+ * @apiUse header_auth
  *
  * @apiParam {String} [q]  Query string
  * @apiParam {String} [vod_type]  Query string, comma delimited, optional. If missing, return all vod types. Value set [film, tv_series]
@@ -1313,12 +1515,12 @@ exports.get_vod_list = function(req, res) {
 
             final_where.attributes = ['id', 'vod_type', 'title', 'pin_protected',  'rate', 'duration', 'year', 'clicks',
                 [
-                    db.sequelize.fn('concat', db.sequelize.col('description'), '<p><strong>Director:</strong> ', db.sequelize.col('director'),
+                    db.sequelize.fn('concat', db.sequelize.col('vod.description'), '<p><strong>Director:</strong> ', db.sequelize.col('director'),
                         '</p><p><strong>Starring:</strong> ', db.sequelize.col('starring'), '</p>'), 'description'
                 ],
-                [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'icon_url'],
+                [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('vod.icon_url')), 'icon_url'],
                 [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('image_url')), 'image_url'],
-                [db.sequelize.fn('UNIX_TIMESTAMP', db.sequelize.col('createdAt')), 'createdAt']
+                [db.sequelize.fn('UNIX_TIMESTAMP', db.sequelize.col('vod.createdAt')), 'createdAt']
             ];
 
             qwhere.expiration_time = {$gte: Date.now()};
@@ -1359,7 +1561,7 @@ exports.get_vod_list = function(req, res) {
                                 "rate": vod_film.rate,
                                 "duration": vod_film.duration,
                                 "year": vod_film.year,
-                                "category_id": vod_film.vod_vod_categories[0].category_id,
+                                "categoryid": vod_film.vod_vod_categories[0].category_id,
                                 "categories": category_name_list,
                                 "description": vod_film.description,
                                 "icon": vod_film.icon_url,
@@ -1376,7 +1578,7 @@ exports.get_vod_list = function(req, res) {
                     response.send_res_get(req, res, vod_list, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
                 });
             }).catch(function(err) {
-                res.jsonp(err);
+                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
 
         }
@@ -1385,14 +1587,27 @@ exports.get_vod_list = function(req, res) {
         }
         return null;
     }).catch(function(error){
-        res.jsonp(error);
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 
-
+/**
+ * @api {post} /apiv2/vod/searchvod?pin_protected=0 VodSearch
+ * @apiName VodSearch
+ * @apiGroup VOD
+ *
+ * @apiUse body_auth
+ * @apiParam {Number} search_string  Search keyword
+ *
+ * @apiDescription Returns vod matches for a specified keyword. pin_protected query string parameter is optional, value set is [0, 1], default value is 0
+ *
+ * Copy paste this auth for testing purposes
+ *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ *
+ */
 exports.searchvod = function(req, res) {
     //var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
-    var allowed_content = ((req.thisuser.show_adult === true) && (req.query.pin_protected === 1)) ? [0, 1] : [0];
+    var allowed_content = ((req.thisuser.show_adult === true) && (req.query.pin_protected === "1")) ? [0, 1] : [0];
 
     models.vod.findAll({
         attributes: ['id', 'title'],
@@ -1435,6 +1650,21 @@ exports.searchvod = function(req, res) {
 
 };
 
+/**
+ * @api {post} /apiv2/vod/resume_movie VodResumeItem
+ * @apiName VodResumeItem
+ * @apiGroup VOD
+ *
+ * @apiUse body_auth
+ * @apiParam {Number} vod_id  Id of vod item the user would like to resume
+ * @apiParam {Number} resume_position  Player position where video should resume
+ *
+ * @apiDescription Saves the id and position of a video that the user would like to resume watching
+ *
+ * Copy paste this auth for testing purposes
+ *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ *
+ */
 exports.resume_movie = function(req, res) {
     //perdor upsert qe nje user te kete vetem 1 film. nese nuk ka asnje te shtohet, ne te kundert te ndryshohet
     models.vod_resume.upsert(
@@ -1456,18 +1686,18 @@ exports.resume_movie = function(req, res) {
 };
 
 /**
- * @api {get} /apiv2/vod/vod_details/[vod_id] GET VOD item details
- * @apiName GetVodDetails
+ * @api {get} /apiv2/vod/vod_details/:vod_id GetVodItemData
+ * @apiName GetVodItemData
  * @apiGroup VOD
  *
- * @apiHeader {String[]} auth Device AUTH token plus device params separated by coma ex: auth=123,mac=abcde1234 *
+ * @apiUse header_auth
  *
- * @apiDescription Copy paste this auth for testing purposes
- * auth=/ihCuMthnmY7pV3WLgC68i70zwLp6DUrLyFe9dOUEkxUBFH9WrUcA95GFAecSJH9HG9tvymreMOFlBviVd3IcII4Z/SiurlGoz9AMtE5KGFZvCl1FQ3FKZYP3LeFgzVs\r\nDQjxaup3sKRljj4lmKUDTA==
+ *@apiDescription Returns information about the subtitles and stream of a vod item
+ *
+ * Copy paste this auth for testing purposes
+ *auth=%7Bapi_version%3D22%2C+appversion%3D1.1.4.2%2C+screensize%3D480x800%2C+appid%3D2%2C+devicebrand%3D+SM-G361F+Build%2FLMY48B%2C+language%3Deng%2C+ntype%3D1%2C+app_name%3DMAGOWARE%2C+device_timezone%3D2%2C+os%3DLinux%3B+U%3B+Android+5.1.1%2C+auth%3D8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A%2C+hdmi%3Dfalse%2C+firmwareversion%3DLMY48B.G361FXXU1APB1%7D
  *
  */
-
-
 exports.get_movie_details = function(req, res) {
     models.vod.findOne({
         attributes: ['id', 'trailer_url', 'vod_preview_url', 'default_subtitle_id'],
@@ -1475,7 +1705,7 @@ exports.get_movie_details = function(req, res) {
             {model: models.vod_stream, attributes: ['stream_format', 'url', 'token', 'token_url', 'encryption', 'encryption_url'], where: {stream_source_id: req.thisuser.vod_stream_source}},
             {model: models.vod_subtitles, attributes: ['id', 'title', [db.sequelize.fn("concat", req.app.locals.settings.assets_url, db.sequelize.col('subtitle_url')), 'url'], ['vod_id', 'vodid']]}
         ],
-        where: {id: req.params.vod_id}
+        where: {id: req.params.vod_id, vod_type: {$in: ['film', 'tv_episode']}}
     }).then(function (result) {
         var vod_data = {};
         if(result){
@@ -1483,16 +1713,13 @@ exports.get_movie_details = function(req, res) {
             if(result.vod_subtitles){
                 try{
                     found = result.vod_subtitles.find(function(x){
-                        if(x.id === (result.default_subtitle_id)){
-                            return x.title;
-                        }
+                        if(x.id === (result.default_subtitle_id)){return x.title;}
                     }).title;
                 }
                 catch(error){
                     found = "";
                 }
             }
-
             vod_data.stream_format = (result.vod_streams[0] && result.vod_streams[0].stream_format) ? result.vod_streams[0].stream_format : "0";
             vod_data.stream_url = (result.vod_streams[0] && result.vod_streams[0].url) ? result.vod_streams[0].url : ""; //url e streamit
             vod_data.trailer_url = (result.vod_streams[0] && result.vod_streams[0].url) ? result.trailer_url : "";
@@ -1513,57 +1740,96 @@ exports.get_movie_details = function(req, res) {
 };
 
 
-
 /**
- * @api {get} /apiv2/vod/get_tv_series_data GET list of seasons and episodes of a tv show
- * @apiName GetTvShowData
+ * @api {get} /apiv2/vod/get_tv_series_data/:vod_id/:season_number GetTvSeriesData
+ * @apiName GetTvSeriesData
  * @apiGroup VOD
  *
- * @apiHeader {String[]} auth Device AUTH token plus device params separated by coma ex: auth=123,mac=abcde1234
+ * @apiUse header_auth
  *
- * @apiParam {Number} [vod_id]  Query string, id of the tv show
- * @apiParam {Number} [season_number]  Query string, optional, specifies season number of the episodes that should be listed. Default value is 1.
+ *@apiDescription GET list of seasons and episodes of a tv show
  *
- *@apiDescription Copy paste this auth for testing purposes
+ * Copy paste this auth for testing purposes
  *auth=%7Bapi_version%3D22%2C+appversion%3D1.1.4.2%2C+screensize%3D480x800%2C+appid%3D2%2C+devicebrand%3D+SM-G361F+Build%2FLMY48B%2C+language%3Deng%2C+ntype%3D1%2C+app_name%3DMAGOWARE%2C+device_timezone%3D2%2C+os%3DLinux%3B+U%3B+Android+5.1.1%2C+auth%3D8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A%2C+hdmi%3Dfalse%2C+firmwareversion%3DLMY48B.G361FXXU1APB1%7D
  *
  */
 exports.get_tv_series_data = function(req, res){
 
-    if(!req.query.season_number) req.query.season_number = 1;
-    models.vod.findOne({
-        attributes: ['id'], where: {season_number: req.query.season_number, vod_parent_id: req.query.vod_id}
-    }).then(function (season_id) {
-        models.vod.findAll({
-            attributes: ['id', 'title'],
-            include: [
-                {
-                    model: models.vod , as: 'seasons', attributes: ['id', 'title', 'season_number'], required: false,
-                    include: [{
-                        model: models.vod , as: 'episodes', attributes: [
-                            'id', 'title', 'pin_protected', 'rate', 'duration', 'year',
-                            [
-                                db.sequelize.fn('concat', db.sequelize.col('seasons.episodes.description'), '<p><strong>Director:</strong> ', db.sequelize.col('seasons.episodes.director'),
-                                    '</p><p><strong>Starring:</strong> ', db.sequelize.col('seasons.episodes.starring'), '</p>'), 'description'
-                            ],
-                            [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('seasons.episodes.icon_url')), 'icon'],
-                            [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('seasons.episodes.image_url')), 'largeimage'],
-                            [db.sequelize.fn('UNIX_TIMESTAMP', db.sequelize.col('seasons.episodes.createdAt')), 'dataadded']
-                        ],
-                        required: false,
-                        where: {vod_parent_id: season_id.id}
-                    }]
-                }
-            ],
-            where: {id: req.query.vod_id},
-            logging: console.log
-        }).then(function (vod_result) {
-            response.send_res_get(req, res, vod_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
-        }).catch(function (error) {
-            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
-        });
-        return null;
-    }).catch(function (error) {
+    var vodID = req.params.tvshowID;
+    var where_seasonNumber = {};
+
+    if(req.params.seasonNumber)
+        where_seasonNumber.season_number = req.params.seasonNumber;
+    else
+        where_seasonNumber.season_number = 1;
+
+    models.vod.find({
+        attributes: ['id'],
+        where: {
+            id: vodID, expiration_time: {$gte: Date.now()}, vod_type: 'tv_series'
+        },
+        include: [
+            {model: models.vod, as: 'seasons', attributes: ['id', 'season_number', 'title', 'vod_type'], where: {vod_parent_id: req.params.tvshowID, expiration_time: {$gte: Date.now()}, vod_type: 'tv_season'} },
+            {model: models.vod_vod_categories, where: {is_available: true}, attributes: ['id'],
+                include: [{model: models.vod_category, where: {isavailable: true},  attributes: ['name' ]}]
+            }
+        ]
+    }).then(function(result) {
+        if (!result) {
+            response.send_res_get(req, res, [], 404, -1, 'E_NOT_FOUND', 'NO DATA FOUND', 'no-store');
+        } else {
+            result = result.toJSON();
+            result.category_names = "";
+            for(var i=0; i<result.vod_vod_categories.length; i++){
+                if(result.category_names.length > 0) result.category_names += ", " + result.vod_vod_categories[i].vod_category.name;
+                else result.category_names += result.vod_vod_categories[i].vod_category.name;
+            }
+            delete result.vod_vod_categories;
+
+            var season_id = result.seasons.filter(function(obj) {return obj.season_number === Number(where_seasonNumber.season_number)})[0].id;
+
+            models.vod.findAll({
+                attributes: ["id", "vod_type", "title",  "year",  "rate", "trailer_url", "vod_preview_url", "isavailable",
+                    [db.sequelize.fn('concat', db.sequelize.col('vod.description'), '<p><strong>Director:</strong> ', db.sequelize.col('vod.director'),
+                        '</p><p><strong>Starring:</strong> ', db.sequelize.col('vod.starring'), '</p>'), 'description'],
+                    [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('vod.icon_url')), 'icon'],
+                    [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('vod.image_url')), 'largeimage']
+                ],
+                where: {vod_type: 'tv_episode', vod_parent_id: season_id, expiration_time: {$gte: Date.now()}},
+                include: [
+                    {model: models.vod_vod_categories, where: {is_available: true}, attributes: ['id'],
+                        include: [{model: models.vod_category, where: {isavailable: true},  attributes: ['name' ]}]
+                    },
+                    {model: models.vod_stream, where: {stream_source_id: req.thisuser.vod_stream_source}, attributes: []}
+                ]
+            }).then(function(episodes) {
+                result.season_count = result.seasons.length; //add number of seasons for the tv show
+                result.episodes = [];
+
+                async.forEach(episodes, function(episode, callback){
+                    episode = episode.toJSON(); //convert episode item to editable json object
+                    // create list of categories for episode
+                    episode.category_names = "";
+                    for(var i=0; i<episode.vod_vod_categories.length; i++){
+                        if(episode.category_names.length > 0) episode.category_names += ", " + episode.vod_vod_categories[i].vod_category.name;
+                        else episode.category_names += episode.vod_vod_categories[i].vod_category.name;
+                    }
+                    delete episode.vod_vod_categories; //delete nested category object
+                    result.episodes.push(episode);
+                    callback(null);
+                },function(error, success){
+                    var response_array = [];
+                    response_array[0] = result;
+                    response.send_res_get(req, res, response_array, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
+                    //response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
+                });
+
+            }).catch(function(error) {
+                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+            });
+            return null;
+        }
+    }).catch(function(error) {
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 

@@ -362,3 +362,184 @@ input#usr {
 }
 
 /*./Drag and Drop Package*/
+
+
+/*Company Logo*/
+img.img-responsive.logo_company {
+    position: relative;
+    top: -22px;
+    width: 321px;
+    height: 51px;
+}
+
+@media (max-width: 767px) {
+    ul.nav.navbar-top-links.navbar-right.text-center.responsive.ng-scope {
+        padding-top: 50px;
+    }
+}
+/*===================================================================================================*/
+/*New Theme for Administration System*/
+/*=========================================Left Menu=================================================*/
+.navbar-default.sidebar.ng-scope {
+    background-color: #262262 ;
+}
+.sidebar ul li a.active {
+    background-color: #ec932f;
+}
+.nav>li>a {
+    color: white;
+}
+.nav>li>a:hover {
+    background-color: #ec932f ;
+    transition: 0.2s;
+}
+.nav>li>a:focus {
+    background-color: #ec932f ;
+}
+.sidebar ul li {
+    border-bottom: none;
+}
+.menu_space {
+    color: #ec932f ;
+}
+div#wrapper {
+    background: #262262 ;
+}
+/*effect-underline*/
+.nav>li>a:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    display: inline-block;
+    height: 1em;
+    width: 100%;
+    border-bottom: 3px solid;
+    margin-top: 15px;
+    opacity: 0;
+    -webkit-transition: opacity 0.35s, -webkit-transform 0.35s;
+    transition: opacity 0.35s, transform 0.35s;
+    -webkit-transform: scale(0,1);
+    transform: scale(0,1);
+}
+
+.nav>li>a:hover:after {
+    opacity: 1;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+}
+/*=========================================./Left Menu=================================================*/
+
+/*=========================================Navbar Top=================================================*/
+body {
+    padding: 0px;
+    background-color: #e6eef8;
+}
+p#company_name {
+    color: white;
+}
+.navbar-default {
+    background-color: #262262 ;
+    border: none;
+}
+#wrapper .navbar-static-top {
+    margin-bottom: 1px;
+    padding-top: 14px;
+    -webkit-box-shadow: 0 10px 6px -6px black;
+    -moz-box-shadow: 0 10px 6px -6px black;
+    box-shadow: 0 10px 6px -6px black;
+}
+.nav .open>a, .nav .open>a:focus, .nav .open>a:hover {
+    background-color: #ec932f ;
+}
+div#page-wrapper {
+    border-left: none;
+    background-color: #e6eef8;
+}
+/*=========================================./Navbar Top=================================================*/
+
+/*=========================================Body Dashboard=================================================*/
+.alert-info {
+    background-color: #524e8e;
+    color: #f5f5f5;
+    border: none;
+    box-shadow: 1px 1px 4px rgba(0,0,0,.15);
+}
+.theme>.panel-heading{
+    background-color: #ec932f;
+    color: white;
+
+}
+.theme {
+    border: none;
+    box-shadow: 3px 4px 10px rgba(0,0,0,.20);
+}
+.dashboard-content .panel-default .panel-heading{
+    background-color: #524e8e;
+}
+.dashboard-content .panel-default .panel-heading a{
+    color: white;
+}
+/*.table-striped > tbody > tr:nth-child(2n) > td {*/
+/*background-color: #e6eef8;*/
+/*}*/
+/*.table-striped > tbody > tr:nth-child(2n+1) > td {*/
+/*background-color: #e6eef8;*/
+
+/*}*/
+/*.table-striped>tbody>tr:nth-child(odd)>td,*/
+/*.table-striped>tbody>tr:nth-child(odd)>th {*/
+/*background-color: red; // Choose your own color here*/
+/*}*/
+
+/*=========================================./Body Dashboard=================================================*/
+
+/*=========================================Buttons=================================================*/
+button.btn.btn-default.dropdown-toggle {
+    background-color: #524e8e;
+    color: white;
+    border: none;
+    transition: .3s;
+}
+button.btn.btn-default.dropdown-toggle:hover {
+    background-color: #ec932f;
+    color: white;
+    border: none;
+}
+button.btn.btn-default.dropdown-toggle:focus {
+    background-color: #ec932f;
+    color: white;
+    border: none;
+}
+a.btn.btn-default,button.btn.btn-default {
+    color: white;
+    background-color: #524e8e;
+    border: none;
+    transition: .3s;
+}
+button.btn.btn-default:focus{
+    color: white;
+    background-color: #524e8e;
+    border: none;
+    transition: .3s;
+}
+a.btn.btn-default:hover,button.btn.btn-default:hover {
+    color: white;
+    background-color: #ec932f;
+    border: none;
+}
+h4 {
+    color: #262262;
+}
+/* This only works with JavaScript,
+if it's not present, don't show loader */
+.no-js #loader { display: none;  }
+.js #loader { display: block; position: absolute; left: 100px; top: 0; }
+.se-pre-con {
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    background: url(../images/Preloader_2.gif) center no-repeat #fff;
+}

@@ -180,7 +180,7 @@ exports.logout = function(req, res) {
  *       "timestamp": 1,
  *       "error_description": "OK",
  *       "extra_data": "LOGOUT_OTHER_DEVICES",
- *       "response_object": []
+ *       "response_object": [{}]
  *      }
  * @apiErrorExample Error-Response:
  *     {
@@ -189,7 +189,7 @@ exports.logout = function(req, res) {
  *       "timestamp": 1,
  *       "error_description": "REQUEST_FAILED",
  *       "extra_data": "Error processing request",
- *       "response_object": []
+ *       "response_object": [{}]
  *     }
  * @apiErrorExample Error-Response:
  *     {
@@ -198,7 +198,7 @@ exports.logout = function(req, res) {
  *       "timestamp": 1,
  *       "error_description": "REQUEST_FAILED",
  *       "extra_data": "Unable to find any device with the required specifications",
- *       "response_object": []
+ *       "response_object": [{}]
  *     }
  * @apiErrorExample Error-Response:
  *     {
@@ -207,7 +207,7 @@ exports.logout = function(req, res) {
  *       "timestamp": 1,
  *       "error_description": "DATABASE_ERROR",
  *       "extra_data": "Error connecting to database",
- *       "response_object": []
+ *       "response_object": [{}]
  *     }
  */
 exports.logout_user = function(req, res) {

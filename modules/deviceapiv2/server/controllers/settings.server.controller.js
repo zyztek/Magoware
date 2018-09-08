@@ -102,8 +102,8 @@ exports.settings = function(req, res) {
                     include: [{
                         model: models.package, required: true, attributes: ['id'], include: [
                             {model: models.package_type, required: true, attributes: ['id'], where:{app_group_id: app_group.app_group_id}, include: [
-                                {model: models.activity, required: true, attributes: ['id'], where: {description: activity}}
-                            ]}
+                                    {model: models.activity, required: true, attributes: ['id'], where: {description: activity}}
+                                ]}
                         ]}
                     ]
                 }).then(function (enddate) {
@@ -401,8 +401,8 @@ exports.get_settings = function(req, res) {
         include: [{
             model: models.package, required: true, attributes: ['id'], include: [
                 {model: models.package_type, required: true, attributes: ['id'], where:{app_group_id: req.auth_obj.screensize}, include: [
-                    {model: models.activity, required: true, attributes: ['id'], where: {description: activity}}
-                ]}
+                        {model: models.activity, required: true, attributes: ['id'], where: {description: activity}}
+                    ]}
             ]}
         ]
     }).then(function (enddate) {

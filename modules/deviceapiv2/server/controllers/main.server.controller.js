@@ -3,23 +3,28 @@ var path = require('path'),
     db = require(path.resolve('./config/lib/sequelize')),
     response = require(path.resolve("./config/responses.js")),
     models = db.models,
+    fs = require('fs'),
     winston = require(path.resolve('./config/lib/winston'));
 
 /**
  * @api {post} /apiv2/main/device_menu /apiv2/main/device_menu
- * @apiVersion 0.2.0
  * @apiName DeviceMenu
  * @apiGroup DeviceAPI
  *
- * @apiHeader {String} auth Users unique access-key.
- * @apiDescription Removes check box from device so user can login on another device
+ * @apiUse body_auth
+ * @apiDescription Returns list of menu items available for this user and device
+ *
+ * Use this token for testing purposes
+ *
+ * auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
  */
 exports.device_menu = function(req, res) {
     var thisresponse = new response.OK();
     //req.auth_obj = {} ;
     //req.auth_obj.appid = 1;
     models.device_menu.findAll({
-        attributes: ['id', 'title', 'url', 'icon_url', [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'icon'], 'menu_code', 'position', ['menu_code','menucode']],
+        attributes: ['id', 'title', 'url', 'icon_url', [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'icon'], 'menu_code', 'position',
+            [db.sequelize.fn('concat', "", db.sequelize.col('menu_code')), 'menucode']],
         where: {appid: {$like: '%'+req.auth_obj.appid+'%' }, isavailable:true},
         order: [[ 'position', 'ASC' ]]
     }).then(function (result) {
@@ -119,3 +124,18 @@ exports.get_devicemenu_leveltwo = function(req, res) {
     });
 };
 
+exports.get_weather_widget = function(req, res) {
+
+    if (fs.existsSync('public/weather_widget/index.html')) {
+        var url= req.app.locals.settings.assets_url;
+        var file = '/weather_widget/index.html';
+        var response_Array = {
+            "widget_url": url+file
+        };
+        return res.send(response_Array);
+    }else {
+        return res.status(404).send({
+            message: 'Image Not Found'
+        });
+    }
+};

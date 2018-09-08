@@ -14,7 +14,7 @@ module.exports = {
         this.timestamp = 1; //Date.now();
         this.error_description = (languages[language]) ? languages[language].language_variables[error_description] : languages['eng'].language_variables[error_description];
         this.extra_data = (languages[language]) ? languages[language].language_variables[extra_data] : extra_data;
-        this.response_object = data;
+        this.response_object = (!data || data.length < 1) ? [{}] : data;
     },
     CREATED: function(language, error_description, extra_data){
         this.code = 'CREATED';

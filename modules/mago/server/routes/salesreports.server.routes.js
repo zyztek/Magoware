@@ -10,10 +10,6 @@ module.exports = function(app) {
 
     /* ===== salesreports the table ===== */
 
-    app.route('/api/MySales')
-        .get(salesReports.list);
-
-
     app.route('/api/salesreports')
         .get(salesReports.list);
 
@@ -38,7 +34,25 @@ module.exports = function(app) {
         .all(policy.isAllowed)
         .get(salesReports.sales_by_product);
 
+    /* ===== Salesreport for Resellers ===== */
+    app.route('/api/MySales')
+        .get(salesReports.list);
 
+    app.route('/api/MySales')
+        .all(policy.isAllowed)
+        .post(salesReports.create);
+
+    app.route('/api/MySales/:MySalesId')
+        .all(policy.isAllowed)
+        .get(salesReports.read)
+        .put(salesReports.update)
+        .delete(salesReports.delete);
+
+    app.param('MySalesId', salesReports.dataByID);
+
+    app.route('/api/MySales/annul/:MySalesId')
+        .all(policy.isAllowed)
+        .put(salesReports.annul);
 
     /* ===== Dashboard ===== */
     app.route('/api/salesreports/annul/:salesReportId')

@@ -12,6 +12,7 @@ export default function (nga, admin) {
         .onSubmitError(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
             progression.done();
             notification.log('New Customer successfully created.', { addnCls: 'humane-flatty-success' });
+            window.location.replace('#/MySales/list?search=%7B"distributorname":"'+localStorage.userName+'"%7D');
             return false;
         }])
         .fields([

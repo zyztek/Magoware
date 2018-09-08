@@ -278,8 +278,8 @@ exports.list = function(req, res) {
 
     if(req.query.user_username) final_where.where.user_username = {like: '%'+req.query.user_username+'%'};
     if(query.login_data_id) final_where.where.login_data_id = query.login_data_id;
-    if(req.query.distributorname) final_where.where.distributorname = {like: '%'+req.query.distributorname+'%'};
     if(req.query.name) final_where.where.combo_id = req.query.name;
+    var distributor_filter = (req.query.distributorname) ? {like: '%'+req.query.distributorname+'%'} : {like: '%%'};
 
     if(req.query.active === 'active') final_where.where.active = true;
     if(req.query.active === 'cancelled') final_where.where.active = false;
@@ -297,7 +297,7 @@ exports.list = function(req, res) {
 
     final_where.include = [
         {model: db.combo, required: true, attributes: ['name']},
-        {model: db.users, required: true, attributes: ['username']}
+        {model: db.users, required: true, attributes: ['username'], where: {username: distributor_filter}}
     ]
 
     DBModel.findAndCountAll(
@@ -413,7 +413,7 @@ exports.sales_by_month = function(req, res) {
 
     if(req.query.user_username) final_where.where.user_username = {like: '%'+req.query.user_username+'%'};
     if(query.login_data_id) final_where.where.login_data_id = query.login_data_id;
-    if(req.query.distributorname) final_where.where.distributorname = {like: '%'+req.query.distributorname+'%'};
+    var distributor_filter = (req.query.distributorname) ? {like: '%'+req.query.distributorname+'%'} : {like: '%%'};
 
     if(req.query.active === 'active') final_where.where.active = true;
     if(req.query.active === 'cancelled') final_where.where.active = false;
@@ -434,7 +434,13 @@ exports.sales_by_month = function(req, res) {
     final_where.attributes = ['id', [sequelize.fn('DATE_FORMAT', sequelize.col('saledate'), "%Y-%m"), 'saledate'], [sequelize.fn('count', sequelize.col('saledate')), 'count']];
     final_where.group = [sequelize.fn('DATE_FORMAT', sequelize.col('saledate'), "%Y-%m")]; //group by month/year of sale (excluding day and time information)
 
-    final_where.include = [{model: db.combo, required: true, attributes: [[sequelize.fn('sum', sequelize.col('value')), 'total_value']]}];
+    final_where.include = [{model: db.combo, required: true, attributes: [[sequelize.fn('sum', sequelize.col('value')), 'total_value']]},
+
+        {model: db.users, required: true, attributes: ['username'], where: {username: distributor_filter}}
+
+
+
+    ];
 
     DBModel.findAndCountAll(
         final_where

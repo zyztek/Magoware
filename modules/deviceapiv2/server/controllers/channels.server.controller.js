@@ -36,6 +36,7 @@ var path = require('path'),
  *          "title": "title",
  *          "icon_url": "http://.../image.png",
  *          "stream_url": "stream url",
+ *          "drm_platform": "drm_platform",
  *          "genre_id": 1,
  *          "channel_mode": "live",
  *          "pin_protected": "false", //"true" / "false" values
@@ -96,7 +97,7 @@ exports.list = function(req, res) {
                 include: [
                     {model: models.channel_stream,
                         required: true,
-                        attributes: ['stream_source_id','stream_url','stream_format','token','token_url','is_octoshape','encryption','encryption_url'],
+                        attributes: ['stream_source_id','stream_url','stream_format', 'drm_platform', 'token','token_url','is_octoshape','encryption','encryption_url'],
                         where: stream_qwhere
                     },
                     { model: models.genre, required: true, attributes: [], where: {is_available: true} },
@@ -138,6 +139,7 @@ exports.list = function(req, res) {
                     temp_obj.pin_protected = 'false';
                     temp_obj.stream_source_id = 1;
                     temp_obj.stream_format = "1";
+                    temp_obj.drm_platform = "none";
                     temp_obj.token = 0;
                     temp_obj.token_url = 'http://tibomanager4.tibo.tv/unsecured/token/apiv2/Akamai_token.aspx';
                     temp_obj.encryption = 0;
@@ -154,6 +156,7 @@ exports.list = function(req, res) {
                     result[i].stream_url = result[i]["channel_streams.stream_url"]; delete result[i]["channel_streams.stream_url"];
                     result[i].channel_mode = has_catchup(catchup_streams, result[i]["id"]);
                     result[i].stream_format = result[i]["channel_streams.stream_format"]; delete result[i]["channel_streams.stream_format"];
+                    result[i].drm_platform = result[i]["channel_streams.drm_platform"]; delete result[i]["channel_streams.drm_platform"];
                     result[i].token = result[i]["channel_streams.token"]; delete result[i]["channel_streams.token"];
                     result[i].token_url = result[i]["channel_streams.token_url"]; delete result[i]["channel_streams.token_url"];
                     result[i].encryption = result[i]["channel_streams.encryption"]; delete result[i]["channel_streams.encryption"];
@@ -165,15 +168,15 @@ exports.list = function(req, res) {
                 var response_data = result.concat(user_channel_list);
                 response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
             }).catch(function(error) {
-                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+                response.send_res(req, res, [{}], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
             return null;
         }).catch(function(error) {
-            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+            response.send_res(req, res, [{}], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
         return null;
     }).catch(function(error) {
-        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+        response.send_res(req, res, [{}], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
@@ -187,39 +190,10 @@ exports.list = function(req, res) {
  *
  * @apiHeader {String} auth Encrypted string composed of username, password, appid, boxid and timestamp.
  *
- *
- * @apiSuccessExample Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "status_code": 200,
- *       "error_code": 1,
- *       "timestamp": 1517479302000, //unix timestamp in milliseconds
- *       "error_description": 'OK',
- *       "extra_data": '',
- *       "response_object": [
- *       {
- *          "id": 1,
- *          "channel_number": 100,
- *          "title": "title",
- *          "icon_url": "http://.../image.png",
- *          "stream_url": "stream url",
- *          "genre_id": 1,
- *          "channel_mode": "live",
- *          "pin_protected": "false", //"true" / "false" values
- *          "stream_source_id": 1,
- *          "stream_format": "0", //current values include 0 (mpd), 1 (smooth streaming), 2 (hls), 3 (other)
- *          "drm_platform": "none", //none, pallycon, verimatrix, widevine
- *          "token": 1, // values 0 / 1
- *          "token_url": "token url",
- *          "encryption": 0, // values 0 / 1
- *          "encryption_url": "encryption url",
- *          "is_octoshape": 0, // values 0 / 1
- *          "favorite_channel": "0" // values "0" / "1"
- *       }, ....
- *       ]
- *   }
  * @apiDescription Copy paste this auth for testing purposes
- * auth=/ihCuMthnmY7pV3WLgC68i70zwLp6DUrLyFe9dOUEkxUBFH9WrUcA95GFAecSJH9HG9tvymreMOFlBviVd3IcII4Z/SiurlGoz9AMtE5KGFZvCl1FQ3FKZYP3LeFgzVs\r\nDQjxaup3sKRljj4lmKUDTA==
+ *
+ * auth=%7Bapi_version%3D22%2C+appversion%3D1.1.4.2%2C+screensize%3D480x800%2C+appid%3D2%2C+devicebrand%3D+SM-G361F+Build%2FLMY48B%2C+language%3Deng%2C+ntype%3D1%2C+app_name%3DMAGOWARE%2C+device_timezone%3D2%2C+os%3DLinux%3B+U%3B+Android+5.1.1%2C+auth%3D8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A%2C+hdmi%3Dfalse%2C+firmwareversion%3DLMY48B.G361FXXU1APB1%7D
+ *
  */
 
 exports.list_get = function(req, res) {
@@ -454,7 +428,7 @@ exports.genre_get = function(req, res) {
  *       "timestamp": 1517479302000, //unix timestamp in milliseconds
  *       "error_description": 'OK',
  *       "extra_data": 'informin message', //message informs of the action (add/remove) performed for user and channel
- *       "response_object": []
+ *       "response_object": [{}]
  *   }
  */
 exports.favorites = function(req, res) {

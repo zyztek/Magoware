@@ -32,7 +32,7 @@ module.exports = function(app) {
 
     app.route('/apiv2/vod/movie_subtitle')
         .all(authpolicy.isAllowed)
-        .post(vodController.movie_subtitle);
+        .post(vodController.subtitles);
 
     app.route('/apiv2/vod/totalhits')
         .all(authpolicy.isAllowed)
@@ -119,7 +119,11 @@ module.exports = function(app) {
         .all(authpolicy.isAllowed)
         .post(vodController.resume_movie);
 
-    app.route('/apiv2/vod/get_tv_series_data')
+    app.route('/apiv2/vod/get_tv_series_data/:tvshowID')
+        .all(authpolicy.isAllowed)
+        .get(vodController.get_tv_series_data)
+
+    app.route('/apiv2/vod/get_tv_series_data/:tvshowID/:seasonNumber')
         .all(authpolicy.isAllowed)
         .get(vodController.get_tv_series_data)
 

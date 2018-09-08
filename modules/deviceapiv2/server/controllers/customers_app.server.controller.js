@@ -185,6 +185,18 @@ exports.update_user_settings = function(req, res) {
 
 };
 
+/**
+ * @api {post} /apiv2/customer_app/change_password Change password
+ * @apiName ChangePassword
+ * @apiGroup DeviceAPI
+ *
+ * @apiParam {String} [auth]  Account protection token
+ * * @apiParam {String} [password]  New password
+ *
+ *@apiDescription Use this auth to test the API
+ *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ *
+ */
 exports.change_password = function(req, res) {
     var key = req.app.locals.settings.new_encryption_key;
     var plaintext_password = (req.auth_obj.appid === '3') ? authentication.decryptPassword(decodeURIComponent(req.body.password), key) : decodeURIComponent(req.body.password);
@@ -218,10 +230,10 @@ exports.reset_pin = function(req, res) {
         }).then(function(template_result) {
             var email_body;
             if(!template_result){
-                email_body = 'Dear '+result.firstname+' '+result.lastname+', your current pin is '+req.body.pin;
+                email_body = 'Dear '+result.firstname+' '+result.lastname+', your current pin is '+req.thisuser.pin;
             }else {
                 var content_from_ui = template_result.content;
-                email_body = content_from_ui.replace(new RegExp('{{result.firstname}}', 'gi'), result.firstname).replace(new RegExp('{{result.lastname}}', 'gi'), result.lastname).replace(new RegExp('{{req.body.pin}}', 'gi'), req.body.pin);
+                email_body = content_from_ui.replace(new RegExp('{{result.firstname}}', 'gi'), result.firstname).replace(new RegExp('{{result.lastname}}', 'gi'), result.lastname).replace(new RegExp('{{req.thisuser.pin}}', 'gi'), req.thisuser.pin);
             }
             var smtpConfig = {
                 host: (req.app.locals.settings.smtp_host) ? req.app.locals.settings.smtp_host.split(':')[0] : 'smtp.gmail.com',
@@ -633,4 +645,3 @@ exports.edit_channel = function(req, res) {
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
-

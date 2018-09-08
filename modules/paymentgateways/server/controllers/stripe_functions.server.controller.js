@@ -361,7 +361,7 @@ exports.render_payment_form = function(req,res) {
             //optionsrow += '<option value ="' + combos[i].dataValues.value + '">' + combos[i].dataValues.name + ' - ' + combos[i].dataValues.value + '</option>';
         }
 
-        res.render(path.resolve('modules/paymentgateways/server/templates/stripe-checkout-form'), {
+        res.render(path.resolve('modules/paymentgateways/server/templates/paymentform/demo/stripe_payment_form'), {
             //options: '<option value="volvo">Volvo</option>', //req.body.name,
             email: 'myemail@email', //req.body.email,
             message: 'req.body.message',

@@ -47,7 +47,7 @@ var path = require('path'),
  *       "timestamp": 1,
  *       "error_description": "DATABASE_ERROR",
  *       "extra_data": "Error connecting to database",
- *       "response_object": []
+ *       "response_object": [{}]
  *     }
  *
  *
@@ -102,7 +102,7 @@ exports.catchup_events =  function(req, res) {
         });
         response.send_res(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=43200');
     }).catch(function(error) {
-        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+        response.send_res(req, res, [{}], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
@@ -159,7 +159,7 @@ exports.get_catchup_events =  function(req, res) {
         });
         response.send_res_get(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=43200');
     }).catch(function(error) {
-        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+        response.send_res(req, res, [{}], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 
@@ -227,6 +227,7 @@ exports.catchup_stream =  function(req, res) {
         var response_data = [{
             "streamurl": thestream, //catchup_streams.channel_streams[0].stream_url.replace('[epochtime]', req.body.timestart)
             "stream_format":  catchup_streams.channel_streams[0].stream_format,
+            "drm_platform": catchup_streams.channel_streams[0].drm_platform,
             "token":  catchup_streams.channel_streams[0].token,
             "token_url":  catchup_streams.channel_streams[0].token_url,
             "encryption":  catchup_streams.channel_streams[0].encryption,
@@ -237,6 +238,6 @@ exports.catchup_stream =  function(req, res) {
 
     }).catch(function(error) {
         winston.error('error catchup_stream',error);
-        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+        response.send_res(req, res, [{}], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };

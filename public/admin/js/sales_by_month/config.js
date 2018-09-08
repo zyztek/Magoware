@@ -15,6 +15,9 @@ export default function (nga, admin) {
                 .label('Total earnings'),
         ])
         .filters([
+            nga.field('distributorname')
+                .attributes({ placeholder: 'Distributor' })
+                .label('Distributor'),
             nga.field('startsaledate', 'date')
                 .attributes({ placeholder: 'From date' })
                 .label('From date'),

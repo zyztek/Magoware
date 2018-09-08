@@ -428,6 +428,11 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     admin.addEntity(nga.entity('sales_monthly_expiration'));
     admin.addEntity(nga.entity('sales_by_expiration'));
     admin.addEntity(nga.entity('Settings'));
+    admin.addEntity(nga.entity('EmailSettings'));
+    admin.addEntity(nga.entity('URL'));
+    admin.addEntity(nga.entity('ApiKeys'));
+    admin.addEntity(nga.entity('ImagesSettings'));
+    admin.addEntity(nga.entity('PlayerSettings'));
     admin.addEntity(nga.entity('Subscriptions'));
     admin.addEntity(nga.entity('Users'));
     admin.addEntity(nga.entity('Groups'));
@@ -449,8 +454,24 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     admin.addEntity(nga.entity('NewCustomer'));
     admin.addEntity(nga.entity('MySubscription'));
     admin.addEntity(nga.entity('MySales'));
+    admin.addEntity(nga.entity('search_customer'));
+    admin.addEntity(nga.entity('AdvancedSettings'));
+    admin.addEntity(nga.entity('Submenu'));
+    admin.addEntity(nga.entity('VodEpisode'));
+
+
+
 
     //Config
+    require('./VodEpisode/config')(nga, admin);
+    require('./Submenu/config')(nga, admin);
+    require('./AdvancedSettings/config')(nga, admin);
+    require('./settings/PlayerSettings/config')(nga, admin);
+    require('./settings/ImagesSettings/config')(nga, admin);
+    require('./settings/ApiKeys/config')(nga, admin);
+    require('./settings/URL/config')(nga, admin);
+    require('./settings/EmailSettings/config')(nga, admin);
+    require('./search_customers_resellers/config')(nga, admin);
     require('./mysubscription_resellers/config')(nga, admin);
     require('./emailTemplate/config')(nga, admin);
     require('./new_customer_resellers/config')(nga, admin);

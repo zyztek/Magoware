@@ -28,10 +28,26 @@ module.exports = function(app) {
 
     app.param('vodId', vods.dataByID);
 
+    /* ===== VodEpisode ===== */
+    app.route('/api/VodEpisode')
+        .get(vods.list);
+
+    app.route('/api/VodEpisode')
+        .all(policy.isAllowed)
+        .post(vods.create);
+
+    app.route('/api/VodEpisode/:VodEpisodeId')
+        .all(policy.isAllowed)
+        .get(vods.read)
+        .put(vods.update)
+        .delete(vods.delete);
+
+    app.param('VodEpisodeId', vods.dataByID);
+
 
     app.route('/api/update_film')
-    .all(policy.isAllowed)
-    .put(vods.update_film);
+        .all(policy.isAllowed)
+        .put(vods.update_film);
 
 
 };

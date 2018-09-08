@@ -156,7 +156,79 @@ export default function (nga, admin) {
         .title('<h4>Channels <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>')
         .actions(['list', '<ma-delete-button label="Remove" entry="entry" entity="entity"></ma-delete-button>'])
         .fields([
-            channels.creationView().fields(),
+            nga.field('title', 'string')
+                .attributes({ placeholder: 'Channel name' })
+                .validation({ required: true })
+                .label('Title'),
+            nga.field('epg_map_id', 'string')
+                .template('<ma-input-field field="field" value="entry.values.epg_map_id"></ma-input-field>'+
+                    '<small id="emailHelp" class="form-text text-muted">Identifier used to match epg files with the respective channel</small>')
+                .label('EPG MAP ID'),
+            nga.field('channel_number', 'string')
+                .validation({ required: true })
+                .label('Number'),
+            nga.field('genre_id', 'reference')
+                .targetEntity(admin.getEntity('Genres'))
+                .targetField(nga.field('description'))
+                .validation({ required: true })
+                .attributes({ placeholder: 'Choose from dropdown list one of the genres you already created' })
+                .label('Genre'),
+            nga.field('description', 'text')
+                .attributes({ placeholder: 'You can specify data you need to know for the channel in this field' })
+                .validation({ required: true })
+                .label('Description'),
+            nga.field('isavailable','boolean')
+                .attributes({ placeholder: 'Is Available' })
+                .validation({ required: true })
+                .label('Is Available'),
+            nga.field('pin_protected', 'boolean')
+                .validation({ required: true })
+                .label('Pin Protected'),
+
+            nga.field('packages_channels','reference_many')
+                .targetEntity(admin.getEntity('Packages'))
+                .permanentFilters({ package_type_id: [1,2] })
+                .targetField(nga.field('package_name'))
+                .label('Packages')
+                .attributes({ placeholder: 'Select packages' })
+                .map(function getpckgid(value, entry) {
+                    var return_object = [];
+                    for (var i = 0; i < value.length; i++) {
+                        return_object[i] = value[i].package_id;
+                    }
+                    return return_object;
+                })
+                .singleApiCall(function (package_id) {
+                    return { 'package_id[]': package_id };
+                }),
+
+            nga.field('icon_url', 'file')
+                .uploadInformation({ 'url': '/file-upload/single-file/channels/icon_url', 'apifilename': 'result'})
+                .template('<div class="row">'+
+                    '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>'+
+                    '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>'+
+                    '</div>'+
+                    '<div class="row"><small id="emailHelp" class="form-text text-muted">240x240 px, not larger than 100 KB</small></div>')
+                .validation({
+                    validator: function(value) {
+                        if (value == null) {
+                            throw new Error('Please, choose icon');
+                        }else {
+                            var icon_url = document.getElementById('icon_url');
+                            if (icon_url.value.length > 0) {
+                                if(icon_url.files[0].size > 102400 ){
+                                    throw new Error('Your Icon is too Big, not larger than 100 KB');
+                                }
+                            }
+                        }
+                    }
+                })
+                .label('Icon *'),
+            nga.field('template')
+                .label('')
+                .template(edit_button),
+
+
             nga.field('ChannelStreams', 'referenced_list')
                 .label('Channel Streams')
                 .targetEntity(admin.getEntity('ChannelStreams'))

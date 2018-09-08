@@ -19,12 +19,12 @@ export default function (nga, admin) {
                 .targetField(nga.field('stream_source'))
                 .label('Stream Source'),
             nga.field('stream_url', 'string')
-                // .map(function truncate(value) {
-                //     if (!value) {
-                //         return 'No Stream Url';
-                //     }
-                //     return value.length > 25 ? value.substr(0, 25) + '...' : value;
-                // })
+            // .map(function truncate(value) {
+            //     if (!value) {
+            //         return 'No Stream Url';
+            //     }
+            //     return value.length > 25 ? value.substr(0, 25) + '...' : value;
+            // })
                 .label('Stream Url'),
             nga.field('stream_mode', 'choice')
                 .attributes({ placeholder: 'Stream Format' })
@@ -109,23 +109,16 @@ export default function (nga, admin) {
                 .validation({validator: function(value) {
                         if(value === null){
                             throw new Error('Please Select Stream Url');
+                        } else if(value.indexOf('http://') == 0 || value.indexOf('https://') == 0 || value.indexOf('udp://') == 0 || value.indexOf('rtmp://') == 0){
+                            document.getElementById('row-stream_url').classList.remove("has-error");
+                            document.getElementById('row-stream_url').classList.add("has-success");
+                        }else{
+                            document.getElementById('row-stream_url').classList.add("has-error");
+                            throw new Error('Invalid Url');
                         }
                     }
                 })
                 .label('Stream Url'),
-            nga.field('recording_engine', 'choice')
-                .attributes({ placeholder: 'Select from dropdown list' })
-                .choices([
-                    { value: 'wowza', label: 'Wowza' },
-                    { value: 'flussonic', label: 'Flussonic' }
-                ])
-                .validation({validator: function(value) {
-                        if(value === null){
-                            throw new Error('Please Select Recording Engine');
-                        }
-                    }
-                })
-                .label('Recording Engine'),
             nga.field('stream_mode', 'choice')
                 .attributes({ placeholder: 'Select Channel Mode from dropdown list' })
                 .choices([
@@ -139,6 +132,24 @@ export default function (nga, admin) {
                     }
                 })
                 .label('Channel mode'),
+            nga.field('recording_engine', 'choice')
+                .defaultValue('none')
+                .choices([
+                    { value: 'none', label: 'None' },
+                    { value: 'wowza', label: 'Wowza' },
+                    { value: 'flussonic', label: 'Flussonic' }
+                ])
+                .validation({validator: function(value) {
+                        if(value === null){
+                            throw new Error('Please Select Recording Engine');
+                        }
+                    }
+                })
+                .template('<div>'+
+                    '<ma-choice-field field="field" value="entry.values.recording_engine"></ma-choice-field>'+
+                    '<small id="emailHelp" class="form-text text-muted">For catchup channels choose the Recording Engine from dropdown list. By default is None</small>'+
+                    '</div>')
+                .label('Recording Engine'),
             nga.field('stream_resolution', 'choices')
                 .attributes({ placeholder: 'Select screen types where this stream should play' })
                 .choices([

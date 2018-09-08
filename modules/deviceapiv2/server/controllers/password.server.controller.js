@@ -62,7 +62,14 @@ exports.validateResetToken = function(req, res) {
 };
 
 /**
- * Forgot for reset password (forgot POST)
+ * @api {post} /apiv2/password/forgot Reset password
+ * @apiName ResetPassword
+ * @apiGroup DeviceAPI
+ *
+ * @apiParam {String} [username]  Username account
+ * @apiParam {String} [language]  Determines language of the email template
+ *
+ *@apiDescription Enter a valid username to test the API
  *
  */
 exports.forgot = function(req, res, next) {

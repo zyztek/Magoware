@@ -29,7 +29,7 @@ function resellersdashboardSummary(Restangular) {
 
             //my sales this month
             Restangular
-                .all('sales_by_month')
+                .all('sales_by_month?distributorname='+localStorage.userName+'')
                 .getList()
                 .then(function(response) {
                     var data = response.data;
@@ -42,12 +42,16 @@ function resellersdashboardSummary(Restangular) {
                         return -1;
                     }
                     var number = findWithAttr(data, 'saledate', datenow);
-                    $scope.stats.this_month = response.data[number].count;
+                    if (number == -1){
+                        $scope.stats.this_month = 0;
+                    }else{
+                        $scope.stats.this_month = response.data[number].count;
+                    }
                 });
 
             //my sales last month
             Restangular
-                .all('sales_by_month')
+                .all('sales_by_month?distributorname='+localStorage.userName+'')
                 .getList()
                 .then(function(response) {
                     var data = response.data;
@@ -60,12 +64,16 @@ function resellersdashboardSummary(Restangular) {
                         return -1;
                     }
                     var number = findWithAttr(data, 'saledate', dateOneMonthAgo);
-                    $scope.stats.last_month = response.data[number].count;
+                    if (number == -1){
+                        $scope.stats.last_month = 0;
+                    }else{
+                        $scope.stats.last_month = response.data[number].count;
+                    }
                 });
 
             //my sales this year
             Restangular
-                .all('sales_by_month?startsaledate='+year+'-01-01&endsaledate='+year+'-12-31')
+                .all('sales_by_month?distributorname='+localStorage.userName+'&startsaledate='+year+'-01-01&endsaledate='+year+'-12-31')
                 .getList()
                 .then(function(response) {
                     var data = response.data;
@@ -73,13 +81,17 @@ function resellersdashboardSummary(Restangular) {
                     for (var i = 0; i < data.length; i++) {
                         array_count.push(data[i].count);
                     }
-                    var sum = array_count.reduce(function(a, b) { return a + b; });
-                    $scope.stats.this_year = sum;
+                    if(array_count.length == 0){
+                        $scope.stats.this_year = 0;
+                    }else{
+                        var sum = array_count.reduce(function(a, b) { return a + b; });
+                        $scope.stats.this_year = sum;
+                    }
                 });
 
             //my sales last year
             Restangular
-                .all('sales_by_month?startsaledate='+yearago+'-01-01&endsaledate='+yearago+'-12-31')
+                .all('sales_by_month?distributorname='+localStorage.userName+'&startsaledate='+yearago+'-01-01&endsaledate='+yearago+'-12-31')
                 .getList()
                 .then(function(response) {
                     var data = response.data;
@@ -87,8 +99,13 @@ function resellersdashboardSummary(Restangular) {
                     for (var i = 0; i < data.length; i++) {
                         array_count.push(data[i].count);
                     }
-                    var sum = array_count.reduce(function(a, b) { return a + b; });
-                    $scope.stats.last_year = sum;
+                    if(array_count.length == 0){
+                        $scope.stats.last_year = 0;
+                    }else{
+                        var sum = array_count.reduce(function(a, b) { return a + b; });
+                        $scope.stats.last_year = sum;
+                    }
+
                 });
         },
         template: dashboardSummaryTemplate

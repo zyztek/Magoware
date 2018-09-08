@@ -45,6 +45,7 @@ function auth_decrypt(encryptedText, key) {
 }
 
 function auth_decrypt1(token_string, key) {
+    console.log(token_string);
     var C = CryptoJS;
     token_string = token_string.replace(/(,\+)/g, ',').replace(/\\r|\\n|\n|\r/g, ''); //remove all occurrences of '+' characters before each token component, remove newlines and carriage returns
     var token_object = querystring.parse(token_string,",","="); //convert token string into token object. library
@@ -59,7 +60,6 @@ function auth_decrypt1(token_string, key) {
     });
     var decrypted = aes.finalize(test);
     try {
-        //console.log("decrypted", decrypted)
         return C.enc.Utf8.stringify(decrypted);
     }
     catch(err) {
@@ -88,6 +88,23 @@ exports.emptyCredentials = function(req, res, next) {
     next();
 }
 
+
+/**
+ * @apiDefine header_auth
+ * @apiHeader {String[]} auth Encoded client authentification token. Sample structure, after decoding:
+ *
+ * {api_version=22, appversion=1.1.4.2, screensize=480x800, appid=2, devicebrand=+SM-G361F+Build/LMY48B, language=eng, ntype=1, app_name=MAGOWARE, device_timezone=2, os=Linux U Android+5.1.1, auth=8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG/FoT9fEw4CrxF, hdmi=false, firmwareversion=LMY48B.G361FXXU1APB1}
+ *
+ */
+
+/**
+ * @apiDefine body_auth
+ * @apiParam {String[]} auth Encrypted client authentification token. Sample structure, after decrypting:
+ *
+ *  username=chernoalpha;password=klmn;boxid=63a7240ers2a745f;appid=2;timestamp=1529422891012
+ *
+ */
+
 exports.isAllowed = function(req, res, next) {
 
 
@@ -104,7 +121,6 @@ exports.isAllowed = function(req, res, next) {
     //krijo objektin e auth
 
     if(req.headers.auth){
-        console.log("req headers ")
         if(missing_params(querystring.parse(auth_decrypt1(auth,req.app.locals.settings.new_encryption_key),";","=")) === false){
             var auth_obj = querystring.parse(auth_decrypt1(auth,req.app.locals.settings.new_encryption_key),";","=");
         }

@@ -4,10 +4,20 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
     </button>
-    <a class="navbar-brand" href="#" ng-click="appController.displayHome()"><span ng-app="myApp" ng-controller="envVariablesCtrl">{{company_name}} - Administration System</span></a>
+    <a class="navbar-brand" href="#" ng-click="appController.displayHome()" ng-app="myApp" ng-controller="envVariablesCtrl">
+
+        <div class="row">
+            <div class="col-sm-6">
+                <img src="{{company_logo}}"  class="img-responsive logo_company" alt="Company Logo">
+            </div>
+            <div class="col-sm-6">
+                <p id="company_name">{{company_name}} - Administration System</p>
+            </div>
+        </div>
+    </a>
 </div>
 
-<ul class="nav navbar-top-links navbar-right text-center">
+<ul class="nav navbar-top-links navbar-right text-center responsive">
     <li uib-dropdown>
         <a uib-dropdown-toggle href="#" aria-expanded="true" ng-controller="username">
             <i class="fa fa-user fa-lg"></i>&nbsp; {{ username }}&nbsp;<i class="fa fa-caret-down"></i>
@@ -30,12 +40,11 @@
                 <a ng-click="serve_language('en');change('English')"><i class="fa fa-sign-out fa-fw"></i> English</a>
                 <a ng-click="serve_language('fr');change('French')"><i class="fa fa-sign-out fa-fw"></i> French</a>
                 <a ng-click="serve_language('sp');change('Spanish')"><i class="fa fa-sign-out fa-fw"></i> Spanish</a>
-				<a ng-click="serve_language('sq');change('Albanian')"><i class="fa fa-sign-out fa-fw"></i> Albanian</a>
+                <a ng-click="serve_language('sq');change('Albanian')"><i class="fa fa-sign-out fa-fw"></i> Albanian</a>
             </li>
 
         </ul>
     </li>
 </ul>
-
 
 

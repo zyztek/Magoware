@@ -79,6 +79,33 @@ export default function (nga, admin) {
             mysales.listView().fields(),
         ]);
 
+    mysales.editionView()
+        .title('<h4>Transaction <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.username }}</h4>')
+        .actions(['list'])
+        .fields([
+            nga.field('id', 'number')
+                .editable(false)
+                .label('ID'),
+            nga.field('transaction_id', 'string')
+                .label('Transaction ID')
+                .editable(false),
+            /*
+            nga.field('active', 'boolean')
+                    .attributes({readOnly: true})
+                    .defaultValue(true)
+                    .validation({ required: true })
+                .label('Cancel Sale'),
+            */
+            nga.field('cancelation_reason', 'string')
+                .label('Cancelation Reason')
+                .editable(true)
+                .validation({ required: true}),
+            nga.field('template')
+                .label('')
+                .template(edit_button),
+
+        ]);
+
     return mysales;
 
 }

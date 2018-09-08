@@ -12,10 +12,11 @@ export default function (nga, admin) {
                 .label('ID'),
             nga.field('template_id', 'choice')
                 .choices([
-                    { value: 'code-pin-email', label: 'Email Template for Code Pin' },
+                    { value: 'code-pin-email', label: 'Email Template for Forgot Pin' },
                     { value: 'new-account', label: 'Email Template for New Account' },
                     { value: 'new-email', label: 'Email Template for New Email' },
                     { value: 'reset-password-email', label: 'Email Template for Reset Password' },
+                    { value: 'weather-widget', label: 'Weather Widget' },
                     // { value: 'reset-password-confirm-email', label: '' },
                     // { value: 'reset-password-email', label: '' },
                     // { value: 'reset-password-enter-password', label: '' },
@@ -36,10 +37,11 @@ export default function (nga, admin) {
             nga.field('template_id', 'choice')
                 .attributes({ placeholder: 'Choose from dropdown list' })
                 .choices([
-                    { value: 'code-pin-email', label: 'Email Template for Code Pin' },
+                    { value: 'code-pin-email', label: 'Email Template for Forgot Pin' },
                     { value: 'new-account', label: 'Email Template for New Account' },
                     { value: 'new-email', label: 'Email Template for New Email' },
                     { value: 'reset-password-email', label: 'Email Template for Reset Password' },
+                    { value: 'weather-widget', label: 'Weather Widget' },
                     // { value: 'reset-password-confirm-email', label: '' },
                     // { value: 'reset-password-email', label: '' },
                     // { value: 'reset-password-enter-password', label: '' },
@@ -78,10 +80,11 @@ export default function (nga, admin) {
             nga.field('template_id', 'choice')
                 .attributes({ placeholder: 'Choose from dropdown list' })
                 .choices([
-                    { value: 'code-pin-email', label: 'Email Template for Code Pin' },
+                    { value: 'code-pin-email', label: 'Email Template for Forgot Pin' },
                     { value: 'new-account', label: 'Email Template for New Account' },
                     { value: 'new-email', label: 'Email Template for New Email' },
                     { value: 'reset-password-email', label: 'Email Template for Reset Password' },
+                    { value: 'weather-widget', label: 'Weather Widget' },
                     // { value: 'reset-password-confirm-email', label: '' },
                     // { value: 'reset-password-email', label: '' },
                     // { value: 'reset-password-enter-password', label: '' },
