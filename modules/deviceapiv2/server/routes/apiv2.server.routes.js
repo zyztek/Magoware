@@ -8,10 +8,10 @@ var path = require('path'),
     credentialsController = require(path.resolve('./modules/deviceapiv2/server/controllers/credentials.server.controller')),
     channelsController = require(path.resolve('./modules/deviceapiv2/server/controllers/channels.server.controller')),
     catchupController = require(path.resolve('./modules/deviceapiv2/server/controllers/catchup.server.controller')),
-//vodController = require(path.resolve('./modules/deviceapiv2/server/controllers/vod.server.controller')),
+    //vodController = require(path.resolve('./modules/deviceapiv2/server/controllers/vod.server.controller')),
     settingsController = require(path.resolve('./modules/deviceapiv2/server/controllers/settings.server.controller')),
     networkController = require(path.resolve('./modules/deviceapiv2/server/controllers/network.server.controller')),
-//eventlogsController = require(path.resolve('./modules/deviceapiv2/server/controllers/eventlogs.server.controller')),
+    //eventlogsController = require(path.resolve('./modules/deviceapiv2/server/controllers/eventlogs.server.controller')),
     passwordController = require(path.resolve('./modules/deviceapiv2/server/controllers/password.server.controller')),
     mainController = require(path.resolve('./modules/deviceapiv2/server/controllers/main.server.controller')),
     customersAppController = require(path.resolve('./modules/deviceapiv2/server/controllers/customers_app.server.controller')),
@@ -98,7 +98,6 @@ module.exports = function(app) {
         .post(catchupController.catchup_stream);
 
 
-
     //settings
     app.route('/apiv2/settings/settings')
         .all(authpolicy.isAllowed)
@@ -119,6 +118,17 @@ module.exports = function(app) {
         .all(authpolicy.isAllowed)
         .get(mainController.device_menu_get)
         .post(mainController.device_menu);
+
+    //main device menu with two levels - level1
+    app.route('/apiv2/main/device_menu_levelone')
+        .all(authpolicy.isAllowed)
+        .get(mainController.get_devicemenu_levelone);
+
+    //main device menu with two levels - level2
+    app.route('/apiv2/main/device_menu_leveltwo')
+        .all(authpolicy.isAllowed)
+        .get(mainController.get_devicemenu_leveltwo);
+
 
     /*******************************************************************
      Network - related API

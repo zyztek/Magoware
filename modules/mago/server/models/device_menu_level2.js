@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = function(sequelize, DataTypes) {
-    var deviceMenu = sequelize.define('device_menu', {
+    var deviceMenuLevel2 = sequelize.define('device_menu_level2', {
         id: {
             type: DataTypes.INTEGER(11),
             allowNull: false,
@@ -29,12 +29,6 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.INTEGER(11),
             allowNull: false
         },
-        position: {
-            type: DataTypes.INTEGER(11),
-            allowNull: false,
-            unique: true
-        },
-
 
         menu_level: {
             type: DataTypes.INTEGER(11),
@@ -49,6 +43,11 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false
         },
 
+        position: {
+            type: DataTypes.INTEGER(11),
+            allowNull: false,
+            unique: true
+        },
 
         locale: {
             type: DataTypes.STRING(16),
@@ -60,9 +59,9 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false
         }
     }, {
-        tableName: 'device_menu',
+        tableName: 'device_menu_level2',
         associate: function(models) {
         }
     });
-    return deviceMenu;
+    return deviceMenuLevel2;
 };

@@ -90,10 +90,21 @@ module.exports = function(app) {
         .get(vodController.list_get_newdata);
 
 
-    //testing api
+    //Get VOD Item Details
     app.route('/apiv2/vod/voditem/:vodID')
         .all(authpolicy.isAllowed)
-        .get(vodController.get_vod_item);
+        .get(vodController.get_vod_item_details);
+
+    //Get TVSHOW Item Details with default Season = 1
+    app.route('/apiv2/vod/tvshow_details/:tvshowID')
+        .all(authpolicy.isAllowed)
+        .get(vodController.get_tvshow_item_details);
+
+    //Get TVSHOW Item Details with episodes for specific Season
+    app.route('/apiv2/vod/tvshow_details/:tvshowID/:seasonNumber')
+        .all(authpolicy.isAllowed)
+        .get(vodController.get_tvshow_item_details);
+
 
     app.route('/apiv2/vod/related/:vodID')
         .all(authpolicy.isAllowed)
@@ -113,4 +124,3 @@ module.exports = function(app) {
         .get(vodController.get_tv_series_data)
 
 };
-

@@ -1035,9 +1035,9 @@ exports.get_tvshow_item_details = function(req, res) {
     var where_seasonNumber = {};
 
     if(req.params.seasonNumber)
-        where_seasonNumber.season_number = req.params.seasonNumber
+        where_seasonNumber.season_nr = req.params.seasonNumber
     else
-        where_seasonNumber.season_number = 1
+        where_seasonNumber.season_nr = 1
 
     models.vod.find({
         where: {
@@ -1058,7 +1058,7 @@ exports.get_tvshow_item_details = function(req, res) {
         } else {
             response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
         }
-    }).catch(function(error) {
+    }).catch(function(err) {
         winston.error('error querying tv show:',error);
     });
 
@@ -1110,7 +1110,7 @@ exports.get_vod_item_related = function(req, res) {
         var offset = isNaN(parseInt(req.query._start)) ? 0 : parseInt(req.query._start);
         var limit =  isNaN(parseInt(req.query._end)) ?  req.app.locals.settings.vod_subset_nr: parseInt(req.query._end) - offset;
         var order_by = (req.query._orderBy) ? req.query._orderBy + ' ' + req.query._orderDir : "matching_score DESC";
-        var related_query = "SELECT DISTINCT CAST(vod.id AS CHAR) AS id, vod.title, vod_type, CONCAT(vod.description, ' Director: ', vod.director, ' Starring: ', vod.starring) AS description, vod.rate, vod.duration, " +
+        var related_query = "SELECT DISTINCT CAST(vod.id AS CHAR) AS id, vod.title, CONCAT(vod.description, ' Director: ', vod.director, ' Starring: ', vod.starring) AS description, vod.rate, vod.duration, " +
             "vod.pin_protected, vod.year, UNIX_TIMESTAMP(vod.createdAt) as dataadded, CONCAT('"+req.app.locals.settings.assets_url+"', vod.icon_url) AS icon, "+
             " concat('"+req.app.locals.settings.assets_url + "', vod.image_url) as largeimage,"+
             " ( "+
@@ -1169,7 +1169,7 @@ exports.get_vod_items_recommended = function(req, res) {
             var qwhere  = {};
             qwhere.where = {};
 
-            qwhere.attributes = ['id', 'title', 'description', 'vod_type','starring', 'director', 'rate', 'duration', 'year', 'pin_protected', 'clicks',
+            qwhere.attributes = ['id', 'title', 'description', 'starring', 'director', 'rate', 'duration', 'year', 'pin_protected', 'clicks',
                 [db.sequelize.fn("concat", req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'icon_url'],
                 [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('image_url')), 'image_url'],
                 [db.sequelize.fn('UNIX_TIMESTAMP', db.sequelize.col('createdAt')), 'createdAt']
