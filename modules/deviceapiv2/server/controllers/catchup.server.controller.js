@@ -176,6 +176,7 @@ exports.get_catchup_events =  function(req, res) {
  */
 
 
+
 exports.catchup_stream =  function(req, res) {
     var channel_number = req.body.channelNumber;
     var stream_mode = 'catchup';
@@ -187,18 +188,29 @@ exports.catchup_stream =  function(req, res) {
         where: {channel_number: channel_number}
     }).then(function (catchup_streams) {
 
-        //if timestamp is missing milisecconds
-        if(req.body.timestart.toString().length == 10) {
-            req.body.timestart = req.body.timestart * 1000;
-        }
-
         var thestream = catchup_streams.channel_streams[0].stream_url;
 
         //check recording engine
         if(catchup_streams.channel_streams[0].recording_engine == 'wowza') {
+
+            //milliseconds required for Date functions
+            if(req.body.timestart.toString().length === 10) {
+                req.body.timestart = req.body.timestart * 1000;
+            }
+
             var date = new Date(req.body.timestart);
-            var catchup_moment = date.getFullYear() + (("0" + date.getMonth()).slice(-2)) + (("0" + date.getDay()).slice(-2)) + (("0" + date.getHours()).slice(-2)) + (("0" + date.getMinutes()).slice(-2)) + (("0" + date.getSeconds()).slice(-2));
+
+            var wtime = {};
+            wtime.years = date.getFullYear();
+            wtime.months = date.getUTCMonth() + 1;
+            wtime.days = date.getUTCDate();
+            wtime.hours = date.getUTCHours();
+            wtime.minutes = date.getUTCMinutes();
+            wtime.seconds = date.getUTCSeconds();
+
+            var catchup_moment = date.getFullYear() + (("0" + wtime.months).slice(-2)) + (("0" + wtime.days).slice(-2)) + (("0" + wtime.hours).slice(-2)) + (("0" + wtime.minutes).slice(-2)) + "00";
             thestream = thestream.replace('[epochtime]', catchup_moment);
+
         }
         else {  //assume it is flussonic
 
