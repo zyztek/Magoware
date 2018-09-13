@@ -147,6 +147,10 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'Is Available' })
                 .validation({ required: true })
                 .label('Is Available'),
+            nga.field('menu_description')
+                .attributes({ placeholder: 'Menu Description' })
+                .validation({ required: true })
+                .label('Menu Description'),
             nga.field('menu_level')
                 .defaultValue(1)
                 .cssClasses('hidden')
