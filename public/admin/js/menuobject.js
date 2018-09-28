@@ -149,7 +149,7 @@ export default [{
     {
         "title":"Advanced Settings",
         "icon":'<span class="fa fa-cog fa-fw"></span>',
-        "link":'/AdvancedSettings/create',
+        "link":'/AdvancedSettings/list',
         "group_roles":["admin","administrator","customercare","management","guest"],
         "children": []
     },

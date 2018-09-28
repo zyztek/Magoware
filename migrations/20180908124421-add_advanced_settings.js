@@ -12,7 +12,8 @@ module.exports = {
             },
             parameter_id: {
                 type: Sequelize.STRING(100),
-                allowNull: false
+                allowNull: false,
+                unique: true
             },
             parameter_value: {
                 type: Sequelize.STRING(100),

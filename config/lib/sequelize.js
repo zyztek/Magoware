@@ -18,6 +18,7 @@ var salt = randomstring.generate(64);
 var protocol = (config.port === 443) ? 'https://' : 'http://'; //port 443 means we are running https, otherwise we are running http (preferably on port 80)
 
 const os = require('os');
+const advanced_settings = require(path.resolve("./config/defaultvalues/advanced_settings.json"));
 const api_list = require(path.resolve("./config/api_list.json"));
 const default_device_menu = require(path.resolve("./config/defaultvalues/device_menu.json"));
 const default_activity = require(path.resolve("./config/defaultvalues/activity.json"));
@@ -207,18 +208,35 @@ db.connect = function(database, username, password, options) {
                 });
                 return null;
             }).then(function() {
-                async.forEach(default_package_type, function(package_type_obj, callback){
-                    db.models['package_type'].findOrCreate({
-                        where: {id: package_type_obj.id}, defaults: package_type_obj
+                //Populating app_group table
+                async.forEach(default_app_groups, function(app_group_obj, callback){
+                    db.models['app_group'].findOrCreate({
+                        where: {id: app_group_obj.id}, defaults: app_group_obj
                     }).then(function(done) {
                         callback(null);
                         return null;
                     }).catch(function(err) {
-                        winston.info('Error creating package type '+package_type_obj.description+': ',err);
+                        winston.info('Error creating app group with id '+app_group_obj.id+': ',err);
                         return null;
                     });
                 }, function(error){
-                    winston.info('Default package_types created successfully. Creating device menu table ...');
+                    winston.info('Default app groups created successfully. Creating advanced settings table ...');
+                    return null;
+                });
+                return null;
+            }).then(function() {
+                async.forEach(advanced_settings, function(advanced_settings_obj, callback){
+                    db.models['advanced_settings'].findOrCreate({
+                        where: {id: advanced_settings_obj.id}, defaults: advanced_settings_obj
+                    }).then(function(done) {
+                        callback(null);
+                        return null;
+                    }).catch(function(err) {
+                        winston.info('Error creating configuration '+advanced_settings_obj.parameter_id+': ',err);
+                        return null;
+                    });
+                }, function(error){
+                    winston.info('Default configurations created successfully. Creating device menu table ...');
                     return null;
                 });
                 return null;

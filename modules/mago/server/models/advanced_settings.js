@@ -11,7 +11,8 @@ module.exports = function(sequelize, DataTypes) {
         },
         parameter_id: {
             type: DataTypes.STRING(100),
-            allowNull: false
+            allowNull: false,
+            unique: true
         },
         parameter_value: {
             type: DataTypes.STRING(100),
