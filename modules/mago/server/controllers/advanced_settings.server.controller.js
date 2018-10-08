@@ -43,6 +43,11 @@ exports.update = function(req, res) {
 
     logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
     updateData.updateAttributes(req.body).then(function(result) {
+        var edited_config_index = req.app.locals.configurations.findIndex(function(obj) {return obj.id === req.body.id;}); //find position of updated record in local variable
+
+        delete req.app.locals.configurations[edited_config_index]; //delete old value
+        req.app.locals.configurations[edited_config_index] = req.body; //update with new one
+
         res.json(result);
     }).catch(function(err) {
         return res.status(400).send({
