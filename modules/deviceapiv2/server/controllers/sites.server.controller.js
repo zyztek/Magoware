@@ -100,7 +100,7 @@ exports.createaccount = function(req,res) {
                         force_upgrade:			  0,
                         account_lock:			  0,
                         resetPasswordToken:		  token,
-                        resetPasswordExpires:     Date.now() + 3600000 // 1 hour
+                        resetPasswordExpires:     Date.now() + 86400000 // email confirmation till 1 day from now
                     }).then(function(new_login){
                         done(null,token, new_customer);
                         return null;
