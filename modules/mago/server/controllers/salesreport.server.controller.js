@@ -701,47 +701,98 @@ exports.download_invoice = function(req, res) {
             return res.status(404).send({message: 'No data found'});
         } else {
 
-            var compiled = ejs.compile(fs.readFileSync('modules/mago/server/templates/salesreport-invoice.html', 'utf8'));
+            db.email_templates.findOne({
+                attributes:['title','content'],
+                where: {template_id: 'invoice-info'}
 
-            if (fs.existsSync('public/files/settings/mago.png')) {
-                var url= 'https://backoffice.magoware.tv';
-                var images = '/files/settings/mago.png' ;
-            }else {
+            }).then(function (result,err) {
 
-                images = req.app.locals.settings.box_logo_url;
-                url = req.app.locals.settings.assets_url;
-            }
+                var compiled = ejs.compile(fs.readFileSync('modules/mago/server/templates/salesreport-invoice.html', 'utf8'));
+                var images = req.app.locals.settings.company_logo;
+                var url = req.app.locals.settings.assets_url;
 
 
-            var html = compiled({
-                image: url+images,
-                username: results.login_datum.username,
-                pin: results.login_datum.pin,
-                password: 1234,
-                firstname: results.login_datum.customer_datum.firstname,
-                lastname: results.login_datum.customer_datum.lastname,
-                email: results.login_datum.customer_datum.email,
-                address: results.login_datum.customer_datum.address,
-                country: results.login_datum.customer_datum.country,
-                telephone: results.login_datum.customer_datum.telephone,
-                user_type: 'Klient',
-                saledate: dateFormat(results.saledate,'yyyy-mm-dd HH:MM:ss'),
-                product: results.combo.name,
-                distributorname: results.user.username,
-                sale_type: (results.length > 1) ? "Ri-abonim" : "Aktivizim",
-            });
-            var options = { format: 'Letter'};
-            var filename = 'Invoice for '+results.login_datum.username+req.params.invoiceID+'.pdf';
+                if(!result){
 
-            pdf.create(html, options).toFile('./public/tmp/'+filename, function(err,pdfres) {
-                res.setHeader('x-filename', filename);
-                res.sendFile(pdfres.filename);
+                    //if no result found in Adm System
+                    var html = compiled({
+                        info0: 'www.magoware.tv',
+                        info1: 'info@magoware.tv',
+                        info2: 'Headquarters: Gjergj Fishta Blv., G & P building, 2nd Floor, Tirana, Albania',
+                        info3: 'Phone Albania +355 445 043 50',
+                        info4: 'USA +1 646 630 8976',
+                        info5: 'United Kingdom +44 203 740 4877',
+                        info6: 'Australia +61 285 181 274',
+                        image: url+images,
+                        username: results.login_datum.username,
+                        pin: results.login_datum.pin,
+                        password: 1234,
+                        firstname: results.login_datum.customer_datum.firstname,
+                        lastname: results.login_datum.customer_datum.lastname,
+                        email: results.login_datum.customer_datum.email,
+                        address: results.login_datum.customer_datum.address,
+                        country: results.login_datum.customer_datum.country,
+                        telephone: results.login_datum.customer_datum.telephone,
+                        user_type: 'Klient',
+                        saledate: dateFormat(results.saledate,'yyyy-mm-dd HH:MM:ss'),
+                        product: results.combo.name,
+                        distributorname: results.user.username,
+                        sale_type: (results.length > 1) ? "Ri-abonim" : "Aktivizim",
+                    });
+                    var options = { format: 'Letter'};
+                    var filename = 'Invoice for '+results.login_datum.username+req.params.invoiceID+'.pdf';
+
+                    pdf.create(html, options).toFile('./public/tmp/'+filename, function(err,pdfres) {
+                        res.setHeader('x-filename', filename);
+                        res.sendFile(pdfres.filename);
+                    });
+                }
+                //./if no result found in Adm System
+
+                // if result is found in Adm System
+                else {
+
+                    var response = result.content;
+                    var array_info = response.split('<br>');
+
+                    var html = compiled({
+                        info0: array_info[0],
+                        info1: array_info[1],
+                        info2: array_info[2],
+                        info3: array_info[3],
+                        info4: array_info[4],
+                        info5: array_info[5],
+                        info6: array_info[6],
+                        image: url+images,
+                        username: results.login_datum.username,
+                        pin: results.login_datum.pin,
+                        password: 1234,
+                        firstname: results.login_datum.customer_datum.firstname,
+                        lastname: results.login_datum.customer_datum.lastname,
+                        email: results.login_datum.customer_datum.email,
+                        address: results.login_datum.customer_datum.address,
+                        country: results.login_datum.customer_datum.country,
+                        telephone: results.login_datum.customer_datum.telephone,
+                        user_type: 'Klient',
+                        saledate: dateFormat(results.saledate,'yyyy-mm-dd HH:MM:ss'),
+                        product: results.combo.name,
+                        distributorname: results.user.username,
+                        sale_type: (results.length > 1) ? "Ri-abonim" : "Aktivizim",
+                    });
+                    var options = { format: 'Letter'};
+                    var filename = 'Invoice for '+results.login_datum.username+req.params.invoiceID+'.pdf';
+
+                    pdf.create(html, options).toFile('./public/tmp/'+filename, function(err,pdfres) {
+                        res.setHeader('x-filename', filename);
+                        res.sendFile(pdfres.filename);
+                    });
+                }
+                //./ if result is found in Adm System
             });
         }
     }).catch(function (err) {
         res.jsonp(err);
     });
-
 };
 
 //./download_invoice

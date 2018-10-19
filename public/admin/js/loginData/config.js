@@ -9,7 +9,7 @@ export default function (nga, admin) {
             nga.field('customer_id','reference')
                 .targetEntity(admin.getEntity('CustomerData'))
                 .targetField(
-                        nga.field('firstname')
+                    nga.field('firstname')
                         .map(function (value, entry) {
                             return entry.firstname + ' ' + entry.lastname;
                         })
@@ -205,10 +205,10 @@ export default function (nga, admin) {
         .title('<h4>Login Accounts <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.username }}</h4>')
         .actions(['list'])
         .fields([
-        	nga.field('customer_id', 'reference')
+            nga.field('customer_id', 'reference')
                 .targetEntity(admin.getEntity('CustomerData'))
                 .targetField(nga.field('firstname', 'template')
-                        .map((v, e) => e.firstname + ' ' + e.lastname))
+                    .map((v, e) => e.firstname + ' ' + e.lastname))
         .attributes({ placeholder: 'Select Customer' })
         .label('Customer')
         .perPage(1000)
@@ -331,93 +331,93 @@ export default function (nga, admin) {
 
 
 
-            nga.field('Subscriptions', 'referenced_list')
-                .label('Subscription')
-                .targetEntity(admin.getEntity('Subscriptions'))
-                .targetReferenceField('login_id')
-                .targetFields([
-                    nga.field('package_id', 'reference')
-                        .targetEntity(admin.getEntity('Packages'))
-                        .targetField(nga.field('package_name'))
-                        .label('Package'),
-                    nga.field('package_id', 'reference')
-                        .targetEntity(admin.getEntity('Packages'))
-                        .targetField(nga.field('package_type_id')
-                            .map(function truncate(value) {
-                                if (value === 1) {
-                                    return 'Live big screen';
-                                } else if (value === 2) {
-                                    return 'Live small screen';
-                                }  else if (value === 3) {
-                                    return 'Vod big screen';
-                                } else if (value === 4) {
-                                    return 'Vod small screen';
-                                }
-                            }))
-                        .label('Package Type'),
-                    nga.field('start_date', 'date')
-                        .cssClasses('hidden-xs')
-                        .template(function (entry) {
-                            var moment = new Date().toISOString().slice(0,10);
-                            var ng_vlera_start = new Date(entry.values.start_date).toISOString().slice(0,10);
-                            var ng_vlera_end = new Date(entry.values.end_date).toISOString().slice(0,10);
-                            if ((moment >= ng_vlera_start) && (moment <= ng_vlera_end)) {
-                                return ng_vlera_start.fontcolor("green");
-                            } else {
-                                return ng_vlera_start.fontcolor("red").bold();
+        nga.field('Subscriptions', 'referenced_list')
+            .label('Subscription')
+            .targetEntity(admin.getEntity('Subscriptions'))
+            .targetReferenceField('login_id')
+            .targetFields([
+                nga.field('package_id', 'reference')
+                    .targetEntity(admin.getEntity('Packages'))
+                    .targetField(nga.field('package_name'))
+                    .label('Package'),
+                nga.field('package_id', 'reference')
+                    .targetEntity(admin.getEntity('Packages'))
+                    .targetField(nga.field('package_type_id')
+                        .map(function truncate(value) {
+                            if (value === 1) {
+                                return 'Live big screen';
+                            } else if (value === 2) {
+                                return 'Live small screen';
+                            }  else if (value === 3) {
+                                return 'Vod big screen';
+                            } else if (value === 4) {
+                                return 'Vod small screen';
                             }
-                        })
-                        .label('Start date'),
-                    nga.field('end_date', 'date')
-                        .cssClasses('hidden-xs')
-                        .template(function (entry) {
-                            var moment = new Date().toISOString().slice(0,10);
-                            var ng_vlera_start = new Date(entry.values.start_date).toISOString().slice(0,10);
-                            var ng_vlera_end = new Date(entry.values.end_date).toISOString().slice(0,10);
-                            if ((moment >= ng_vlera_start) && (moment <= ng_vlera_end)) {
-                                return ng_vlera_end.fontcolor("green");
-                            } else {
-                                return ng_vlera_end.fontcolor("red").bold();
-                            }
-                        })
-                        .label('End date'),
-                ]),
+                        }))
+                    .label('Package Type'),
+                nga.field('start_date', 'date')
+                    .cssClasses('hidden-xs')
+                    .template(function (entry) {
+                        var moment = new Date().toISOString().slice(0,10);
+                        var ng_vlera_start = new Date(entry.values.start_date).toISOString().slice(0,10);
+                        var ng_vlera_end = new Date(entry.values.end_date).toISOString().slice(0,10);
+                        if ((moment >= ng_vlera_start) && (moment <= ng_vlera_end)) {
+                            return ng_vlera_start.fontcolor("green");
+                        } else {
+                            return ng_vlera_start.fontcolor("red").bold();
+                        }
+                    })
+                    .label('Start date'),
+                nga.field('end_date', 'date')
+                    .cssClasses('hidden-xs')
+                    .template(function (entry) {
+                        var moment = new Date().toISOString().slice(0,10);
+                        var ng_vlera_start = new Date(entry.values.start_date).toISOString().slice(0,10);
+                        var ng_vlera_end = new Date(entry.values.end_date).toISOString().slice(0,10);
+                        if ((moment >= ng_vlera_start) && (moment <= ng_vlera_end)) {
+                            return ng_vlera_end.fontcolor("green");
+                        } else {
+                            return ng_vlera_end.fontcolor("red").bold();
+                        }
+                    })
+                    .label('End date'),
+            ]),
 
-            nga.field('')
-                .label('')
-                .template('<ma-create-button entity-name="Subscriptions" class="pull-right" label="ADD SUBSCRIPTION" default-values="{ login_id: entry.values.id }"></ma-create-button>'),
+        nga.field('')
+            .label('')
+            .template('<ma-create-button entity-name="Subscriptions" class="pull-right" label="ADD SUBSCRIPTION" default-values="{ login_id: entry.values.id }"></ma-create-button>'),
 
-            nga.field('Devices', 'referenced_list')
-                .label('Devices')
-                .targetEntity(admin.getEntity('Devices'))
-                .targetReferenceField('login_data_id')
-                .targetFields([
-                    nga.field('login_data_id', 'reference')
-                        .targetEntity(admin.getEntity('LoginData'))
-                        .targetField(nga.field('username'))
-                        .label('Account'),
-                    nga.field('device_ip')
-                        .cssClasses('hidden-xs')
-                        .label('Device IP'),
-                    nga.field('appid')
-                        .cssClasses('hidden-xs')
-                        .label('App ID'),
-                    nga.field('app_version')
-                        .cssClasses('hidden-xs')
-                        .label('App Version'),
-                    nga.field('ntype')
-                        .cssClasses('hidden-xs')
-                        .label('Ntype'),
-                    nga.field('updatedAt','date')
-                        .cssClasses('hidden-xs')
-                        .label('Last Updated'),
-                    nga.field('device_brand')
-                        .cssClasses('hidden-xs')
-                        .label('Device Brand'),
-                    nga.field('device_active','boolean')
-                        .label('Device Active'),
-                ])
-                .listActions(['edit']),
+        nga.field('Devices', 'referenced_list')
+            .label('Devices')
+            .targetEntity(admin.getEntity('Devices'))
+            .targetReferenceField('login_data_id')
+            .targetFields([
+                nga.field('login_data_id', 'reference')
+                    .targetEntity(admin.getEntity('LoginData'))
+                    .targetField(nga.field('username'))
+                    .label('Account'),
+                nga.field('device_ip')
+                    .cssClasses('hidden-xs')
+                    .label('Device IP'),
+                nga.field('appid')
+                    .cssClasses('hidden-xs')
+                    .label('App ID'),
+                nga.field('app_version')
+                    .cssClasses('hidden-xs')
+                    .label('App Version'),
+                nga.field('ntype')
+                    .cssClasses('hidden-xs')
+                    .label('Ntype'),
+                nga.field('updatedAt','date')
+                    .cssClasses('hidden-xs')
+                    .label('Last Updated'),
+                nga.field('device_brand')
+                    .cssClasses('hidden-xs')
+                    .label('Device Brand'),
+                nga.field('device_active','boolean')
+                    .label('Device Active'),
+            ])
+            .listActions(['edit']),
 
         nga.field('Salesreports', 'referenced_list')
             .label('Sale Reports')
@@ -442,10 +442,7 @@ export default function (nga, admin) {
                     .targetField(nga.field('name'))
                     .label('Product')
             ])
-            .listActions(['<ma-edit-button entry="entry" entity="entity" label="Cancel Subscription" size="xs"></ma-edit-button>']),
-    nga.field('custom_action')
-        .label('')
-        .template('<show-invoice post="entry" class="pull-right"></show-invoice>'),
+            .listActions(['<ma-edit-button entry="entry" entity="entity" label="Cancel Subscription" size="xs"></ma-edit-button><download-invoice post="entry"></download-invoice>']),
         //hidden field
         nga.field('livetvlastchange', 'datetime')
             .cssClasses('hidden')
@@ -465,8 +462,8 @@ export default function (nga, admin) {
             .editable(true)
             .validation({ required: false })
             .label('')
-        //./hidden field
-        ]);
+    //./hidden field
+]);
 
     return logindata;
 }
