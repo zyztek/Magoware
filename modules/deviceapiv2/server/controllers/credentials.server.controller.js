@@ -6,7 +6,7 @@ var path = require('path'),
     push_msg = require(path.resolve('./custom_functions/push_messages')),
     crypto = require('crypto'),
     models = db.models;
-var async = require("async");
+    var async = require("async");
 
 /**
  * @api {post} /apiv2/credentials/login /apiv2/credentials/login
@@ -21,75 +21,101 @@ var async = require("async");
  * @apiDescription If token is not present, plain text values are used to login
  */
 exports.login = function(req, res) {
+    var appids = [];
 
-    //login start
-    models.login_data.findOne({
-        where: {username: req.auth_obj.username},
-        attributes: [ 'id','username', 'password', 'account_lock', 'salt']
-    }).then(function(users) {
-        if (!users) {
-            //todo: this should be handled @token validation. for now it generates an empty response
-            response.send_res(req, res, [], 702, -1, 'USER_NOT_FOUND_DESCRIPTION', 'USER_NOT_FOUND_DATA', 'no-store');
-        }
-        else if (users.account_lock) {
-            //todo: this should be handled @token validation, though it does return a response
-            response.send_res(req, res, [], 703, -1, 'ACCOUNT_LOCK_DESCRIPTION', 'ACCOUNT_LOCK_DATA', 'no-store');
-        }
-        else if(password_encryption.authenticate(req.auth_obj.password, req.thisuser.salt, req.thisuser.password) === false) {
-            response.send_res(req, res, [], 704, -1, 'WRONG_PASSWORD_DESCRIPTION', 'WRONG_PASSWORD_DATA', 'no-store');
-        }
-        else  {
-            models.devices.findAll({
-                where: {username: req.auth_obj.username, device_active:true, device_id: {not: req.auth_obj.boxid}} //todo: ne vend te findOne, bej findAll. ku device!== boxid
-            }).then(function(device){
-                //if record is found then device is found
 
-                var max_multilogin_nr = req.app.locals.configurations.filter(function(obj) {
-                    return obj.parameter_id === "max_multilogin_nr"
-                })[0].parameter_value;
+    if (req.auth_obj.username === 'guest') {
+        models.devices.upsert({
+            device_active: true,
+            login_data_id: req.thisuser.id,
+            username: req.auth_obj.username,
+            device_mac_address: decodeURIComponent(req.body.macaddress),
+            appid: req.auth_obj.appid,
+            app_name: (req.body.app_name) ? req.body.app_name : '',
+            app_version: req.body.appversion,
+            ntype: req.body.ntype,
+            device_id: req.auth_obj.boxid,
+            hdmi: (req.body.hdmi == 'true') ? 1 : 0,
+            firmware: decodeURIComponent(req.body.firmwareversion),
+            device_brand: decodeURIComponent(req.body.devicebrand),
+            screen_resolution: decodeURIComponent(req.body.screensize),
+            api_version: decodeURIComponent(req.body.api_version),
+            device_ip: req.ip.replace('::ffff:', ''),
+            os: decodeURIComponent(req.body.os)
+        }).then(function (result) {
+            var response_data = [{"encryption_key": req.app.locals.settings.new_encryption_key}];
+            response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
+        }).catch(function (error) {
+            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+        });
+    }
+    else {
+        //login start
+        models.login_data.findOne({
+            where: {username: req.auth_obj.username},
+            attributes: [ 'id','username', 'password', 'account_lock', 'salt']
+        }).then(function(users) {
+            if (!users) {
+                //todo: this should be handled @token validation. for now it generates an empty response
+                response.send_res(req, res, [], 702, -1, 'USER_NOT_FOUND_DESCRIPTION', 'USER_NOT_FOUND_DATA', 'no-store');
+            }
+            else if (users.account_lock) {
+                //todo: this should be handled @token validation, though it does return a response
+                response.send_res(req, res, [], 703, -1, 'ACCOUNT_LOCK_DESCRIPTION', 'ACCOUNT_LOCK_DATA', 'no-store');
+            }
+            else if(password_encryption.authenticate(req.auth_obj.password, req.thisuser.salt, req.thisuser.password) === false) {
+                response.send_res(req, res, [], 704, -1, 'WRONG_PASSWORD_DESCRIPTION', 'WRONG_PASSWORD_DATA', 'no-store');
+            }
+            else  {
+                models.devices.findAll({
+                    where: {username: req.auth_obj.username, device_active:true, device_id: {not: req.auth_obj.boxid}} //todo: ne vend te findOne, bej findAll. ku device!== boxid
+                }).then(function(device){
+                    //if record is found then device is found
 
-                if(!device || device.length < Number(max_multilogin_nr)) {
-                    models.devices.upsert({
-                        device_active:      true,
-                        login_data_id:		users.id,
-                        username:           req.auth_obj.username,
-                        device_mac_address: decodeURIComponent(req.body.macaddress),
-                        appid:              req.auth_obj.appid,
-                        app_name:           (req.body.app_name) ? req.body.app_name : '',
-                        app_version:        req.body.appversion,
-                        ntype:              req.body.ntype,
-                        device_id:          req.auth_obj.boxid,
-                        hdmi:               (req.body.hdmi=='true') ? 1 : 0,
-                        firmware:           decodeURIComponent(req.body.firmwareversion),
-                        device_brand:       decodeURIComponent(req.body.devicebrand),
-                        screen_resolution:  decodeURIComponent(req.body.screensize),
-                        api_version:        decodeURIComponent(req.body.api_version),
-                        device_ip:          req.ip.replace('::ffff:', ''),
-                        os:                 decodeURIComponent(req.body.os),
-                        googleappid:        req.body.googleappid
-                    }).then(function(result){
-                        var response_data = [{
-                            "encryption_key": req.app.locals.settings.new_encryption_key
-                        }];
-                        response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
-                        return null;
-                    }).catch(function(error) {
-                        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
-                    });
-                }
-                else {
-                    response.send_res(req, res, [], 705, -1, 'DUAL_LOGIN_ATTEMPT_DESCRIPTION', 'DUAL_LOGIN_ATTEMPT_DATA', 'no-store'); //same user try to login on another device
-                }
-                return null;
-            }).catch(function(error) {
-                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
-            });
-        }
-        return null;
-    }).catch(function(error) {
-        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
-    });
+                    var max_multilogin_nr = req.app.locals.configurations.filter(function(obj) {
+                        return obj.parameter_id === "max_multilogin_nr"
+                    })[0].parameter_value;
 
+                    if(!device || device.length < Number(max_multilogin_nr)) {
+                        models.devices.upsert({
+                            device_active:      true,
+                            login_data_id:		users.id,
+                            username:           req.auth_obj.username,
+                            device_mac_address: decodeURIComponent(req.body.macaddress),
+                            appid:              req.auth_obj.appid,
+                            app_name:           (req.body.app_name) ? req.body.app_name : '',
+                            app_version:        req.body.appversion,
+                            ntype:              req.body.ntype,
+                            device_id:          req.auth_obj.boxid,
+                            hdmi:               (req.body.hdmi=='true') ? 1 : 0,
+                            firmware:           decodeURIComponent(req.body.firmwareversion),
+                            device_brand:       decodeURIComponent(req.body.devicebrand),
+                            screen_resolution:  decodeURIComponent(req.body.screensize),
+                            api_version:        decodeURIComponent(req.body.api_version),
+                            device_ip:          req.ip.replace('::ffff:', ''),
+                            os:                 decodeURIComponent(req.body.os),
+                            googleappid:        req.body.googleappid
+                        }).then(function(result){
+                            var response_data = [{ "encryption_key": req.app.locals.settings.new_encryption_key}];
+                            response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
+                            return null;
+                        }).catch(function(error) {
+                            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+                        });
+                    }
+                    else {
+                        response.send_res(req, res, [], 705, -1, 'DUAL_LOGIN_ATTEMPT_DESCRIPTION', 'DUAL_LOGIN_ATTEMPT_DATA', 'no-store'); //same user try to login on another device
+                    }
+                    return null;
+                }).catch(function(error) {
+                    response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+                });
+            }
+            return null;
+        }).catch(function(error) {
+            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+        });
+    }
 
 };
 
@@ -131,7 +157,7 @@ exports.logout = function(req, res) {
  *       "timestamp": 1,
  *       "error_description": "OK",
  *       "extra_data": "LOGOUT_OTHER_DEVICES",
- *       "response_object": [{}]
+ *       "response_object": []
  *      }
  * @apiErrorExample Error-Response:
  *     {
@@ -140,7 +166,7 @@ exports.logout = function(req, res) {
  *       "timestamp": 1,
  *       "error_description": "REQUEST_FAILED",
  *       "extra_data": "Error processing request",
- *       "response_object": [{}]
+ *       "response_object": []
  *     }
  * @apiErrorExample Error-Response:
  *     {
@@ -149,7 +175,7 @@ exports.logout = function(req, res) {
  *       "timestamp": 1,
  *       "error_description": "REQUEST_FAILED",
  *       "extra_data": "Unable to find any device with the required specifications",
- *       "response_object": [{}]
+ *       "response_object": []
  *     }
  * @apiErrorExample Error-Response:
  *     {
@@ -158,7 +184,7 @@ exports.logout = function(req, res) {
  *       "timestamp": 1,
  *       "error_description": "DATABASE_ERROR",
  *       "extra_data": "Error connecting to database",
- *       "response_object": [{}]
+ *       "response_object": []
  *     }
  */
 exports.logout_user = function(req, res) {
