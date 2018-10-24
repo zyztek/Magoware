@@ -19,12 +19,12 @@ export default function (nga, admin) {
                 .targetField(nga.field('stream_source'))
                 .label('Stream Source'),
             nga.field('stream_url', 'string')
-            // .map(function truncate(value) {
-            //     if (!value) {
-            //         return 'No Stream Url';
-            //     }
-            //     return value.length > 25 ? value.substr(0, 25) + '...' : value;
-            // })
+                // .map(function truncate(value) {
+                //     if (!value) {
+                //         return 'No Stream Url';
+                //     }
+                //     return value.length > 25 ? value.substr(0, 25) + '...' : value;
+                // })
                 .label('Stream Url'),
             nga.field('stream_mode', 'choice')
                 .attributes({ placeholder: 'Stream Format' })
@@ -85,25 +85,25 @@ export default function (nga, admin) {
                 .targetField(nga.field('title'))
                 .attributes({ placeholder: 'Select Channel from dropdown list' })
                 .validation({validator: function(value) {
-                        if(value === null){
+                        if(value === null || value === ''){
                             throw new Error('Please Select Channel');
                         }
                     }
                 })
                 .perPage(-1)
-                .label('Channel'),
+                .label('Channel *'),
             nga.field('stream_source_id', 'reference')
                 .targetEntity(admin.getEntity('ChannelStreamSources'))
                 .targetField(nga.field('stream_source'))
                 .validation({validator: function(value) {
-                        if(value === null){
+                        if(value === null || value === ''){
                             throw new Error('Please Select Stream Source Id');
                         }
                     }
                 })
                 .attributes({ placeholder: 'Select Stream Source from dropdown list' })
                 .perPage(-1)
-                .label('Stream Source Id'),
+                .label('Stream Source Id *'),
             nga.field('stream_url', 'string')
                 .attributes({ placeholder: 'Channel Stream Url' })
                 .validation({validator: function(value) {
@@ -118,7 +118,7 @@ export default function (nga, admin) {
                         }
                     }
                 })
-                .label('Stream Url'),
+                .label('Stream Url *'),
             nga.field('stream_mode', 'choice')
                 .attributes({ placeholder: 'Select Channel Mode from dropdown list' })
                 .choices([
@@ -126,12 +126,12 @@ export default function (nga, admin) {
                     { value: 'catchup', label: 'Catchup stream' }
                 ])
                 .validation({validator: function(value) {
-                        if(value === null){
+                        if(value === null || value === ''){
                             throw new Error('Please Select Channel mode');
                         }
                     }
                 })
-                .label('Channel mode'),
+                .label('Channel mode *'),
             nga.field('recording_engine', 'choice')
                 .defaultValue('none')
                 .choices([
@@ -140,7 +140,7 @@ export default function (nga, admin) {
                     { value: 'flussonic', label: 'Flussonic' }
                 ])
                 .validation({validator: function(value) {
-                        if(value === null){
+                        if(value === null || value === ''){
                             throw new Error('Please Select Recording Engine');
                         }
                     }
@@ -149,7 +149,7 @@ export default function (nga, admin) {
                     '<ma-choice-field field="field" value="entry.values.recording_engine"></ma-choice-field>'+
                     '<small id="emailHelp" class="form-text text-muted">For catchup channels choose the Recording Engine from dropdown list. By default is None</small>'+
                     '</div>')
-                .label('Recording Engine'),
+                .label('Recording Engine *'),
             nga.field('stream_resolution', 'choices')
                 .attributes({ placeholder: 'Select screen types where this stream should play' })
                 .choices([
@@ -157,12 +157,12 @@ export default function (nga, admin) {
                     { value: 'large', label: 'Large screens' }
                 ])
                 .validation({validator: function(value) {
-                        if(value === null){
+                        if(value === null || value === ''){
                             throw new Error('Please Select Stream resolution');
                         }
                     }
                 })
-                .label('Stream resolution'),
+                .label('Stream resolution *'),
 
             nga.field('stream_format', 'choice')
                 .attributes({ placeholder: 'Choose from dropdown list stream format , for example HLS format' })
@@ -173,12 +173,12 @@ export default function (nga, admin) {
                     { value: 3, label: 'OTHER' }
                 ])
                 .validation({validator: function(value) {
-                        if(value === null){
+                        if(value === null || value === ''){
                             throw new Error('Please Select Stream Format');
                         }
                     }
                 })
-                .label('Stream Format'),
+                .label('Stream Format *'),
 
             nga.field('token', 'boolean')
                 .attributes({ placeholder: 'Token' })
@@ -206,12 +206,12 @@ export default function (nga, admin) {
                     { value: 'widevine', label: 'Widevine' }
                 ])
                 .validation({validator: function(value) {
-                        if(value === null){
+                        if(value === null || value === ''){
                             throw new Error('Please Select DRM Platform');
                         }
                     }
                 })
-                .label('DRM Platform'),
+                .label('DRM Platform *'),
             nga.field('template')
                 .label('')
                 .template(edit_button),

@@ -5,7 +5,7 @@ export default function (nga, admin) {
 
     AdvancedSettings.listView()
         .title('<h4>Advanced Settings <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
-        .listActions(['edit'])
+        .actions([])
         .batchActions([])
         .fields([
             nga.field('id')
@@ -20,15 +20,18 @@ export default function (nga, admin) {
                 .label('Parameter 2'),
             nga.field('duration')
                 .label('Duration')
-        ]);
+        ])
+        .listActions(['edit']);
 
     AdvancedSettings.editionView()
         .title('<h4>Advanced Settings <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.id }}</h4>')
         .fields([
             nga.field('parameter_id')
                 .attributes({ readOnly: true })
+                .validation({ required: true })
                 .label('Parameter ID'),
             nga.field('parameter_value')
+                .validation({ required: true })
                 .label('Parameter'),
             nga.field('parameter1_value')
                 .label('Parameter 1'),
@@ -40,6 +43,18 @@ export default function (nga, admin) {
                 .label('')
                 .template(edit_button)
         ]);
+
+
+    AdvancedSettings.editionView()
+        .actions(['list'])
+        .title('<h4>Advanced Settings <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.id }}</h4>')
+        .fields([
+            AdvancedSettings.creationView().fields()
+        ]);
+
+    AdvancedSettings.deletionView()
+        .title('<h4>Advanced Settings <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.id }}')
+        .actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>'])
 
     return AdvancedSettings;
 

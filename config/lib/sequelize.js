@@ -208,7 +208,6 @@ db.connect = function(database, username, password, options) {
                 });
                 return null;
             }).then(function() {
-                //Populating app_group table
                 async.forEach(default_package_type, function(package_type_obj, callback){
                     db.models['package_type'].findOrCreate({
                         where: {id: package_type_obj.id}, defaults: package_type_obj
@@ -216,28 +215,11 @@ db.connect = function(database, username, password, options) {
                         callback(null);
                         return null;
                     }).catch(function(err) {
-                        winston.info('Error creating app group with id '+package_type_obj.id+': ',err);
+                        winston.info('Error creating package type '+package_type_obj.description+': ',err);
                         return null;
                     });
                 }, function(error){
-                    winston.info('Default app groups created successfully. Creating app_group table ...');
-                    return null;
-                });
-                return null;
-            }).then(function() {
-                //Populating app_group table
-                async.forEach(default_app_groups, function(app_group_obj, callback){
-                    db.models['app_group'].findOrCreate({
-                        where: {id: app_group_obj.id}, defaults: app_group_obj
-                    }).then(function(done) {
-                        callback(null);
-                        return null;
-                    }).catch(function(err) {
-                        winston.info('Error creating app group with id '+app_group_obj.id+': ',err);
-                        return null;
-                    });
-                }, function(error){
-                    winston.info('Default app groups created successfully. Creating advanced settings table ...');
+                    winston.info('Default package_types created successfully. Creating advanced_settings table ...');
                     return null;
                 });
                 return null;

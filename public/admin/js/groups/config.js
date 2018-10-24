@@ -43,13 +43,10 @@ export default function (nga, admin) {
 			]);
 
 	groups.editionView()
-			.title('<h4>User group <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.description }}</h4>')
+			.title('<h4>User group <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.name }}</h4>')
 			.actions(['list'])
 			.fields([
-				groups.listView().fields(),
-				nga.field('template')
-						.label('')
-						.template(edit_button),
+				groups.creationView().fields(),
 				nga.field('', 'referenced_list')
 						.label('User permissions')
 						.targetEntity(admin.getEntity('Grouprights'))

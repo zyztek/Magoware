@@ -47,7 +47,7 @@ var path = require('path'),
  *       "timestamp": 1,
  *       "error_description": "DATABASE_ERROR",
  *       "extra_data": "Error connecting to database",
- *       "response_object": [{}]
+ *       "response_object": []
  *     }
  *
  *
@@ -102,7 +102,7 @@ exports.catchup_events =  function(req, res) {
         });
         response.send_res(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=43200');
     }).catch(function(error) {
-        response.send_res(req, res, [{}], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
@@ -159,7 +159,7 @@ exports.get_catchup_events =  function(req, res) {
         });
         response.send_res_get(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=43200');
     }).catch(function(error) {
-        response.send_res(req, res, [{}], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 
@@ -201,12 +201,12 @@ exports.catchup_stream =  function(req, res) {
             var date = new Date(req.body.timestart);
 
             var wtime = {};
-            wtime.years = date.getFullYear();
-            wtime.months = date.getUTCMonth() + 1;
-            wtime.days = date.getUTCDate();
-            wtime.hours = date.getUTCHours();
-            wtime.minutes = date.getUTCMinutes();
-            wtime.seconds = date.getUTCSeconds();
+                wtime.years = date.getFullYear();
+                wtime.months = date.getUTCMonth() + 1;
+                wtime.days = date.getUTCDate();
+                wtime.hours = date.getUTCHours();
+                wtime.minutes = date.getUTCMinutes();
+                wtime.seconds = date.getUTCSeconds();
 
             var catchup_moment = date.getFullYear() + (("0" + wtime.months).slice(-2)) + (("0" + wtime.days).slice(-2)) + (("0" + wtime.hours).slice(-2)) + (("0" + wtime.minutes).slice(-2)) + "00";
             thestream = thestream.replace('[epochtime]', catchup_moment);
@@ -238,6 +238,6 @@ exports.catchup_stream =  function(req, res) {
 
     }).catch(function(error) {
         winston.error('error catchup_stream',error);
-        response.send_res(req, res, [{}], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };

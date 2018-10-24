@@ -35,4 +35,27 @@ module.exports = function(app) {
 
     app.param('usersId', users.dataByID);
 
+    /* ===== Resellers users ===== */
+
+    app.route('/api/ResellersUsers')
+        .get(users.list);
+
+    app.route('/api/ResellersUsers')
+        .all(policy.isAllowed)
+        .post(users.create);
+
+    app.route('/api/ResellersUsers/:ResellersUsersId')
+        .get(users.read);
+
+    app.route('/api/ResellersUsers/:ResellersUsersId')
+        .all(policy.isAllowed)
+        .put(users.update)
+        .delete(users.delete);
+
+    app.route('/api/ResellersUsers/change-password')
+        .all(policy.isAllowed)
+        .post(auth.changepassword1);
+
+    app.param('ResellersUsersId', users.dataByID);
+
 };

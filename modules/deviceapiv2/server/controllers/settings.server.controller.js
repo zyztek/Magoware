@@ -102,8 +102,8 @@ exports.settings = function(req, res) {
                     include: [{
                         model: models.package, required: true, attributes: ['id'], include: [
                             {model: models.package_type, required: true, attributes: ['id'], where:{app_group_id: app_group.app_group_id}, include: [
-                                    {model: models.activity, required: true, attributes: ['id'], where: {description: activity}}
-                                ]}
+                                {model: models.activity, required: true, attributes: ['id'], where: {description: activity}}
+                            ]}
                         ]}
                     ]
                 }).then(function (enddate) {
@@ -149,7 +149,8 @@ exports.settings = function(req, res) {
                 });
                 return null;
             }).catch(function(error) {
-                //todo: return some response?
+                callback(null, login_data, 0, 0, refresh);
+                return null;
             });
         },
         function(login_data, daysleft, seconds_left, refresh, callback) {
@@ -401,8 +402,8 @@ exports.get_settings = function(req, res) {
         include: [{
             model: models.package, required: true, attributes: ['id'], include: [
                 {model: models.package_type, required: true, attributes: ['id'], where:{app_group_id: req.auth_obj.screensize}, include: [
-                        {model: models.activity, required: true, attributes: ['id'], where: {description: activity}}
-                    ]}
+                    {model: models.activity, required: true, attributes: ['id'], where: {description: activity}}
+                ]}
             ]}
         ]
     }).then(function (enddate) {
@@ -452,53 +453,53 @@ exports.get_settings = function(req, res) {
 
 
 
-    var daysleft = 1;
-    var seconds_left = 199999;
+            var daysleft = 1;
+            var seconds_left = 199999;
 
-    var mainmenurefresh = (req.body.activity === 'login') ? refresh : false;
-    var vodrefresh = (req.body.activity === 'vod') ? refresh : false;
-    var livetvrefresh = (req.body.activity === 'livetv') ? refresh : false;
+            var mainmenurefresh = (req.body.activity === 'login') ? refresh : false;
+            var vodrefresh = (req.body.activity === 'vod') ? refresh : false;
+            var livetvrefresh = (req.body.activity === 'livetv') ? refresh : false;
 
-    //return images based on appid
-    var logo_url = (req.auth_obj.screensize === 1) ?  req.app.locals.settings.box_logo_url :  req.app.locals.settings.mobile_logo_url;
-    var background_url = (req.auth_obj.screensize === 1) ?  req.app.locals.settings.box_background_url :  req.app.locals.settings.mobile_background_url;
-    var vod_background_url = (req.auth_obj.appid == 1) ?  req.app.locals.settings.vod_background_url :  req.app.locals.settings.vod_background_url;
+            //return images based on appid
+            var logo_url = (req.auth_obj.screensize === 1) ?  req.app.locals.settings.box_logo_url :  req.app.locals.settings.mobile_logo_url;
+            var background_url = (req.auth_obj.screensize === 1) ?  req.app.locals.settings.box_background_url :  req.app.locals.settings.mobile_background_url;
+            var vod_background_url = (req.auth_obj.appid == 1) ?  req.app.locals.settings.vod_background_url :  req.app.locals.settings.vod_background_url;
 
-    //days_left message is empty if user still has subscription
-    var lang = (languages[req.body.language]) ? req.body.language : 'eng'; //handle missing language variables, serving english as default
-    var days_left_message = (daysleft > 0) ? "" : languages[lang].language_variables['NO_SUBSCRIPTION'];
+            //days_left message is empty if user still has subscription
+            var lang = (languages[req.body.language]) ? req.body.language : 'eng'; //handle missing language variables, serving english as default
+            var days_left_message = (daysleft > 0) ? "" : languages[lang].language_variables['NO_SUBSCRIPTION'];
 
-    var response_data = [{
-        "logo_url": req.app.locals.settings.assets_url+""+logo_url,
-        "background_url": req.app.locals.settings.assets_url+""+background_url,
-        "vod_background_url": req.app.locals.settings.assets_url+""+vod_background_url,
-        "livetvrefresh": livetvrefresh,
-        "vodrefresh": vodrefresh,
-        "mainmenurefresh": mainmenurefresh,
-        "daysleft": daysleft,
-        "seconds_left": Math.min(req.app.locals.settings.activity_timeout, login_data.activity_timeout, seconds_left),
-        "online_payment_url": req.app.locals.settings.online_payment_url,
-        "days_left_message": days_left_message,
-        //"record_count": Math.ceil(record_count / req.app.locals.settings.vod_subset_nr),
-        //"resume_movie": resume_vod,
-        //"movie_url": movie_url.toString(),
-        //"resume_position": resume_position,
-        "company_url": req.app.locals.settings.company_url,
-        "log_event_interval":  req.app.locals.settings.log_event_interval,
-        "channel_log_time":  req.app.locals.settings.channel_log_time,
-        "activity_timeout":  Math.min(req.app.locals.settings.activity_timeout, login_data.activity_timeout),
-        "player": login_data.player,
-        "pin": login_data.pin,
-        "showadult": login_data.show_adult,
-        "timezone": login_data.timezone,
-        "auto_timezone": login_data.auto_timezone,
-        //"iptimezone": offset,
-        //"available_upgrade": available_upgrade,
-        "get_ads": (req.thisuser.get_ads && (req.thisuser.get_ads === true) ) ? 1 : 0,
-        "vast_ad_url": "https://servedbyadbutler.com/vast.spark?setID=5291&ID=173381&pid=57743" //todo: get value from database
-    }];
+            var response_data = [{
+                "logo_url": req.app.locals.settings.assets_url+""+logo_url,
+                "background_url": req.app.locals.settings.assets_url+""+background_url,
+                "vod_background_url": req.app.locals.settings.assets_url+""+vod_background_url,
+                "livetvrefresh": livetvrefresh,
+                "vodrefresh": vodrefresh,
+                "mainmenurefresh": mainmenurefresh,
+                "daysleft": daysleft,
+                "seconds_left": Math.min(req.app.locals.settings.activity_timeout, login_data.activity_timeout, seconds_left),
+                "online_payment_url": req.app.locals.settings.online_payment_url,
+                "days_left_message": days_left_message,
+                //"record_count": Math.ceil(record_count / req.app.locals.settings.vod_subset_nr),
+                //"resume_movie": resume_vod,
+                //"movie_url": movie_url.toString(),
+                //"resume_position": resume_position,
+                "company_url": req.app.locals.settings.company_url,
+                "log_event_interval":  req.app.locals.settings.log_event_interval,
+                "channel_log_time":  req.app.locals.settings.channel_log_time,
+                "activity_timeout":  Math.min(req.app.locals.settings.activity_timeout, login_data.activity_timeout),
+                "player": login_data.player,
+                "pin": login_data.pin,
+                "showadult": login_data.show_adult,
+                "timezone": login_data.timezone,
+                "auto_timezone": login_data.auto_timezone,
+                //"iptimezone": offset,
+                //"available_upgrade": available_upgrade,
+                "get_ads": (req.thisuser.get_ads && (req.thisuser.get_ads === true) ) ? 1 : 0,
+                "vast_ad_url": "https://servedbyadbutler.com/vast.spark?setID=5291&ID=173381&pid=57743" //todo: get value from database
+            }];
 
-    response.send_res_get(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=43200');
+            response.send_res_get(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=43200');
 
 
 }

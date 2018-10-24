@@ -67,7 +67,7 @@ exports.event =  function(req, res) {
             models.epg_data.findAll({
                 attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end', 'long_description' ],
                 order: [['program_start', 'ASC']],
-                limit: 3,
+                limit: 6,
                 include: [
                     {
                         model: models.channels, required: true, attributes: ['title', 'channel_number'],
@@ -122,8 +122,8 @@ exports.event =  function(req, res) {
                     raw_result.push(raw_obj);
                 });
 
-                if(result.length <3){
-                    for(var i=0; i<3-result.length; i++){
+                if(result.length <6){
+                    for(var i=0; i<6-result.length; i++){
                         var temp_obj = {};
                         temp_obj.channelName = channel_title;
                         temp_obj.id = -1;
@@ -211,7 +211,7 @@ exports.get_event =  function(req, res) {
             models.epg_data.findAll({
                 attributes: [ 'id', 'title', 'short_description', 'short_name', 'duration_seconds', 'program_start', 'program_end', 'long_description' ],
                 order: [['program_start', 'ASC']],
-                limit: 3,
+                limit: 6,
                 include: [
                     {
                         model: models.channels, required: true, attributes: ['title', 'channel_number'],
@@ -266,8 +266,8 @@ exports.get_event =  function(req, res) {
                     raw_result.push(raw_obj);
                 });
 
-                if(result.length <3){
-                    for(var i=0; i<3-result.length; i++){
+                if(result.length <6){
+                    for(var i=0; i<6-result.length; i++){
                         var temp_obj = {};
                         temp_obj.channelName = channel_title;
                         temp_obj.id = -1;

@@ -2,75 +2,77 @@
 import edit_button from '../edit_button.html';
 
 export default function (nga, admin) {
-    var devicemenu = admin.getEntity('DeviceMenus');
-    var appids = {1: 'Android Set Top Box', 2: 'Android Smart Phone',3: 'IOS', 4: 'Android Smart TV', 5: 'Samsung Smart TV', 6: 'Apple TV'};
+	var devicemenu = admin.getEntity('DeviceMenus');
+	var appids = {1: 'Android Set Top Box', 2: 'Android Smart Phone',3: 'IOS', 4: 'Android Smart TV', 5: 'Samsung Smart TV', 6: 'Apple TV'};
 
-    devicemenu.listView()
+	devicemenu.listView()
 
-        .title('<h4>Main Menu <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
-        .batchActions([])
-        .fields([
-            nga.field('icon_url', 'file')
+		.title('<h4>Main Menu <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
+		.batchActions([])
+		.fields([
+			nga.field('icon_url', 'file')
                 .template('<img src="{{ entry.values.icon_url }}" height="42" width="45" />')
                 .cssClasses('hidden-xs')
-                .label('Icon'),
-            nga.field('title', 'string')
-                .isDetailLink(true)
-                .label('Title'),
-            nga.field('url')
-                .map(function truncate(value) {
-                    if (!value) {
-                        return '';
-                    }
-                    return value.length > 25 ? value.substr(0, 25) + '...' : value;
-                })
-                .cssClasses('hidden-xs')
-                .label('Url'),
-            nga.field('menu_code', 'choice')
-                .attributes({ placeholder: 'Menu Code' })
-                .choices([
-                    { value: 0, label: 'Url' },
-                    { value: 1, label: 'Live TV' },
-                    { value: 2, label: 'EPG' },
-                    { value: 3, label: 'Logout' },
-                    { value: 4, label: 'Apps' },
-                    { value: 10, label: 'Network Test' },
-                    { value: 11, label: 'Vod' },
-                    { value: 12, label: 'Application menu' },
-                    { value: 20, label: 'Personal' },
-                    { value: 21, label: 'Catchup' }
-                ])
-                .validation({ required: true })
-                .label('Menu Code'),
-            nga.field('position', 'string')
-                .label('Position'),
+					.label('Icon'),
+			nga.field('title', 'string')
+				.isDetailLink(true)
+				.label('Title'),
+			nga.field('url')
+				.map(function truncate(value) {
+                 	if (!value) {
+                            return '';
+                      	}
+                            return value.length > 25 ? value.substr(0, 25) + '...' : value;
+                      	})
+				.cssClasses('hidden-xs')
+				.label('Url'),
+			nga.field('menu_code', 'choice')
+					.attributes({ placeholder: 'Menu Code' })
+					.choices([
+						{ value: 0, label: 'Url' },
+						{ value: 1, label: 'Live TV' },
+						{ value: 2, label: 'EPG' },
+						{ value: 3, label: 'Logout' },
+						{ value: 4, label: 'Apps' },
+						{ value: 10, label: 'Network Test' },
+						{ value: 11, label: 'Vod' },
+						{ value: 12, label: 'Application menu' },
+						{ value: 20, label: 'Personal' },
+						{ value: 21, label: 'Catchup' }
+					])
+					.validation({ required: true })
+					.label('Menu Code'),
+			nga.field('position', 'string')
+				.label('Position'),
 
-            nga.field('appid','template')
-                .map(function toarray(value) {
-                    var thearray = JSON.parse("["+value+"]");
-                    var returnobj = {};
-                    thearray.forEach(function(element) {
-                        returnobj[element] = appids[element];
-                    });
-                    return returnobj;
-                })
-                .template('<span ng-repeat="theappid in entry.values.appid track by $index" class="label label-default">{{theappid}}</span>')
-                .label('Applications IDs'),
+			nga.field('appid','template')
+					.map(function toarray(value) {
+						var thearray = JSON.parse("["+value+"]");
+						var returnobj = {};
+						thearray.forEach(function(element) {
+							returnobj[element] = appids[element];
+						});
+						return returnobj;
+					})
+					.template('<span ng-repeat="theappid in entry.values.appid track by $index" class="label label-default">{{theappid}}</span>')
+					.label('Applications IDs'),
 
-            nga.field('isavailable', 'boolean')
-                .label('Available'),
+			nga.field('is_guest_menu', 'boolean')
+				.label('Guest menu'),
+			nga.field('isavailable', 'boolean')
+				.label('Available'),
+		])
+		.filters([
+          	nga.field('q')
+              	.label('')
+              	.template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>')
+              	.pinned(true),
         ])
-        .filters([
-            nga.field('q')
-                .label('')
-                .template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>')
-                .pinned(true),
-        ])
-        .listActions(['edit','delete'])
+		.listActions(['edit','delete'])
 
 
         .exportFields([
-            devicemenu.listView().fields(),
+         devicemenu.listView().fields(),
         ]);
 
 
@@ -110,7 +112,9 @@ export default function (nga, admin) {
                         }
                     }
                 })
-                .label('Icon *'),
+				.label('Icon *'),
+
+
             nga.field('menu_code', 'choice')
                 .attributes({ placeholder: 'Choose from dropdown list the type of main menu item you are creating' })
                 .choices([
@@ -121,12 +125,17 @@ export default function (nga, admin) {
                     { value: 4, label: 'Apps' },
                     { value: 10, label: 'Network Test' },
                     { value: 11, label: 'Vod' },
-                    { value: 12, label: 'Application menu' },
+					{ value: 12, label: 'Application menu' },
                     { value: 20, label: 'Personal' },
                     { value: 21, label: 'Catchup' }
                 ])
-                .validation({ required: true })
-                .label('Menu Code'),
+                .validation({validator: function(value) {
+                        if(value === null || value === ''){
+                            throw new Error('Please Select Menu Code');
+                        }
+                    }
+                })
+                .label('Menu Code *'),
 
             nga.field('appid', 'choices')
                 .attributes({ placeholder: 'Choose from dropdown list the device application this main menu will belong to' })
@@ -136,13 +145,28 @@ export default function (nga, admin) {
                     { value: 3, label: 'IOS' },
                     { value: 4, label: 'Android Smart TV' },
                     { value: 5, label: 'Samsung Smart TV' },
-                    { value: 6, label: 'Apple TV' }
+					{ value: 6, label: 'Apple TV' }
                 ])
-                .label('Applications IDs'),
+                .validation({validator: function(value) {
+                        if(value === null || value === ''){
+                            throw new Error('Please Select Applications IDs');
+                        }
+                    }
+                })
+                .label('Applications IDs *'),
             nga.field('position', 'string')
                 .attributes({ placeholder: 'Position of this menu item in main menu ex:if you place number 1 this menu item will be the first one in main menu' })
                 .validation({ required: true })
                 .label('Position'),
+			nga.field('is_guest_menu', 'choice')
+				.defaultValue(false)
+				.choices([
+					{ value: true, label: 'Create for guests only' },
+					{ value: false, label: 'Create for clients only' }
+				])
+				.attributes({ placeholder: 'Choose from dropdown list' })
+				.validation({ required: true})
+				.label('Guest menu'),
             nga.field('isavailable', 'boolean')
                 .attributes({ placeholder: 'Is Available' })
                 .validation({ required: true })
@@ -152,9 +176,9 @@ export default function (nga, admin) {
                 .validation({ required: true })
                 .label('Menu Description'),
             nga.field('menu_level')
-                .defaultValue(1)
+				.defaultValue(1)
                 .cssClasses('hidden')
-                .label(''),
+				.label(''),
             nga.field('parent_id')
                 .defaultValue(0)
                 .cssClasses('hidden')
@@ -167,13 +191,14 @@ export default function (nga, admin) {
         ]);
 
     devicemenu.editionView()
-        .title('<h4>Main Menu <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>')
-        .actions(['list'])
+    	.title('<h4>Main Menu <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>')
+    	.actions(['list'])
         .fields([
             devicemenu.creationView().fields(),
         ]);
 
 
-    return devicemenu;
+	return devicemenu;
 
 }
+

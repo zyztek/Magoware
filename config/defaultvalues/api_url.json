@@ -7,6 +7,9 @@
     "api_url": "/api/logindata","description": "List of user accounts","api_group_id": 1
   },
   {
+    "api_url": "/api/ResellersLoginData","description": "List of user accounts","api_group_id": 1
+  },
+  {
     "api_url": "/api/customerdata","description": "List of customer groups","api_group_id": 1
   },
   {
@@ -156,6 +159,9 @@
   },
   {
     "api_url": "/api/users","description": "sales 2 api","api_group_id": 6
+  },
+  {
+    "api_url": "/api/ResellersUsers","description": "sales 2 api","api_group_id": 6
   },
   {
     "api_url": "/api/change-password","description": "sales 1 api","api_group_id": 6

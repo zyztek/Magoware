@@ -1,7 +1,7 @@
 [
   {
-    "id":1,
-    "parameter_id":"max_multilogin_nr",
+    "id": 1,
+    "parameter_id": "max_multilogin_nr",
     "parameter_value": "2",
     "parameter1_value": "",
     "parameter2_value": "",

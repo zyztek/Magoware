@@ -21,6 +21,10 @@ export default function (nga, admin) {
                 .label('Address'),
             nga.field('subscription_status')
                 .label('Subscription Status'),
+            nga.field('')
+                .label('')
+                .template('<ma-create-button entity-name="MySubscription" class="pull-right" label="ADD SUBSCRIPTION" default-values="{ login_id: entry.values.id }"></ma-create-button>'),
+
         ])
         .filters([
             nga.field('q')

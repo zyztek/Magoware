@@ -33,9 +33,14 @@ export default function (nga, admin) {
 			nga.field('group_id', 'reference')
 				.targetEntity(admin.getEntity('Groups'))
                 .targetField(nga.field('name'))
-                .validation({ required: true })
+                .validation({validator: function(value) {
+                        if(value === null || value === ''){
+                            throw new Error('Please Select Group');
+                        }
+                    }
+                })
                 .attributes({ placeholder: 'Select group' })
-				.label('Group'),
+				.label('Group *'),
 			nga.field('username', 'string')
 				.attributes({ placeholder: 'Username must be at least 3 character long' })
 				.validation({ required: true, minlength: 3 })
@@ -52,8 +57,14 @@ export default function (nga, admin) {
 				.attributes({ placeholder: 'Telephone' })
 				.validation({ required: true })
 				.label('Telephone'),
+            nga.field('jwtoken', 'string')
+                .attributes({ placeholder: 'JWToken' })
+				.defaultValue('')
+                .label('JWToken'),
 			nga.field('third_party_api_token', 'string')
-					.label('Third party token'),
+                .attributes({ placeholder: 'Third party token' })
+                .defaultValue('')
+				.label('Third party token'),
 			nga.field('isavailable', 'boolean')
 				.validation({ required: true })
 				.label('Is Available'),

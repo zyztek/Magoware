@@ -21,7 +21,7 @@ module.exports = function(sequelize, DataTypes) {
         on_behalf_id : {
             type: DataTypes.INTEGER(11),
             allowNull: true
-        },
+            },
         combo_id: {
             type: DataTypes.INTEGER(11),
             allowNull: false

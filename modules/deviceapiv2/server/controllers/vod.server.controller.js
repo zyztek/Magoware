@@ -844,7 +844,7 @@ exports.related = function(req, res) {
 
         var related_query = "SELECT DISTINCT vod.id, "+
             " ( "+
-            //" IF( (category_id = "+result[0].category_id+"), 1, 0) + "+ //category matching score
+                //" IF( (category_id = "+result[0].category_id+"), 1, 0) + "+ //category matching score
             " ( "+director_matching_score+" ) + "+ //director matching score
             " ( "+actor_matching_score+" ) "+ //actor matching score
             " ) AS matching_score "+
@@ -1084,7 +1084,7 @@ exports.get_vod_item_details = function(req, res) {
     models.vod.find({
         where: {
             id: vodID,
-            expiration_time: {$gte: Date.now()}
+			expiration_time: {$gte: Date.now()}
         },
         include: [{model: models.vod_subtitles},
             {
@@ -1283,9 +1283,13 @@ exports.get_vod_item_related = function(req, res) {
                 if(i === actor_list.length-1) actor_matching_score = actor_matching_score+" IF( ( starring like '%"+actor_list[i].trim()+"%' ), 0.3, 0)";
                 else actor_matching_score = actor_matching_score+" IF( ( starring like '%"+actor_list[i].trim()+"%' ), 0.3, 0) + "
             }
+            var vod_stream = {
+                join_query: (vod_item_type !== "tv_series") ? " INNER JOIN vod_stream ON vod.id = vod_stream.vod_id " : "",
+                where_condition: (vod_item_type !== "tv_series") ? " AND vod_stream.stream_source_id = "+req.thisuser.vod_stream_source : ""
+            };
 
             var where_condition =  " vod.id <> "+req.params.vodID+
-                " AND vod.isavailable = true AND vod_type = '"+vod_item_type+"' AND vod_stream.stream_source_id = "+req.thisuser.vod_stream_source+" AND expiration_time > NOW() ";
+                " AND vod.isavailable = true AND vod_type = '"+vod_item_type+"' AND expiration_time > NOW() "+vod_stream.where_condition;
 
             if(req.thisuser.show_adult === true) where_condition = where_condition + " AND pin_protected = false ";
             where_condition += " AND subscription.login_id = "+req.thisuser.id+" and subscription.end_date > NOW() AND package.package_type_id = "+ Number(req.auth_obj.screensize + 2) +" ";
@@ -1298,14 +1302,14 @@ exports.get_vod_item_related = function(req, res) {
                 "vod.pin_protected, vod.vod_type, vod.year, UNIX_TIMESTAMP(vod.createdAt) as dataadded, CONCAT('"+req.app.locals.settings.assets_url+"', vod.icon_url) AS icon, "+
                 " concat('"+req.app.locals.settings.assets_url + "', vod.image_url) as largeimage,"+
                 " ( "+
-                //" IF( (category_id = "+result[0].category_id+"), 1, 0) + "+ //category matching score
+                    //" IF( (category_id = "+result[0].category_id+"), 1, 0) + "+ //category matching score
                 " ( "+director_matching_score+" ) + "+ //director matching score
                 " ( "+actor_matching_score+" ) "+ //actor matching score
                 " ) AS matching_score "+
                 " , GROUP_CONCAT(DISTINCT vod_category.name SEPARATOR ', ') as categories, vod_vod_categories.category_id as categoryid "+
                 " FROM vod "+
                 " INNER JOIN vod_vod_categories ON vod.id = vod_vod_categories.vod_id INNER JOIN vod_category ON vod_vod_categories.category_id = vod_category.id "+
-                " INNER JOIN vod_stream ON vod.id = vod_stream.vod_id "+
+                vod_stream.join_query+
                 " INNER JOIN package_vod ON vod.id = package_vod.vod_id INNER JOIN package ON package.id = package_vod.package_id INNER JOIN subscription ON subscription.package_id = package.id   "+
                 " WHERE "+ where_condition+
                 " GROUP BY vod.id "+
@@ -1523,9 +1527,9 @@ exports.get_vod_list = function(req, res) {
                 [db.sequelize.fn('UNIX_TIMESTAMP', db.sequelize.col('vod.createdAt')), 'createdAt']
             ];
 
-            qwhere.expiration_time = {$gte: Date.now()};
+	qwhere.expiration_time = {$gte: Date.now()};
 
-            final_where.where = qwhere;
+    final_where.where = qwhere;
 
             //if(parseInt(query._end) !== -1){
             final_where.offset = isNaN(parseInt(query._start)) ? 0:parseInt(query._start);
@@ -1699,38 +1703,65 @@ exports.resume_movie = function(req, res) {
  *
  */
 exports.get_movie_details = function(req, res) {
+    var attributes = [
+        'id', ['adult_content', 'adult'], 'budget', 'imdb_id', 'original_language', 'original_title', ['description', 'overview'], 'popularity', 'release_date', 'revenue', ['duration', 'runtime'],
+        [sequelize.fn('DATE_FORMAT', sequelize.col('release_date'), '%Y-%m-%d'), 'release_date'], 'revenue', ['duration', 'runtime'], 'spoken_languages', 'status', 'tagline', 'title', 'vote_average',
+        'vote_count', 'trailer_url', 'vod_preview_url', 'default_subtitle_id'];
+
     models.vod.findOne({
-        attributes: ['id', 'trailer_url', 'vod_preview_url', 'default_subtitle_id'],
+        attributes: attributes,
         include: [
             {model: models.vod_stream, attributes: ['stream_format', 'url', 'token', 'token_url', 'encryption', 'encryption_url'], where: {stream_source_id: req.thisuser.vod_stream_source}},
-            {model: models.vod_subtitles, attributes: ['id', 'title', [db.sequelize.fn("concat", req.app.locals.settings.assets_url, db.sequelize.col('subtitle_url')), 'url'], ['vod_id', 'vodid']]}
+            {
+                model: models.vod_subtitles,
+                attributes: ['id', 'title', [db.sequelize.fn("concat", req.app.locals.settings.assets_url, db.sequelize.col('subtitle_url')), 'url'], ['vod_id', 'vodid']]
+            },
+            {
+                model: models.vod_vod_categories,
+                attributes: ['id'],
+                required: true,
+                include: [{model: models.vod_category, attributes: ['id', 'name'], required: true}]
+            }
         ],
         where: {id: req.params.vod_id, vod_type: {$in: ['film', 'tv_episode']}}
     }).then(function (result) {
         var vod_data = {};
         if(result){
-            var found = "";
             if(result.vod_subtitles){
-                try{
-                    found = result.vod_subtitles.find(function(x){
-                        if(x.id === (result.default_subtitle_id)){return x.title;}
+                try {
+                    var found = result.vod_subtitles.find(function (x) {
+                        if (x.id === (result.default_subtitle_id)) {
+                            return x.title;
+                        }
                     }).title;
                 }
-                catch(error){
-                    found = "";
+                catch (error) {
+                    var found = "";
                 }
             }
+
+            //convert query results from instance to JSON, to modify it
+            vod_data = result.toJSON();
+
+            //asign value of default subtitle
+            delete vod_data.default_subtitle_id;
+            vod_data.default_language = found;
+            //prepare array of categories
+            vod_data.genres = [];
+            for (var i = 0; i < vod_data.vod_vod_categories.length; i++) vod_data.genres.push({
+                "id": vod_data.vod_vod_categories[i].vod_category.id,
+                "name": vod_data.vod_vod_categories[i].vod_category.name
+            });
+            delete vod_data.vod_vod_categories;
+            //assign vod stream properties to the response data object. delete vod_stream object
             vod_data.stream_format = (result.vod_streams[0] && result.vod_streams[0].stream_format) ? result.vod_streams[0].stream_format : "0";
             vod_data.stream_url = (result.vod_streams[0] && result.vod_streams[0].url) ? result.vod_streams[0].url : ""; //url e streamit
-            vod_data.trailer_url = (result.vod_streams[0] && result.vod_streams[0].url) ? result.trailer_url : "";
-            vod_data.vod_preview_url = (result.vod_streams[0] && result.vod_streams[0].url) ? result.vod_preview_url : "";
             vod_data.drm_platform = (result.vod_streams[0] && result.vod_streams[0].drm_platform) ? result.drm_platform : "none";
             vod_data.token =  (result.vod_streams[0] && result.vod_streams[0].token) ? "1" : "0";
             vod_data.TokenUrl = (result.vod_streams[0] && result.vod_streams[0].token_url) ? result.vod_streams[0].token_url : "";
             vod_data.encryption = (result.vod_streams[0] && result.vod_streams[0].encryption) ? "1" : "0";
             vod_data.encryption_url = (result.vod_streams[0] && result.vod_streams[0].encryption_url) ? result.vod_streams[0].encryption_url : "";
-            vod_data.default_language = found;
-            vod_data.subtitles = (result.vod_subtitles.length > 0) ? result.vod_subtitles : [{}];
+
         }
         response.send_res_get(req, res, [vod_data], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
@@ -1874,5 +1905,6 @@ function add_click(movie_title){
 
 exports.delete_resume_movie = delete_resume_movie;
 exports.add_click = add_click;
+
 
 

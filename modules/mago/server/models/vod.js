@@ -30,9 +30,30 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING(128),
             allowNull: false
         },
+        original_title: {
+            type: DataTypes.STRING(128),
+            allowNull: false,
+            defaultValue: ''
+        },
         description: {
             type: DataTypes.STRING(1000),
             allowNull: false
+        },
+        tagline: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            defaultValue: ''
+        },
+        spoken_languages: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            defaultValue: '[{"iso_639_1": "en", "name": "English"}]',
+            get: function () {
+                return JSON.parse(this.getDataValue('spoken_languages'));
+            },
+            set: function (value) {
+                return this.setDataValue('spoken_languages', JSON.stringify(value));
+            }
         },
         year: {
             type: DataTypes.INTEGER(11),
@@ -53,6 +74,21 @@ module.exports = function(sequelize, DataTypes) {
         rate: {
             type: DataTypes.INTEGER,
             allowNull: false
+        },
+        vote_average: {
+            type: DataTypes.DOUBLE,
+            allowNull: false,
+            defaultValue: 5.0
+        },
+        vote_count: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0
+        },
+        popularity: {
+            type: DataTypes.DOUBLE,
+            allowNull: false,
+            defaultValue: 0
         },
         duration: {
             type: DataTypes.INTEGER(11),
@@ -80,6 +116,10 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.INTEGER(1),
             allowNull: false
         },
+        adult_content: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false
+        },
         isavailable: {
             type: DataTypes.BOOLEAN,
             allowNull: false
@@ -89,9 +129,36 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false,
             defaultValue: 0
         },
-        expiration_time: {
+		expiration_time: {
             type: DataTypes.DATE,
             defaultValue: '2019:01:01 00:00:00'
+        },
+        price: {
+            type: DataTypes.DOUBLE,
+            allowNull: true
+        },
+        revenue: {
+            type: DataTypes.INTEGER(11),
+            allowNull: false
+        },
+        budget: {
+            type: DataTypes.INTEGER(11),
+            allowNull: false
+        },
+        original_language: {
+            type: DataTypes.STRING(3),
+            allowNull: false,
+            defaultValue: 'en'
+        },
+        release_date: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: '1896-12-28'
+        },
+        status: {
+            type: DataTypes.STRING(15),
+            allowNull: false,
+            defaultValue: 'unknown'
         }
     }, {
         tableName: 'vod',
@@ -105,6 +172,8 @@ module.exports = function(sequelize, DataTypes) {
             if(models.vod_stream){
                 Vod.hasMany(models.vod_stream, {foreignKey: 'vod_id'});
             }
+            Vod.belongsTo(models.vod, { as: 'tv_show_filter', foreignKey: 'vod_parent_id', useJunctionTable: false })
+            Vod.belongsTo(models.vod, { as: 'season_filter', foreignKey: 'vod_parent_id', useJunctionTable: false })
             Vod.hasMany(models.vod, { as: 'seasons', foreignKey: 'vod_parent_id', useJunctionTable: false })
             Vod.hasMany(models.vod, { as: 'episodes', foreignKey: 'vod_parent_id', useJunctionTable: false })
         }

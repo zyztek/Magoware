@@ -82,11 +82,6 @@ export default function (nga, admin) {
                 ])
                 .attributes({ placeholder: 'Pin Protected' })
                 .label('Pin Protected'),
-            nga.field('category', 'reference')
-                .targetEntity(admin.getEntity('VodCategories'))
-                .perPage(-1)
-                .targetField(nga.field('name'))
-                .label('Category'),
             nga.field('added_before', 'datetime')
                 .label('Added before'),
             nga.field('added_after', 'datetime')
@@ -126,6 +121,9 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'Movie Name' })
                 .validation({ required: true })
                 .label('Title'),
+            nga.field('original_title', 'string')
+                .validation({required: true, placeholder: ' '})
+                .label('Original title'),
             nga.field('imdb_id', 'string')
                 .attributes({ placeholder: 'Movie Imdb Id' })
                 .template(
@@ -161,10 +159,19 @@ export default function (nga, admin) {
             nga.field('rate', 'number')
                 .attributes({ placeholder: 'Movie rated. Must be greater than 0, smaller or equal to 10' })
                 .validation({ required: true, validator: function(value){
-                        if(value<=0) throw  new Error ('Rate must be greater than 0');
-                        if(value>10) throw  new Error ('Rate cannot be greater than 10');
-                    }})
+                    if(value<=0) throw  new Error ('Rate must be greater than 0');
+                    if(value>10) throw  new Error ('Rate cannot be greater than 10');
+                }})
                 .label('Rate'),
+            nga.field('vote_average', 'float')
+                .validation({required: true}).defaultValue(5.0)
+                .label('Vote Average'),
+            nga.field('vote_count', 'number')
+                .validation({required: true}).defaultValue(0)
+                .label('Vote Count'),
+            nga.field('popularity', 'float')
+                .validation({required: true}).defaultValue(0)
+                .label('Popularity'),
             nga.field('clicks', 'number')
                 .attributes({ placeholder: 'Movie clicks' })
                 .validation({ required: true })
@@ -173,6 +180,11 @@ export default function (nga, admin) {
                 .validation({ required: true })
                 .attributes({ placeholder: 'Duration of movie in minutes' })
                 .label('Duration'),
+            nga.field('tagline', 'string')
+                .defaultValue('')
+                .validation({required: true})
+                .attributes({placeholder: 'Trailer url'})
+                .label('Trailer url'),
             nga.field('description', 'text')
                 .transform(function lineBreaks(value, entry) {
                     return value.split("\n").join("<br/>");
@@ -202,11 +214,11 @@ export default function (nga, admin) {
                 .validation({
                     validator: function(value) {
                         var vod_preview_url = document.getElementById('vod_preview_url');
-                        if (vod_preview_url.value.length > 0) {
-                            if(vod_preview_url.files[0].size > 1048576 ){
-                                throw new Error('Your File of Video scrubbing url is too Big, not larger than 1MB');
+                            if (vod_preview_url.value.length > 0) {
+                                if(vod_preview_url.files[0].size > 1048576 ){
+                                    throw new Error('Your File of Video scrubbing url is too Big, not larger than 1MB');
+                                }
                             }
-                        }
 
                     }
                 })
@@ -259,14 +271,36 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'Pin Protected' })
                 .validation({ required: true })
                 .label('Pin Protected'),
+
+            nga.field('adult_content', 'number')
+                .validation({required: true})
+                .label('Adult content'),
+
             nga.field('isavailable','boolean')
                 .attributes({ placeholder: 'Is Available' })
                 .validation({ required: true })
                 .label('Is Available'),
-            nga.field('expiration_time','datetime')
+			nga.field('expiration_time','datetime')
                 .validation({ required: true })
                 .defaultValue(new Date())
                 .label('Expiration date'),
+            nga.field('price', 'float')
+                .label('Price'),
+            nga.field('revenue', 'number')
+                .validation({required: true})
+                .label('Revenues'),
+            nga.field('budget', 'number')
+                .validation({required: true})
+                .label('Budget'),
+            nga.field('original_language', 'string')
+                .validation({required: true}).defaultValue('en')
+                .label('Original language'),
+            nga.field('release_date', 'date')
+                .validation({required: true}).defaultValue('1896-12-28')
+                .label('Release date'),
+            nga.field('status', 'string')
+                .validation({required: true}).defaultValue('unknown')
+                .label('Status'),
             nga.field('template')
                 .label('')
                 .template(edit_button),
@@ -281,6 +315,9 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'Movie Name' })
                 .validation({ required: true })
                 .label('Title'),
+            nga.field('original_title', 'string')
+                .validation({required: true, placeholder: ' '})
+                .label('Original title'),
             nga.field('imdb_id', 'string')
                 .attributes({ placeholder: 'Movie Imdb Id' })
                 .template(
@@ -330,10 +367,19 @@ export default function (nga, admin) {
             nga.field('rate', 'number')
                 .attributes({ placeholder: 'Movie rated. Must be greater than 0, smaller or equal to 10' })
                 .validation({ required: true, validator: function(value){
-                        if(value<=0) throw  new Error ('Rate must be greater than 0');
-                        if(value>10) throw  new Error ('Rate cannot be greater than 10');
-                    }})
+                    if(value<=0) throw  new Error ('Rate must be greater than 0');
+                    if(value>10) throw  new Error ('Rate cannot be greater than 10');
+                }})
                 .label('Rate'),
+            nga.field('vote_average', 'float')
+                .validation({required: true}).defaultValue(5.0)
+                .label('Vote Average'),
+            nga.field('vote_count', 'number')
+                .validation({required: true}).defaultValue(0)
+                .label('Vote Count'),
+            nga.field('popularity', 'float')
+                .validation({required: true}).defaultValue(0)
+                .label('Popularity'),
             nga.field('clicks', 'number')
                 .attributes({ placeholder: 'Movie clicks' })
                 .validation({ required: true })
@@ -370,11 +416,11 @@ export default function (nga, admin) {
                 .validation({
                     validator: function(value) {
                         var vod_preview_url = document.getElementById('vod_preview_url');
-                        if (vod_preview_url.value.length > 0) {
-                            if(vod_preview_url.files[0].size > 1048576 ){
-                                throw new Error('Your File of Video scrubbing url is too Big, not larger than 1MB');
+                            if (vod_preview_url.value.length > 0) {
+                                if(vod_preview_url.files[0].size > 1048576 ){
+                                    throw new Error('Your File of Video scrubbing url is too Big, not larger than 1MB');
+                                }
                             }
-                        }
 
                     }
                 })
@@ -427,14 +473,34 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'Pin Protected' })
                 .validation({ required: true })
                 .label('Pin Protected'),
+            nga.field('adult_content', 'number')
+                .validation({required: true})
+                .label('Adult content'),
             nga.field('isavailable','boolean')
                 .attributes({ placeholder: 'Is Available' })
                 .validation({ required: true })
                 .label('Is Available'),
-            nga.field('expiration_time','datetime')
+			nga.field('expiration_time','datetime')
                 .validation({ required: true })
                 .defaultValue(new Date())
                 .label('Expires in'),
+            nga.field('price', 'float')
+                .label('Price'),
+            nga.field('revenue', 'number')
+                .validation({required: true})
+                .label('Revenues'),
+            nga.field('budget', 'number')
+                .validation({required: true})
+                .label('Budget'),
+            nga.field('original_language', 'string')
+                .validation({required: true}).defaultValue('en')
+                .label('Original language'),
+            nga.field('release_date', 'date')
+                .validation({required: true}).defaultValue('1896-12-28')
+                .label('Release date'),
+            nga.field('status', 'string')
+                .validation({required: true}).defaultValue('unknown')
+                .label('Status'),
             //default subtitle field is exclusive to the edition view
             nga.field('default_subtitle_id', 'choice')
                 .choices(function(entry) {
@@ -467,12 +533,12 @@ export default function (nga, admin) {
                 .targetReferenceField('vod_id')
                 .targetFields([
                     nga.field('url')
-                    // .map(function truncate(value) {
-                    //     if (!value) {
-                    //         return '';
-                    //     }
-                    //     return value.length > 35 ? value.substr(0, 35) + '...' : value;
-                    // })
+                        // .map(function truncate(value) {
+                        //     if (!value) {
+                        //         return '';
+                        //     }
+                        //     return value.length > 35 ? value.substr(0, 35) + '...' : value;
+                        // })
                         .label('Vod URL'),
                 ])
                 .listActions(['edit', 'delete']),

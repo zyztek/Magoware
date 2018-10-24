@@ -58,7 +58,7 @@ function move(Restangular, $uibModal, $q, notification, $state,$http) {
                         </button>
                           <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
                             <li role="menuitem" ng-click="change(choice.name,choice.id)"  ng-repeat="choice in list_of_vods">
-                                <a href="#/Vods/list?search=%7B%22pin_protected%22:%220%22%7D" ng-click="moveto()">{{choice.name}}</a>
+                                <p id="paragraph_vod" ng-click="moveto()">{{choice.name}}</p>
                             </li>
                           </ul>
                     </div>`

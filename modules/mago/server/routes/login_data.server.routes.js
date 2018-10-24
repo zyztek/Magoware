@@ -33,4 +33,20 @@ module.exports = function(app) {
 
     app.param('loginDataId', loginData.dataByID);
 
+    /* =====Resellers login data ===== */
+    app.route('/api/ResellersLoginData')
+        .get(loginData.list);
+
+    app.route('/api/ResellersLoginData')
+        .all(policy.isAllowed)
+        .post(loginData.create);
+
+    app.route('/api/ResellersLoginData/:ResellersLoginDataId')
+        .all(policy.isAllowed)
+        .get(loginData.read)
+        .put(loginData.update)
+    //.delete(loginData.delete);
+
+    app.param('ResellersLoginDataId', loginData.dataByID);
+
 };

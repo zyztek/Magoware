@@ -168,15 +168,15 @@ exports.list = function(req, res) {
                 var response_data = result.concat(user_channel_list);
                 response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
             }).catch(function(error) {
-                response.send_res(req, res, [{}], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
             return null;
         }).catch(function(error) {
-            response.send_res(req, res, [{}], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
         return null;
     }).catch(function(error) {
-        response.send_res(req, res, [{}], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
@@ -428,7 +428,7 @@ exports.genre_get = function(req, res) {
  *       "timestamp": 1517479302000, //unix timestamp in milliseconds
  *       "error_description": 'OK',
  *       "extra_data": 'informin message', //message informs of the action (add/remove) performed for user and channel
- *       "response_object": [{}]
+ *       "response_object": []
  *   }
  */
 exports.favorites = function(req, res) {

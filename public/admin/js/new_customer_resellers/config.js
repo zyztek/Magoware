@@ -5,9 +5,9 @@ export default function (nga, admin) {
 
 
     newcustomer.creationView()
-    // .url(function(entityId) {
-    //     return 'NewCustomer'; // Can be absolute or relative
-    // })
+        // .url(function(entityId) {
+        //     return 'NewCustomer'; // Can be absolute or relative
+        // })
         .title('<h4>Customer Data <i class="fa fa-angle-right" aria-hidden="true"></i> Create Customer</h4>')
         .onSubmitError(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
             progression.done();
@@ -17,13 +17,13 @@ export default function (nga, admin) {
         }])
         .fields([
             nga.field('username', 'string')
-                .attributes({ placeholder: 'Number,lowercase letter, and at least 2 or more characters'})
-                .label('Username')
-                .validation({ required: true, pattern: '^[a-z\\d]{2,}$' }),
-            nga.field('password', 'password')
-                .attributes({ placeholder: '4 or more characters' , title: '4 or more characters' })
-                .label('Password')
-                .validation({ required: true, pattern: '.{4,}' }),
+            .attributes({ placeholder: 'Number,lowercase letter, and at least 2 or more characters'})
+            .label('Username')
+            .validation({ required: true, pattern: '^[a-z\\d]{2,}$' }),
+        nga.field('password', 'password')
+            .attributes({ placeholder: '4 or more characters' , title: '4 or more characters' })
+            .label('Password')
+            .validation({ required: true, pattern: '.{4,}' }),
             nga.field('group_id', 'reference')
                 .targetEntity(admin.getEntity('CustomerGroups'))
                 .targetField(nga.field('description'))

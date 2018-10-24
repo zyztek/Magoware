@@ -4,7 +4,7 @@ import edit_button from '../edit_button.html';
 export default function (nga, admin) {
     var VodEpisode = admin.getEntity('VodEpisode');
     VodEpisode.listView()
-        .title('<h4>Vod Episode <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
+        .title('<h4>Episode <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
         .batchActions([
             '<vod type="update_film" selection="selection"></vod>'
         ])
@@ -63,9 +63,16 @@ export default function (nga, admin) {
                 .cssClasses('hidden-xs')
                 .label('Pin Protected'),
         ])
+        .permanentFilters({
+            vod_type: 'tv_episode'
+        })
         .sortDir("DESC")
         .sortField("createdAt")
         .filters([
+            nga.field('tv_show_title')
+                .label('Tv show'),
+            nga.field('season_number', 'number')
+                .label('Season number'),
             nga.field('not_id', 'reference')
                 .targetEntity(admin.getEntity('vodPackages'))
                 .permanentFilters({ package_type_id: [3,4] })
@@ -82,11 +89,13 @@ export default function (nga, admin) {
                 ])
                 .attributes({ placeholder: 'Pin Protected' })
                 .label('Pin Protected'),
+                /*
             nga.field('category', 'reference')
                 .targetEntity(admin.getEntity('VodCategories'))
                 .perPage(-1)
                 .targetField(nga.field('name'))
                 .label('Category'),
+            */
             nga.field('added_before', 'datetime')
                 .label('Added before'),
             nga.field('added_after', 'datetime')
@@ -111,11 +120,11 @@ export default function (nga, admin) {
         ]);
 
     VodEpisode.deletionView()
-        .title('<h4>Vod Episode <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.title }}')
+        .title('<h4>Episode <i class="fa fa-angle-right" aria-hidden="true"></i> Remove <span style ="color:red;"> {{ entry.values.title }}')
         .actions(['<ma-back-button entry="entry" entity="entity"></ma-back-button>'])
 
     VodEpisode.creationView()
-        .title('<h4>Vod Episode <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Movie</h4>')
+        .title('<h4>Episode <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Episode</h4>')
         .onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
             progression.done();
             $state.go($state.get('edit'), { entity: entity.name(), id: entry._identifierValue });
@@ -123,16 +132,32 @@ export default function (nga, admin) {
         }])
         .fields([
             nga.field('title', 'string')
-                .attributes({ placeholder: 'Movie Name' })
+                .attributes({ placeholder: 'Episode Name' })
                 .validation({ required: true })
                 .label('Title'),
             nga.field('imdb_id', 'string')
-                .attributes({ placeholder: 'Movie Imdb Id' })
+                .attributes({ placeholder: 'Episode Imdb Id' })
                 .template(
                     '<ma-input-field field="field" value="entry.values.imdb_id"></ma-input-field>'+
                     '<small id="emailHelp" class="form-text text-muted">*This Id should either be left empty, or match exactly the Imdb Id</small>'
                 )
                 .label('Movie Imdb Id'),
+            nga.field('tv_show_id', 'reference')
+                .targetEntity(admin.getEntity('Series'))
+                .permanentFilters({ vod_type: 'tv_series' })
+                .targetField(nga.field('title'))
+                .attributes({ placeholder: 'Select the TV Shows name from the dropdown list ' })
+                .validation({validator: function(value) {
+                        if(value === null || value === ''){
+                            throw new Error('Please Select TV Shows Name');
+                        }
+                    }
+                })
+                .label('TV Shows Name *'),
+            nga.field('season_number', 'number')
+                .attributes({ placeholder: 'Season Number' })
+                .validation({ required: true })
+                .label('Season Number'),
             nga.field('vod_vod_categories','reference_many')
                 .targetEntity(admin.getEntity('VodCategories'))
                 .targetField(nga.field('name'))
@@ -151,22 +176,22 @@ export default function (nga, admin) {
                     return { 'package_id[]': package_id };
                 }),
             nga.field('year', 'string')
-                .attributes({ placeholder: 'Movie Year' })
+                .attributes({ placeholder: 'Episode Year' })
                 .validation({ required: true })
                 .label('Year'),
             nga.field('director', 'string')
-                .attributes({ placeholder: 'Movie Director' })
+                .attributes({ placeholder: 'Episode Director' })
                 .validation({ required: true })
                 .label('Director'),
             nga.field('rate', 'number')
-                .attributes({ placeholder: 'Movie rated. Must be greater than 0, smaller or equal to 10' })
+                .attributes({ placeholder: 'Episode rated. Must be greater than 0, smaller or equal to 10' })
                 .validation({ required: true, validator: function(value){
                         if(value<=0) throw  new Error ('Rate must be greater than 0');
                         if(value>10) throw  new Error ('Rate cannot be greater than 10');
                     }})
                 .label('Rate'),
             nga.field('clicks', 'number')
-                .attributes({ placeholder: 'Movie clicks' })
+                .attributes({ placeholder: 'Episode clicks' })
                 .validation({ required: true })
                 .label('Clicks'),
             nga.field('duration')
@@ -177,14 +202,14 @@ export default function (nga, admin) {
                 .transform(function lineBreaks(value, entry) {
                     return value.split("\n").join("<br/>");
                 })
-                .attributes({ placeholder: 'Movie Subject' })
+                .attributes({ placeholder: 'Episode Subject' })
                 .validation({ required: true, maxlength: 1000})
                 .label('Description'),
             nga.field('starring', 'text')
                 .transform(function lineBreak(value, entry) {
                     return value.split("\n").join("<br/>");
                 })
-                .attributes({ placeholder: 'Movie actors' })
+                .attributes({ placeholder: 'Episode actors' })
                 .validation({ required: true, maxlength: 1000})
                 .label('Starring'),
             nga.field('trailer_url', 'string')
@@ -273,7 +298,7 @@ export default function (nga, admin) {
         ]);
 
     VodEpisode.editionView()
-        .title('<h4>Vod Episode <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>')
+        .title('<h4>Episode <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>')
         .actions(['list', '<ma-delete-button label="Remove" entry="entry" entity="entity"></ma-delete-button>'])
         .onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
             progression.done();
@@ -284,16 +309,32 @@ export default function (nga, admin) {
         .fields([
             //creation view fields
             nga.field('title', 'string')
-                .attributes({ placeholder: 'Movie Name' })
+                .attributes({ placeholder: 'Episode Name' })
                 .validation({ required: true })
                 .label('Title'),
             nga.field('imdb_id', 'string')
-                .attributes({ placeholder: 'Movie Imdb Id' })
+                .attributes({ placeholder: 'Episode Imdb Id' })
                 .template(
                     '<ma-input-field field="field" value="entry.values.imdb_id"></ma-input-field>'+
                     '<small id="emailHelp" class="form-text text-muted">*This Id should either be left empty, or match exactly the Imdb Id</small>'
                 )
                 .label('Movie Imdb Id'),
+            nga.field('season_filter.tv_show_filter.tv_show_id', 'reference')
+                .targetEntity(admin.getEntity('Series'))
+                .permanentFilters({ vod_type: 'tv_series' })
+                .targetField(nga.field('title'))
+                .attributes({ placeholder: 'Select the TV Shows name from the dropdown list ' })
+                .validation({validator: function(value) {
+                        if(value === null || value === ''){
+                            throw new Error('Please Select TV Shows Name');
+                        }
+                    }
+                })
+                .label('TV Shows Name *'),
+            nga.field('season_number', 'number')
+                .attributes({ placeholder: 'Season Number' })
+                .validation({ required: true })
+                .label('Season Number'),
             nga.field('vod_vod_categories','reference_many')
                 .targetEntity(admin.getEntity('VodCategories'))
                 .targetField(nga.field('name'))
@@ -326,22 +367,22 @@ export default function (nga, admin) {
                     return { 'package_id[]': package_id };
                 }),
             nga.field('year', 'string')
-                .attributes({ placeholder: 'Movie Year' })
+                .attributes({ placeholder: 'Episode Year' })
                 .validation({ required: true })
                 .label('Year'),
             nga.field('director', 'string')
-                .attributes({ placeholder: 'Movie Director' })
+                .attributes({ placeholder: 'Episode Director' })
                 .validation({ required: true })
                 .label('Director'),
             nga.field('rate', 'number')
-                .attributes({ placeholder: 'Movie rated. Must be greater than 0, smaller or equal to 10' })
+                .attributes({ placeholder: 'Episode rated. Must be greater than 0, smaller or equal to 10' })
                 .validation({ required: true, validator: function(value){
                         if(value<=0) throw  new Error ('Rate must be greater than 0');
                         if(value>10) throw  new Error ('Rate cannot be greater than 10');
                     }})
                 .label('Rate'),
             nga.field('clicks', 'number')
-                .attributes({ placeholder: 'Movie clicks' })
+                .attributes({ placeholder: 'Episode clicks' })
                 .validation({ required: true })
                 .label('Clicks'),
             nga.field('duration')
@@ -352,17 +393,18 @@ export default function (nga, admin) {
                 .transform(function lineBreaks(value, entry) {
                     return value.split("\n").join("<br/>");
                 })
-                .attributes({ placeholder: 'Movie Subject' })
-                .validation({ required: true, maxlength: 1000 })
+                .attributes({ placeholder: 'Episode Subject' })
+                .validation({ required: true, maxlength: 1000})
                 .label('Description'),
             nga.field('starring', 'text')
                 .transform(function lineBreak(value, entry) {
                     return value.split("\n").join("<br/>");
                 })
-                .attributes({ placeholder: 'Movie actors' })
-                .validation({ required: true, maxlength: 1000 })
+                .attributes({ placeholder: 'Episode actors' })
+                .validation({ required: true, maxlength: 1000})
                 .label('Starring'),
             nga.field('trailer_url', 'string')
+                .defaultValue('')
                 .attributes({ placeholder: 'Trailer url' })
                 .label('Trailer url'),
             nga.field('vod_preview_url', 'file')
@@ -395,7 +437,7 @@ export default function (nga, admin) {
                 .validation({
                     validator: function(value) {
                         if (value == null) {
-                            // throw new Error('Please, choose icon');
+                            throw new Error('Please, choose icon');
                         }else {
                             var icon_url = document.getElementById('icon_url');
                             if (icon_url.value.length > 0) {
@@ -440,7 +482,7 @@ export default function (nga, admin) {
             nga.field('expiration_time','datetime')
                 .validation({ required: true })
                 .defaultValue(new Date())
-                .label('Expires in'),
+                .label('Expiration date'),
             //default subtitle field is exclusive to the edition view
             nga.field('default_subtitle_id', 'choice')
                 .choices(function(entry) {

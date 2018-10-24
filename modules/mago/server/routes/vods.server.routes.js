@@ -7,7 +7,10 @@ var passport = require('passport'),
 var path = require('path'),
     db = require(path.resolve('./config/lib/sequelize')).models,
     policy = require('../policies/mago.server.policy'),
-    vods = require(path.resolve('./modules/mago/server/controllers/vod.server.controller'));
+    vods = require(path.resolve('./modules/mago/server/controllers/vod.server.controller')),
+    tv_shows = require(path.resolve('./modules/mago/server/controllers/tv_series.server.controller')),
+    tv_seasons = require(path.resolve('./modules/mago/server/controllers/tv_seasons.server.controller')),
+    tv_episodes = require(path.resolve('./modules/mago/server/controllers/tv_episodes.server.controller'));
 
 
 module.exports = function(app) {
@@ -28,26 +31,64 @@ module.exports = function(app) {
 
     app.param('vodId', vods.dataByID);
 
+
+
     /* ===== VodEpisode ===== */
     app.route('/api/VodEpisode')
-        .get(vods.list);
+        .get(tv_episodes.list);
 
     app.route('/api/VodEpisode')
         .all(policy.isAllowed)
-        .post(vods.create);
+        .post(tv_episodes.create);
 
     app.route('/api/VodEpisode/:VodEpisodeId')
         .all(policy.isAllowed)
-        .get(vods.read)
-        .put(vods.update)
-        .delete(vods.delete);
+        .get(tv_episodes.read)
+        .put(tv_episodes.update)
+        .delete(tv_episodes.delete);
 
-    app.param('VodEpisodeId', vods.dataByID);
+    app.param('VodEpisodeId', tv_episodes.dataByID);
+
+
+
+    /* ===== VodSeries ===== */
+    app.route('/api/Series')
+        .get(tv_shows.list);
+
+    app.route('/api/Series')
+        .all(policy.isAllowed)
+        .post(tv_shows.create);
+
+    app.route('/api/Series/:SeriesId')
+        .all(policy.isAllowed)
+        .get(tv_shows.read)
+        .put(tv_shows.update)
+        .delete(tv_shows.delete);
+
+    app.param('SeriesId', tv_shows.dataByID);
+
+
+
+    /* ===== VodSeason ===== */
+    app.route('/api/Season')
+        .get(tv_seasons.list);
+
+    app.route('/api/Season')
+        .all(policy.isAllowed)
+        .post(tv_seasons.create);
+
+    app.route('/api/Season/:SeasonId')
+        .all(policy.isAllowed)
+        .get(tv_seasons.read)
+        .put(tv_seasons.update)
+        .delete(tv_seasons.delete);
+
+    app.param('SeasonId', tv_seasons.dataByID);
 
 
     app.route('/api/update_film')
-        .all(policy.isAllowed)
-        .put(vods.update_film);
+    .all(policy.isAllowed)
+    .put(vods.update_film);
 
 
 };

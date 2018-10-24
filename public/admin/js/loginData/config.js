@@ -9,7 +9,7 @@ export default function (nga, admin) {
             nga.field('customer_id','reference')
                 .targetEntity(admin.getEntity('CustomerData'))
                 .targetField(
-                    nga.field('firstname')
+                        nga.field('firstname')
                         .map(function (value, entry) {
                             return entry.firstname + ' ' + entry.lastname;
                         })
@@ -76,8 +76,13 @@ export default function (nga, admin) {
         })
         .perPage(5) // limit the number of results to 5
         .attributes({ placeholder: 'Select Customer' })
-        .label('Customer')
-        .validation({ required: true}),
+        .label('Customer *')
+        .validation({validator: function(value) {
+                if(value === null || value === ''){
+                    throw new Error('Please Select Customer');
+                }
+            }
+        }),
         nga.field('username', 'string')
             .attributes({ placeholder: 'Number,lowercase letter, and at least 2 or more characters'})
             .label('Username')
@@ -90,16 +95,26 @@ export default function (nga, admin) {
             .targetEntity(admin.getEntity('ChannelStreamSources'))
             .targetField(nga.field('stream_source'))
             .attributes({ placeholder: 'Choose from dropdown list channel stream source for this customer' })
-            .label('Channel Stream Source')
+            .label('Channel Stream Source *')
             .perPage(-1)
-            .validation({ required: true}),
+            .validation({validator: function(value) {
+                    if(value === null || value === ''){
+                        throw new Error('Please Select Channel Stream Source');
+                    }
+                }
+            }),
         nga.field('vod_stream_source', 'reference')
             .targetEntity(admin.getEntity('VodStreamSources'))
             .targetField(nga.field('description'))
             .attributes({ placeholder: 'Choose from dropdown list VOD Stream Source for this customer' })
-            .label('VOD Stream Source')
+            .label('VOD Stream Source *')
             .perPage(-1)
-            .validation({ required: true}),
+            .validation({validator: function(value) {
+                    if(value === null || value === ''){
+                        throw new Error('Please Select VOD Stream Source');
+                    }
+                }
+            }),
         nga.field('pin', 'string')
             .attributes({ placeholder: 'Must contain 4 numbers' , title: 'Must contain 4 numbers' })
             .validation({ required: true , pattern:'(?=.*\\d)[0-9]{4}' })
@@ -138,8 +153,13 @@ export default function (nga, admin) {
                 { value: +12, label: '(UTC+12:00) Auckland, Fiji' },
             ])
             .attributes({ placeholder: 'Select client timezone depending on country' })
-            .validation({ required: true })
-            .label('Timezone'),
+            .validation({validator: function(value) {
+                    if(value === null || value === ''){
+                        throw new Error('Please Select Timezone');
+                    }
+                }
+            })
+            .label('Timezone *'),
 
         nga.field('get_messages', 'choice')
             .defaultValue(false)
@@ -205,14 +225,19 @@ export default function (nga, admin) {
         .title('<h4>Login Accounts <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.username }}</h4>')
         .actions(['list'])
         .fields([
-            nga.field('customer_id', 'reference')
+        	nga.field('customer_id', 'reference')
                 .targetEntity(admin.getEntity('CustomerData'))
                 .targetField(nga.field('firstname', 'template')
-                    .map((v, e) => e.firstname + ' ' + e.lastname))
+                        .map((v, e) => e.firstname + ' ' + e.lastname))
         .attributes({ placeholder: 'Select Customer' })
-        .label('Customer')
+        .label('Customer *')
         .perPage(1000)
-        .validation({ required: true}),
+        .validation({validator: function(value) {
+                if(value === null || value === ''){
+                    throw new Error('Please Select Customer');
+                }
+            }
+        }),
         nga.field('username', 'string')
             .attributes({ placeholder: 'Username', readOnly: true })
             .label('Username')
@@ -229,14 +254,24 @@ export default function (nga, admin) {
             .targetEntity(admin.getEntity('ChannelStreamSources'))
             .targetField(nga.field('stream_source'))
             .attributes({ placeholder: 'Select Channel Stream Source' })
-            .label('Channel Stream Source')
-            .validation({ required: true}),
+            .label('Channel Stream Source *')
+            .validation({validator: function(value) {
+                    if(value === null || value === ''){
+                        throw new Error('Please Select Channel Stream Source');
+                    }
+                }
+            }),
         nga.field('vod_stream_source', 'reference')
             .targetEntity(admin.getEntity('VodStreamSources'))
             .targetField(nga.field('description'))
             .attributes({ placeholder: 'Select Vod Stream Source' })
-            .label('VOD Stream Source')
-            .validation({ required: true}),
+            .label('VOD Stream Source *')
+            .validation({validator: function(value) {
+                    if(value === null || value === ''){
+                        throw new Error('Please Select VOD Stream Source');
+                    }
+                }
+            }),
         nga.field('activity_timeout', 'string')
             .attributes({ placeholder: 'Activity time out' })
             .validation({ required: true })
@@ -271,8 +306,13 @@ export default function (nga, admin) {
                 { value: +12, label: '(UTC+12:00) Auckland, Fiji' },
             ])
             .attributes({ placeholder: 'Select Timezone' })
-            .validation({ required: true })
-            .label('Timezone'),
+            .validation({validator: function(value) {
+                    if(value === null || value === ''){
+                        throw new Error('Please Select Timezone');
+                    }
+                }
+            })
+            .label('Timezone *'),
 
         nga.field('get_messages', 'choice')
             .choices([
@@ -331,93 +371,93 @@ export default function (nga, admin) {
 
 
 
-        nga.field('Subscriptions', 'referenced_list')
-            .label('Subscription')
-            .targetEntity(admin.getEntity('Subscriptions'))
-            .targetReferenceField('login_id')
-            .targetFields([
-                nga.field('package_id', 'reference')
-                    .targetEntity(admin.getEntity('Packages'))
-                    .targetField(nga.field('package_name'))
-                    .label('Package'),
-                nga.field('package_id', 'reference')
-                    .targetEntity(admin.getEntity('Packages'))
-                    .targetField(nga.field('package_type_id')
-                        .map(function truncate(value) {
-                            if (value === 1) {
-                                return 'Live big screen';
-                            } else if (value === 2) {
-                                return 'Live small screen';
-                            }  else if (value === 3) {
-                                return 'Vod big screen';
-                            } else if (value === 4) {
-                                return 'Vod small screen';
+            nga.field('Subscriptions', 'referenced_list')
+                .label('Subscription')
+                .targetEntity(admin.getEntity('Subscriptions'))
+                .targetReferenceField('login_id')
+                .targetFields([
+                    nga.field('package_id', 'reference')
+                        .targetEntity(admin.getEntity('Packages'))
+                        .targetField(nga.field('package_name'))
+                        .label('Package'),
+                    nga.field('package_id', 'reference')
+                        .targetEntity(admin.getEntity('Packages'))
+                        .targetField(nga.field('package_type_id')
+                            .map(function truncate(value) {
+                                if (value === 1) {
+                                    return 'Live big screen';
+                                } else if (value === 2) {
+                                    return 'Live small screen';
+                                }  else if (value === 3) {
+                                    return 'Vod big screen';
+                                } else if (value === 4) {
+                                    return 'Vod small screen';
+                                }
+                            }))
+                        .label('Package Type'),
+                    nga.field('start_date', 'date')
+                        .cssClasses('hidden-xs')
+                        .template(function (entry) {
+                            var moment = new Date().toISOString().slice(0,10);
+                            var ng_vlera_start = new Date(entry.values.start_date).toISOString().slice(0,10);
+                            var ng_vlera_end = new Date(entry.values.end_date).toISOString().slice(0,10);
+                            if ((moment >= ng_vlera_start) && (moment <= ng_vlera_end)) {
+                                return ng_vlera_start.fontcolor("green");
+                            } else {
+                                return ng_vlera_start.fontcolor("red").bold();
                             }
-                        }))
-                    .label('Package Type'),
-                nga.field('start_date', 'date')
-                    .cssClasses('hidden-xs')
-                    .template(function (entry) {
-                        var moment = new Date().toISOString().slice(0,10);
-                        var ng_vlera_start = new Date(entry.values.start_date).toISOString().slice(0,10);
-                        var ng_vlera_end = new Date(entry.values.end_date).toISOString().slice(0,10);
-                        if ((moment >= ng_vlera_start) && (moment <= ng_vlera_end)) {
-                            return ng_vlera_start.fontcolor("green");
-                        } else {
-                            return ng_vlera_start.fontcolor("red").bold();
-                        }
-                    })
-                    .label('Start date'),
-                nga.field('end_date', 'date')
-                    .cssClasses('hidden-xs')
-                    .template(function (entry) {
-                        var moment = new Date().toISOString().slice(0,10);
-                        var ng_vlera_start = new Date(entry.values.start_date).toISOString().slice(0,10);
-                        var ng_vlera_end = new Date(entry.values.end_date).toISOString().slice(0,10);
-                        if ((moment >= ng_vlera_start) && (moment <= ng_vlera_end)) {
-                            return ng_vlera_end.fontcolor("green");
-                        } else {
-                            return ng_vlera_end.fontcolor("red").bold();
-                        }
-                    })
-                    .label('End date'),
-            ]),
+                        })
+                        .label('Start date'),
+                    nga.field('end_date', 'date')
+                        .cssClasses('hidden-xs')
+                        .template(function (entry) {
+                            var moment = new Date().toISOString().slice(0,10);
+                            var ng_vlera_start = new Date(entry.values.start_date).toISOString().slice(0,10);
+                            var ng_vlera_end = new Date(entry.values.end_date).toISOString().slice(0,10);
+                            if ((moment >= ng_vlera_start) && (moment <= ng_vlera_end)) {
+                                return ng_vlera_end.fontcolor("green");
+                            } else {
+                                return ng_vlera_end.fontcolor("red").bold();
+                            }
+                        })
+                        .label('End date'),
+                ]),
 
-        nga.field('')
-            .label('')
-            .template('<ma-create-button entity-name="Subscriptions" class="pull-right" label="ADD SUBSCRIPTION" default-values="{ login_id: entry.values.id }"></ma-create-button>'),
+            nga.field('')
+                .label('')
+                .template('<ma-create-button entity-name="Subscriptions" class="pull-right" label="ADD SUBSCRIPTION" default-values="{ login_id: entry.values.id }"></ma-create-button>'),
 
-        nga.field('Devices', 'referenced_list')
-            .label('Devices')
-            .targetEntity(admin.getEntity('Devices'))
-            .targetReferenceField('login_data_id')
-            .targetFields([
-                nga.field('login_data_id', 'reference')
-                    .targetEntity(admin.getEntity('LoginData'))
-                    .targetField(nga.field('username'))
-                    .label('Account'),
-                nga.field('device_ip')
-                    .cssClasses('hidden-xs')
-                    .label('Device IP'),
-                nga.field('appid')
-                    .cssClasses('hidden-xs')
-                    .label('App ID'),
-                nga.field('app_version')
-                    .cssClasses('hidden-xs')
-                    .label('App Version'),
-                nga.field('ntype')
-                    .cssClasses('hidden-xs')
-                    .label('Ntype'),
-                nga.field('updatedAt','date')
-                    .cssClasses('hidden-xs')
-                    .label('Last Updated'),
-                nga.field('device_brand')
-                    .cssClasses('hidden-xs')
-                    .label('Device Brand'),
-                nga.field('device_active','boolean')
-                    .label('Device Active'),
-            ])
-            .listActions(['edit']),
+            nga.field('Devices', 'referenced_list')
+                .label('Devices')
+                .targetEntity(admin.getEntity('Devices'))
+                .targetReferenceField('login_data_id')
+                .targetFields([
+                    nga.field('login_data_id', 'reference')
+                        .targetEntity(admin.getEntity('LoginData'))
+                        .targetField(nga.field('username'))
+                        .label('Account'),
+                    nga.field('device_ip')
+                        .cssClasses('hidden-xs')
+                        .label('Device IP'),
+                    nga.field('appid')
+                        .cssClasses('hidden-xs')
+                        .label('App ID'),
+                    nga.field('app_version')
+                        .cssClasses('hidden-xs')
+                        .label('App Version'),
+                    nga.field('ntype')
+                        .cssClasses('hidden-xs')
+                        .label('Ntype'),
+                    nga.field('updatedAt','date')
+                        .cssClasses('hidden-xs')
+                        .label('Last Updated'),
+                    nga.field('device_brand')
+                        .cssClasses('hidden-xs')
+                        .label('Device Brand'),
+                    nga.field('device_active','boolean')
+                        .label('Device Active'),
+                ])
+                .listActions(['edit']),
 
         nga.field('Salesreports', 'referenced_list')
             .label('Sale Reports')
@@ -462,8 +502,8 @@ export default function (nga, admin) {
             .editable(true)
             .validation({ required: false })
             .label('')
-    //./hidden field
-]);
+        //./hidden field
+        ]);
 
     return logindata;
 }

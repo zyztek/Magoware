@@ -69,6 +69,8 @@ exports.update = function(req, res) {
         //refresh company settings in app memory
         delete req.app.locals.settings;
         req.app.locals.settings = result;
+        delete req.app.locals.backendsettings;
+        req.app.locals.backendsettings = result;
 
         return res.json(result);
     }).catch(function(err) {
@@ -150,6 +152,7 @@ exports.dataByID = function(req, res, next, id) {
         } else {
             req.settings = result;
             req.app.locals.settings = result; //update settings on app when changed from UI
+            req.app.locals.backendsettings = result; //update settings on app when changed from UI
             next();
             return null;
         }

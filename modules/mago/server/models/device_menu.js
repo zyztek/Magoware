@@ -34,8 +34,6 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false,
             unique: true
         },
-
-
         menu_level: {
             type: DataTypes.INTEGER(11),
             allowNull: false
@@ -48,12 +46,15 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING(256),
             allowNull: false
         },
-
-
         locale: {
             type: DataTypes.STRING(16),
             allowNull: false,
             defaultValue: 'en'
+        },
+        is_guest_menu: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
         },
         isavailable: {
             type: DataTypes.BOOLEAN,

@@ -2,35 +2,35 @@ import edit_button from '../edit_button.html';
 import filter_genre_btn from '../filter_genre_btn.html';
 
 export default function (nga, admin) {
-    var genre = admin.getEntity('Genres');
-    genre.listView()
-        .title('<h4>Genres <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
-        .batchActions([])
-        .fields([
+	var genre = admin.getEntity('Genres');
+	genre.listView()
+		.title('<h4>Genres <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
+		.batchActions([])
+		.fields([
             nga.field('id', 'string')
                 .isDetailLink(true)
                 .label('ID'),
-            nga.field('description', 'string')
-                .label('Description'),
+			nga.field('description', 'string')
+				.label('Description'),
             nga.field('icon_url', 'file')
                 .template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />')
                 .cssClasses('hidden-xs')
                 .label('Icon'),
-            nga.field('is_available', 'boolean')
-                .label('Available'),
-            nga.field('channels')
-                .map(function total(value, entry) {
-                    var obj = [];
-                    for (var i = value.length - 1; i >= 0; i--) {
-                        obj[i] = value[i].total;
-                        return obj[i];
-                    }
-                })
-                .label('Number of Channels'),
-        ])
+			nga.field('is_available', 'boolean')
+					.label('Available'),
+			nga.field('channels')
+				.map(function total(value, entry) {
+					var obj = [];
+					for (var i = value.length - 1; i >= 0; i--) {
+						obj[i] = value[i].total;
+						return obj[i];
+					}
+				})
+				.label('Number of Channels'),
+		])
         .listActions(['edit', 'delete'])
         .exportFields([
-            genre.listView().fields(),
+         genre.listView().fields(),
         ]);
 
     genre.deletionView()
@@ -76,32 +76,32 @@ export default function (nga, admin) {
                 .template(edit_button),
         ]);
 
-    genre.editionView()
-        .title('<h4>Genres <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.description }}</h4>')
-        .actions(['list'])
+    genre.editionView() 
+        .title('<h4>Genres <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.description }}</h4>')     
+        .actions(['list'])     
         .fields([
             genre.creationView().fields(),
-            nga.field('', 'referenced_list')
-                .label('Channel')
-                .targetEntity(admin.getEntity('Channels'))
-                .targetReferenceField('genre_id')
-                .targetFields([
-                    nga.field('channel_number')
-                        .label('Nr'),
-                    nga.field('icon_url', 'file')
-                        .template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />')
-                        .label('Icon'),
-                    nga.field('title', 'string')
-                        .attributes({ placeholder: 'Title' })
-                        .validation({ required: true })
-                        .label('Title')
-                ])
+           	 	nga.field('', 'referenced_list')
+                    .label('Channel')
+                    .targetEntity(admin.getEntity('Channels'))
+                    .targetReferenceField('genre_id')
+                    .targetFields([
+		                nga.field('channel_number')
+		                	.label('Nr'),
+		                nga.field('icon_url', 'file')
+		                	.template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />')
+		                	.label('Icon'),
+		                nga.field('title', 'string')                
+		                    .attributes({ placeholder: 'Title' })
+		                    .validation({ required: true })
+		                    .label('Title')
+	                    ])
                 .listActions(['edit']),
-            nga.field('template')
-                .label('')
-                .template(filter_genre_btn),
+                nga.field('template')
+                   .label('')
+                   .template(filter_genre_btn),
         ]);
 
-    return genre;
-
+	return genre;
+	
 }

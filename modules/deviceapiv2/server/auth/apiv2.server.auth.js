@@ -118,7 +118,7 @@ exports.isAllowed = function(req, res, next) {
         var auth = decodeURIComponent(req.params.auth);
     }
 
-    //krijo objektin e auth
+    //
 
     if(req.headers.auth){
         if(missing_params(querystring.parse(auth_decrypt1(auth,req.app.locals.settings.new_encryption_key),";","=")) === false){
@@ -170,30 +170,40 @@ exports.isAllowed = function(req, res, next) {
                 next();
             }
             else{
-                //do lexojme te dhenat e user. kjo do behet sinkrone me te tjerat
+                //reading client data
                 models.login_data.findOne({
                     where: {username: auth_obj.username}
                 }).then(function (result) {
                     if(result) {
-                        if(result.account_lock) {
-                            response.send_res(req, res, [], 703, -1, 'ACCOUNT_LOCK_DESCRIPTION', 'ACCOUNT_LOCK_DATA', 'no-store');
+                        //the user is a normal client account. check user rights to make requests with his credentials
+                        if(auth_obj.username !== 'guest'){
+                            if(result.account_lock) {
+                                response.send_res(req, res, [], 703, -1, 'ACCOUNT_LOCK_DESCRIPTION', 'ACCOUNT_LOCK_DATA', 'no-store');
+                            }
+                            else if(authenticationHandler.authenticate(auth_obj.password, result.salt, result.password) === false) {
+                                response.send_res(req, res, [], 704, -1, 'WRONG_PASSWORD_DESCRIPTION', 'WRONG_PASSWORD_DATA', 'no-store');
+                            }
+                            else if( (result.resetPasswordExpires !== null ) && (result.resetPasswordExpires.length > 9 && result.resetPasswordExpires !== '0') ){
+                                response.send_res(req, res, [], 704, -1, 'EMAIL_NOT_CONFIRMED', 'EMAIL_NOT_CONFIRMED_DESC', 'no-store');
+                            }
+                            else {
+                                req.thisuser = result;
+                                req.auth_obj = auth_obj;
+                                next();
+                                return null; //returns promise
+                            }
                         }
-                        else if(authenticationHandler.authenticate(auth_obj.password, result.salt, result.password) === false) {
-                            response.send_res(req, res, [], 704, -1, 'WRONG_PASSWORD_DESCRIPTION', 'WRONG_PASSWORD_DATA', 'no-store');
-                        }
-                        else if( (result.resetPasswordExpires !== null ) && (result.resetPasswordExpires.length > 9 && result.resetPasswordExpires !== '0') ){
-                            response.send_res(req, res, [], 704, -1, 'EMAIL_NOT_CONFIRMED', 'EMAIL_NOT_CONFIRMED_DESC', 'no-store');
-                        }
-                        else {
+                        //login as guest is enabled and the user is guest. allow request to be processed
+                        else if( (auth_obj.username === 'guest') && (req.app.locals.backendsettings.allow_guest_login === true) ){
                             req.thisuser = result;
                             req.auth_obj = auth_obj;
                             next();
                             return null; //returns promise
                         }
+                        //the user is a guest account but guest login is disabled. return error message
+                        else response.send_res(req, res, [], 702, -1, 'GUEST_LOGIN_DISABLED_DESCRIPTION', 'GUEST_LOGIN_DISABLED_DATA', 'no-store');
                     }
-                    else{
-                        response.send_res(req, res, [], 702, -1, 'USER_NOT_FOUND_DESCRIPTION', 'USER_NOT_FOUND_DATA', 'no-store');
-                    }
+                    else response.send_res(req, res, [], 702, -1, 'USER_NOT_FOUND_DESCRIPTION', 'USER_NOT_FOUND_DATA', 'no-store');
                 }).catch(function(error) {
                     response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
                 });

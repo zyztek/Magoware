@@ -58,10 +58,15 @@ export default function (nga, admin) {
             nga.field('group_id', 'reference')
                 .targetEntity(admin.getEntity('CustomerGroups'))
                 .targetField(nga.field('description'))
-                .attributes({ placeholder: ' Select from the dropdown list one of the groups you created' })
-                .label('Group')
+                .attributes({ placeholder: 'Select from the dropdown list one of the groups you created' })
+                .label('Group *')
                 .perPage(-1)
-                .validation({ required: true}),
+                .validation({validator: function(value) {
+                        if(value === null || value === ''){
+                            throw new Error('Please Select Group');
+                        }
+                    }
+                }),
             nga.field('firstname', 'string')
                 .attributes({ placeholder: 'Customer Firstname' })
                 .validation({ required: true })

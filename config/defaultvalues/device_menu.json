@@ -8,6 +8,10 @@
     "menu_code":1,
     "position":15,
     "locale":"eng",
+    "menu_level": 1,
+    "parent_id": 1,
+    "menu_description": "Live Tv",
+    "is_guest_menu": false,
     "isavailable":1
   },
   {
@@ -19,6 +23,10 @@
     "menu_code":11,
     "position":20,
     "locale":"eng",
+    "menu_level": 1,
+    "parent_id": 1,
+    "menu_description": "Vod",
+    "is_guest_menu": false,
     "isavailable":1
   },
   {
@@ -30,6 +38,10 @@
     "menu_code":4,
     "position":40,
     "locale":"eng",
+    "menu_level": 1,
+    "parent_id": 1,
+    "menu_description": "Apps",
+    "is_guest_menu": false,
     "isavailable":1
   },
   {
@@ -41,7 +53,26 @@
     "menu_code":20,
     "position":30,
     "locale":"eng",
+    "menu_level": 1,
+    "parent_id": 1,
+    "menu_description": "Personal",
+    "is_guest_menu": false,
     "isavailable":1
+  },
+  {
+    "id": 5,
+    "appid": "1",
+    "title": "Network Test",
+    "url": "not used",
+    "icon_url": "\/files\/device_menu\/networktest240x240.png",
+    "menu_code": 10,
+    "position": 90,
+    "locale": "eng",
+    "menu_level": 1,
+    "parent_id": 1,
+    "menu_description": "Network Test",
+    "is_guest_menu": false,
+    "isavailable": 1
   },
   {
     "id":6,
@@ -52,16 +83,10 @@
     "menu_code":3,
     "position":100,
     "locale":"eng",
+    "menu_level": 1,
+    "parent_id": 1,
+    "menu_description": "Logout",
+    "is_guest_menu": false,
     "isavailable":1
-  },
-  {
-    "id":5,
-    "appid":"1",
-    "title":"Network Test",
-    "url":"not used",
-    "icon_url":"\/files\/device_menu\/networktest240x240.png",
-    "menu_code":10,
-    "position":90,
-    "locale":"eng",
-    "isavailable":1
-  }]
+  }
+]

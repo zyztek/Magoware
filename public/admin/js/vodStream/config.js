@@ -51,34 +51,34 @@ export default function (nga, admin) {
                 .targetField(nga.field('title'))
                 .attributes({ placeholder: 'Choose from dropdown list VOD Movie' })
                 .validation({validator: function(value) {
-                        if(value === null){
+                        if(value === null || value === ''){
                             throw new Error('Please Select Vod');
                         }
                     }
                 })
                 .perPage(-1)
-                .label('Vod'),
+                .label('Vod *'),
             nga.field('stream_source_id', 'reference')
                 .targetEntity(admin.getEntity('VodStreamSources'))
                 .targetField(nga.field('description'))
                 .attributes({ placeholder: 'Stream Source' })
                 .validation({validator: function(value) {
-                        if(value === null){
+                        if(value === null || value === ''){
                             throw new Error('Please Select Stream Source');
                         }
                     }
                 })
                 .perPage(-1)
-                .label('Stream Source'),
+                .label('Stream Source *'),
             nga.field('url', 'string')
                 .attributes({ placeholder: 'Movie Stream Url' })
                 .validation({validator: function(value) {
-                        if(value === null){
+                        if(value === null || value === ''){
                             throw new Error('Please Select Url');
                         }
                     }
                 })
-                .label('Url'),
+                .label('Url *'),
             nga.field('stream_format', 'choice')
                 .attributes({ placeholder: 'Stream Format' })
                 .choices([
@@ -88,12 +88,12 @@ export default function (nga, admin) {
                     { value: 3, label: 'OTHER' }
                 ])
                 .validation({validator: function(value) {
-                        if(value === null){
+                        if(value === null || value === ''){
                             throw new Error('Please Select Stream Format');
                         }
                     }
                 })
-                .label('Stream Format'),
+                .label('Stream Format *'),
             nga.field('token', 'boolean')
                 .attributes({ placeholder: 'Token' })
                 .validation({ required: true })
@@ -101,14 +101,14 @@ export default function (nga, admin) {
             nga.field('token_url', 'string')
                 .defaultValue('Token Url')
                 .attributes({ placeholder: 'Token Url' })
-                .validation({ required: false })
+                .validation({ required: true })
                 .label('Token Url'),
             nga.field('encryption', 'boolean')
                 .validation({ required: true })
                 .label('Encryption'),
             nga.field('encryption_url', 'string')
                 .defaultValue('Encryption url')
-                .validation({ required: false })
+                .validation({ required: true })
                 .label('Encryption url'),
             nga.field('drm_platform', 'choice')
                 .attributes({ placeholder: 'Select from dropdown list' })
@@ -120,12 +120,12 @@ export default function (nga, admin) {
                     { value: 'widevine', label: 'Widevine' }
                 ])
                 .validation({validator: function(value) {
-                        if(value === null){
+                        if(value === null || value === ''){
                             throw new Error('Please Select DRM Platform');
                         }
                     }
                 })
-                .label('DRM Platform'),
+                .label('DRM Platform *'),
             nga.field('template')
                 .label('')
                 .template(edit_button),

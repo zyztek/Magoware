@@ -16,8 +16,8 @@ var path = require('path'),
     mainController = require(path.resolve('./modules/deviceapiv2/server/controllers/main.server.controller')),
     customersAppController = require(path.resolve('./modules/deviceapiv2/server/controllers/customers_app.server.controller')),
     productsAppController = require(path.resolve('./modules/deviceapiv2/server/controllers/products.server.controller')),
-    sitesController = require(path.resolve('./modules/deviceapiv2/server/controllers/sites.server.controller')),
-    headerController = require(path.resolve('./modules/deviceapiv2/server/controllers/header.server.controller')),
+	sitesController = require(path.resolve('./modules/deviceapiv2/server/controllers/sites.server.controller')),
+	headerController = require(path.resolve('./modules/deviceapiv2/server/controllers/header.server.controller')),
     deviceepgController = require(path.resolve('./modules/deviceapiv2/server/controllers/deviceepg.server.controller')),
     winston = require(path.resolve('./config/lib/winston'));
 
@@ -25,7 +25,7 @@ module.exports = function(app) {
 
     app.use('/apiv2',function (req, res, next) {
         winston.info(req.originalUrl +'  '+ JSON.stringify(req.body));
-        res.header("Access-Control-Allow-Origin", "*");
+		res.header("Access-Control-Allow-Origin", "*");
         next();
     });
 
@@ -112,7 +112,7 @@ module.exports = function(app) {
         .get(settingsController.help_support);
     app.route('/apiv2/help_support')
         .get(settingsController.help_support);
-
+	
     //main device menu
     app.route('/apiv2/main/device_menu')
         .all(authpolicy.isAllowed)
@@ -131,7 +131,7 @@ module.exports = function(app) {
 
 
     /*******************************************************************
-     Network - related API
+                         Network - related API
      *******************************************************************/
     app.route('/apiv2/network/dbtest')
         .all(authpolicy.isAllowed)
@@ -252,6 +252,12 @@ module.exports = function(app) {
     app.route('/apiv2/channels/epgdata')
         .all(authpolicy.isAllowed)
         .get(deviceepgController.get_epg_data)
+
+    /* ===== weather widget ===== */
+
+    app.route('/apiv2/weather_widget')
+        // .all(authpolicy.isAllowed)
+        .get(mainController.get_weather_widget);
 
 
 };

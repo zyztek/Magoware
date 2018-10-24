@@ -125,8 +125,13 @@ export default function (nga, admin) {
                     { value: 20, label: 'Personal' },
                     { value: 21, label: 'Catchup' }
                 ])
-                .validation({ required: true })
-                .label('Menu Code'),
+                .validation({validator: function(value) {
+                        if(value === null || value === ''){
+                            throw new Error('Please Select Menu Code');
+                        }
+                    }
+                })
+                .label('Menu Code *'),
 
             nga.field('appid', 'choices')
                 .attributes({ placeholder: 'Choose from dropdown list the device application this menu will belong to' })
@@ -138,7 +143,13 @@ export default function (nga, admin) {
                     { value: 5, label: 'Samsung Smart TV' },
                     { value: 6, label: 'Apple TV' }
                 ])
-                .label('Applications IDs'),
+                .validation({validator: function(value) {
+                        if(value === null || value === ''){
+                            throw new Error('Please Select Applications IDs');
+                        }
+                    }
+                })
+                .label('Applications IDs *'),
             nga.field('position', 'string')
                 .attributes({ placeholder: 'Position of this menu item in main menu ex:if you place number 1 this menu item will be the first one in main menu' })
                 .validation({ required: true })
@@ -147,21 +158,17 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'Is Available' })
                 .validation({ required: true })
                 .label('Is Available'),
-
-
-            nga.field('parent_id','choice')
+            nga.field('parent_id','reference')
+                .targetEntity(admin.getEntity('DeviceMenus'))
+                .targetField(nga.field('title'))
                 .attributes({ placeholder: 'Choose from dropdown list the parent that this menu will belong to' })
-                .choices([
-                    { value: 1, label: 'Live Tv' },
-                    { value: 11, label: 'Shop subscription' },
-                    { value: 2, label: 'Vod' },
-                    { value: 4, label: 'Personal' },
-                    { value: 3, label: 'Applications' },
-                    { value: 13, label: 'Snapchat' },
-                    { value: 6, label: 'Logout' }
-                ])
-                .validation({ required: true })
-                .label('Parent ID'),
+                .validation({validator: function(value) {
+                        if(value === null || value === ''){
+                            throw new Error('Please Select Parent ID');
+                        }
+                    }
+                })
+                .label('Parent ID *'),
             nga.field('menu_description')
                 .attributes({ placeholder: 'Menu Description' })
                 .validation({ required: true })
@@ -189,3 +196,4 @@ export default function (nga, admin) {
     return Submenu;
 
 }
+

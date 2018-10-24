@@ -7,13 +7,13 @@ export default function (nga, admin) {
         .batchActions([])
         .fields([
 
-            nga.field('channel_number', 'string')
-                .label('Number'),
-            nga.field('title', 'string')
-                .isDetailLink(true)
-                .label('Title'),
-            nga.field('epg_map_id', 'string')
-                .label('EPG MAP ID'),
+			nga.field('channel_number', 'string')
+					.label('Number'),
+			nga.field('title', 'string')
+					.isDetailLink(true)
+					.label('Title'),
+			nga.field('epg_map_id', 'string')
+					.label('EPG MAP ID'),
             nga.field('genre_id', 'reference')
                 .targetEntity(admin.getEntity('Genres'))
                 .targetField(nga.field('description'))
@@ -22,23 +22,23 @@ export default function (nga, admin) {
                 .template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />')
                 .cssClasses('hidden-xs')
                 .label('Icon'),
-            nga.field('packages_channels')
+			nga.field('packages_channels')
                 .cssClasses('hidden')
-                .map(function getpckgid(value, entry) {
-                    var return_object = [];
-                    for (var i = 0; i < value.length; i++) {
-                        return_object[i] = value[i].package_id;
-                    }
-                    return return_object;
+				.map(function getpckgid(value, entry) {
+					var return_object = [];
+					for (var i = 0; i < value.length; i++) {
+						return_object[i] = value[i].package_id;
+					}
+					   return return_object;
                 })
-                .label('Packages Channels'),
-            nga.field('packages_channels','reference_many')
-                .targetEntity(admin.getEntity('Packages'))
-                .targetField(nga.field('package_name'))
-                .singleApiCall(function (package_id) {
-                    return { 'package_id[]': package_id };
-                })
-                .label('Packages'),
+				.label('Packages Channels'),
+			nga.field('packages_channels','reference_many')
+					.targetEntity(admin.getEntity('Packages'))
+					.targetField(nga.field('package_name'))
+					.singleApiCall(function (package_id) {
+    					return { 'package_id[]': package_id };
+					})
+				    .label('Packages'),
             nga.field('description', 'text')
                 .cssClasses('hidden-xs')
                 .label('Description'),
@@ -56,14 +56,14 @@ export default function (nga, admin) {
                     { value: false, label: 'Not Available' }
                 ])
                 .label('Available'),
-            nga.field('q')
-                .label('')
-                .template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>')
-                .pinned(true)])
+          nga.field('q')
+              .label('')
+              .template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>')
+              .pinned(true)])
         .listActions(['edit'])
 
         .exportFields([
-            channels.listView().fields(),
+         channels.listView().fields(),
         ]);
 
     channels.deletionView()
@@ -93,15 +93,21 @@ export default function (nga, admin) {
                 .template('<ma-input-field field="field" value="entry.values.epg_map_id"></ma-input-field>'+
                     '<small id="emailHelp" class="form-text text-muted">Identifier used to match epg files with the respective channel</small>')
                 .label('EPG MAP ID'),
-            nga.field('channel_number', 'string')
+            nga.field('channel_number', 'number')
+                .attributes({ placeholder: 'Must be number' })
                 .validation({ required: true })
                 .label('Number'),
             nga.field('genre_id', 'reference')
                 .targetEntity(admin.getEntity('Genres'))
                 .targetField(nga.field('description'))
-                .validation({ required: true })
+                .validation({validator: function(value) {
+                        if(value === null || value === ''){
+                            throw new Error('Please Select Genre');
+                        }
+                    }
+                })
                 .attributes({ placeholder: 'Choose from dropdown list one of the genres you already created' })
-                .label('Genre'),
+                .label('Genre *'),
             nga.field('description', 'text')
                 .attributes({ placeholder: 'You can specify data you need to know for the channel in this field' })
                 .validation({ required: true })
@@ -153,7 +159,7 @@ export default function (nga, admin) {
         ]);
 
     channels.editionView()
-        .title('<h4>Channels <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>')
+    	.title('<h4>Channels <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>')
         .actions(['list', '<ma-delete-button label="Remove" entry="entry" entity="entity"></ma-delete-button>'])
         .fields([
             nga.field('title', 'string')
@@ -164,15 +170,21 @@ export default function (nga, admin) {
                 .template('<ma-input-field field="field" value="entry.values.epg_map_id"></ma-input-field>'+
                     '<small id="emailHelp" class="form-text text-muted">Identifier used to match epg files with the respective channel</small>')
                 .label('EPG MAP ID'),
-            nga.field('channel_number', 'string')
+            nga.field('channel_number', 'number')
+                .attributes({ placeholder: 'Must be number' })
                 .validation({ required: true })
                 .label('Number'),
             nga.field('genre_id', 'reference')
                 .targetEntity(admin.getEntity('Genres'))
                 .targetField(nga.field('description'))
-                .validation({ required: true })
+                .validation({validator: function(value) {
+                        if(value === null || value === ''){
+                            throw new Error('Please Select Genre');
+                        }
+                    }
+                })
                 .attributes({ placeholder: 'Choose from dropdown list one of the genres you already created' })
-                .label('Genre'),
+                .label('Genre *'),
             nga.field('description', 'text')
                 .attributes({ placeholder: 'You can specify data you need to know for the channel in this field' })
                 .validation({ required: true })
@@ -229,41 +241,41 @@ export default function (nga, admin) {
                 .template(edit_button),
 
 
-            nga.field('ChannelStreams', 'referenced_list')
-                .label('Channel Streams')
-                .targetEntity(admin.getEntity('ChannelStreams'))
-                .targetReferenceField('channel_id')
-                .targetFields([
-                    nga.field('stream_url')
-                    // .map(function truncate(value) {
-                    // 	if (!value) {
-                    // 		return '';
-                    // 	}
-                    // 	return value.length > 25 ? value.substr(0, 25) + '...' : value;
-                    // })
-                        .label('Stream Url'),
-                    nga.field('stream_source_id', 'reference')
-                        .targetEntity(admin.getEntity('ChannelStreamSources'))
-                        .targetField(nga.field('stream_source'))
-                        .cssClasses('hidden-xs')
-                        .label('Stream Source'),
-                    nga.field('stream_format')
-                        .cssClasses('hidden-xs')
-                        .label('Stream Format'),
-                    nga.field('token', 'boolean')
-                        .label('Token'),
-                    nga.field('encryption', 'boolean')
-                        .cssClasses('hidden-xs')
-                        .label('Encryption'),
-                    nga.field('stream_mode', 'string')
-                        .cssClasses('hidden-xs')
-                        .label('Stream Mode'),
+                nga.field('ChannelStreams', 'referenced_list')
+					.label('Channel Streams')
+                    .targetEntity(admin.getEntity('ChannelStreams'))
+                    .targetReferenceField('channel_id')
+                    .targetFields([
+		                nga.field('stream_url')
+								// .map(function truncate(value) {
+								// 	if (!value) {
+								// 		return '';
+								// 	}
+								// 	return value.length > 25 ? value.substr(0, 25) + '...' : value;
+								// })
+								.label('Stream Url'),
+		                nga.field('stream_source_id', 'reference')
+		                    .targetEntity(admin.getEntity('ChannelStreamSources'))
+		                    .targetField(nga.field('stream_source'))
+		                    .cssClasses('hidden-xs')
+		                    .label('Stream Source'),
+		                nga.field('stream_format')
+		                    .cssClasses('hidden-xs')
+		                    .label('Stream Format'),
+		                nga.field('token', 'boolean')
+		                    .label('Token'),
+		                nga.field('encryption', 'boolean')
+		                    .cssClasses('hidden-xs')
+		                    .label('Encryption'),
+						nga.field('stream_mode', 'string')
+								.cssClasses('hidden-xs')
+								.label('Stream Mode'),
 
-                ])
-                .listActions(['edit', 'delete']),
-            nga.field('template')
-                .label('')
-                .template('<ma-create-button entity-name="ChannelStreams" class="pull-right" label="ADD STREAM" default-values="{ channel_id: entry.values.id }"></ma-create-button>'),
+                    ])
+                    .listActions(['edit', 'delete']),
+                        nga.field('template')
+			                .label('')
+			                .template('<ma-create-button entity-name="ChannelStreams" class="pull-right" label="ADD STREAM" default-values="{ channel_id: entry.values.id }"></ma-create-button>'),
 
         ]);
 

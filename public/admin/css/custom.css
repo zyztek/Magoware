@@ -480,15 +480,15 @@ div#page-wrapper {
     color: white;
 }
 /*.table-striped > tbody > tr:nth-child(2n) > td {*/
-/*background-color: #e6eef8;*/
+    /*background-color: #e6eef8;*/
 /*}*/
 /*.table-striped > tbody > tr:nth-child(2n+1) > td {*/
-/*background-color: #e6eef8;*/
+    /*background-color: #e6eef8;*/
 
 /*}*/
 /*.table-striped>tbody>tr:nth-child(odd)>td,*/
 /*.table-striped>tbody>tr:nth-child(odd)>th {*/
-/*background-color: red; // Choose your own color here*/
+    /*background-color: red; // Choose your own color here*/
 /*}*/
 
 /*=========================================./Body Dashboard=================================================*/
@@ -542,4 +542,24 @@ if it's not present, don't show loader */
     height: 100%;
     z-index: 9999;
     background: url(../images/Preloader_2.gif) center no-repeat #fff;
+}
+
+@media (max-width: 1652px) {
+    download-invoice.ng-scope.ng-isolate-scope{
+        position: relative;
+        top: 3px;
+    }
+}
+@media (min-width: 1653px) {
+    download-invoice.ng-scope.ng-isolate-scope{
+        position: relative;
+        left: 3px;
+    }
+}
+p#paragraph_vod {
+    padding-left: 22px;
+}
+p#paragraph_vod:hover {
+    background-color: #ec932f;
+    color: white;
 }

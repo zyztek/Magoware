@@ -9,11 +9,11 @@ var path = require('path'),
     async = require('async'),
     winston = require(path.resolve('./config/lib/winston')),
     whiteilst_IPs =['54.187.174.169',
-        '54.187.205.235',
-        '54.187.216.72',
-        '54.241.31.99',
-        '54.241.31.102',
-        '54.241.34.107'];
+                    '54.187.205.235',
+                    '54.187.216.72',
+                    '54.241.31.99',
+                    '54.241.31.102',
+                    '54.241.34.107'];
 
 /*
 * @api {get} /apiv2/payments/stripe/getkey Get Stripe Token Key
@@ -23,9 +23,9 @@ var path = require('path'),
 */
 exports.stripe_get_key = function(req,res) {
     var thisresponse = new response.OK();
-    thisresponse.response_object = [{
-        stripekey:req.app.locals.paymenttokens.STRIPE.API_KEY
-    }]
+        thisresponse.response_object = [{
+            stripekey:req.app.locals.paymenttokens.STRIPE.API_KEY
+        }]
     res.send(thisresponse);
 };
 
@@ -74,14 +74,12 @@ exports.stripe_one_off_charge = function(req,res) {
     DBCombos.findOne({
         where: {product_id:req.body.product_id}
     }).then(function (result) {
-
         if(!result) {
             thisresponse.error_code = 400;
             thisresponse.extra_data = "Plan not found on database";
             res.send(thisresponse);
         } else {
             stripeobj.amount = result.dataValues.value;
-
             stripe.charges.create(stripeobj, function(err, charge) {
                 if(err) {
                     //payment failed
@@ -102,7 +100,7 @@ exports.stripe_one_off_charge = function(req,res) {
             return null;
         }
     }).catch(function(error) {
-        console.log(error);
+       console.log(error);
     });
 };
 
@@ -147,9 +145,9 @@ exports.stripe_subscription_charge = function(req,res) {
                         stripe.subscriptions.create({
                                 customer: customer.id,
                                 items: [
-                                    {
-                                        plan: req.body.product_id
-                                    }
+                                   {
+                                     plan: req.body.product_id
+                                   }
                                 ],
                                 metadata: {
                                     firstname: req.body.firstname,
@@ -176,7 +174,7 @@ exports.stripe_subscription_charge = function(req,res) {
                     }
                 }
             );
-            return null;
+        return null;
         }
     }).catch(function(error) {
         console.log('some error',error);
@@ -195,20 +193,20 @@ exports.stripe_add_subscription = function(req,res) {
     var stripeinvoiceid = req.body.data.object.invoice; //
     var sale_or_refund = 1; //sale
     var transaction_object = {};
-    transaction_object.transaction_id = req.body.id;
-    transaction_object.transaction_type = req.body.type;
-    transaction_object.transaction_token = req.body.data.object.source.id;
-    transaction_object.refunds_info = req.body.data.object.refunds.url;
-    transaction_object.message = req.body.data.object.outcome.seller_message;
-    transaction_object.payment_provider = 'stripe';
-    transaction_object.date = Date.now();
-    transaction_object.full_log = JSON.stringify(req.body);
-    transaction_object.amount = req.body.data.object.amount;
-    transaction_object.payment_success = true;
+        transaction_object.transaction_id = req.body.id;
+        transaction_object.transaction_type = req.body.type;
+        transaction_object.transaction_token = req.body.data.object.source.id;
+        transaction_object.refunds_info = req.body.data.object.refunds.url;
+        transaction_object.message = req.body.data.object.outcome.seller_message;
+        transaction_object.payment_provider = 'stripe';
+        transaction_object.date = Date.now();
+        transaction_object.full_log = JSON.stringify(req.body);
+        transaction_object.amount = req.body.data.object.amount;
+        transaction_object.payment_success = true;
 
     async.waterfall([
         function(callback) {
-            //if invoice available then it is a subscription, else it is a on off charge.
+            //if invoice available then it is a subscription, else it is a one off charge.
             if (stripeinvoiceid) {
                 stripe.invoices.retrieve(
                     stripeinvoiceid,
@@ -305,18 +303,18 @@ exports.stripe_refund = function(req,res) {
     var transaction_id = req.body.data.object.id;
 
     var transaction_object = {};
-    transaction_object.transaction_id = req.body.id;
-    transaction_object.transaction_type = req.body.type;
-    transaction_object.transaction_token = req.body.data.object.source.id;
-    transaction_object.refunds_info = req.body.data.object.refunds.url;
-    transaction_object.message = req.body.data.object.outcome.seller_message;
-    transaction_object.payment_provider = 'stripe';
-    transaction_object.date = Date.now();
-    transaction_object.full_log = JSON.stringify(req.body);
-    transaction_object.amount = req.body.data.object.amount_refunded;
-    transaction_object.payment_success = true;
-    transaction_object.customer_username = req.body.data.object.metadata.username;
-    transaction_object.product_id = req.body.data.object.metadata.product_id;
+        transaction_object.transaction_id = req.body.id;
+        transaction_object.transaction_type = req.body.type;
+        transaction_object.transaction_token = req.body.data.object.source.id;
+        transaction_object.refunds_info = req.body.data.object.refunds.url;
+        transaction_object.message = req.body.data.object.outcome.seller_message;
+        transaction_object.payment_provider = 'stripe';
+        transaction_object.date = Date.now();
+        transaction_object.full_log = JSON.stringify(req.body);
+        transaction_object.amount = req.body.data.object.amount_refunded;
+        transaction_object.payment_success = true;
+        transaction_object.customer_username = req.body.data.object.metadata.username;
+        transaction_object.product_id = req.body.data.object.metadata.product_id;
 
     db.salesreport.findOne({
         where: {transaction_id: transaction_id}
@@ -402,20 +400,20 @@ exports.stripe_order_charge = function (req,res) {
     };
 
     stripe.orders.create(
-        stripeobject
+            stripeobject
         , function(err, order) {
-            if(order) {
-                stripe.orders.pay(order.id, {
-                    source: req.body.stripetoken
-                }, function(err, orderstatus) {
-                    if(orderstatus)
-                        res.send(orderstatus);
-                    else
-                        res.send(err);
-                });
-            }
-            else {
-                res.send(err);
-            }
-        });
+        if(order) {
+            stripe.orders.pay(order.id, {
+                source: req.body.stripetoken
+            }, function(err, orderstatus) {
+                if(orderstatus)
+                    res.send(orderstatus);
+                else
+                    res.send(err);
+            });
+        }
+        else {
+            res.send(err);
+        }
+    });
 };

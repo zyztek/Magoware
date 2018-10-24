@@ -107,7 +107,7 @@ function resellersdashboardSummary(Restangular) {
                     }
 
                 });
-        },
+            },
         template: dashboardSummaryTemplate
     };
 }

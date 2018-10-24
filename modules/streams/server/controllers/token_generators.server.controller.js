@@ -119,7 +119,7 @@ Date.prototype.format = function (mask, utc) {
 };
 
 
-function getClientIp(req) {
+ function getClientIp(req) {
     var ipAddress;
     // The request may be forwarded from local web server.
     var forwardedIpsStr = req.header('x-forwarded-for');
@@ -163,7 +163,7 @@ exports.akamai_token_v2_generator = function(req,res) {
 
     var token = "?" + new akamai_token_generator.default(config).generateToken();
     var theresponse = new responses.OK();
-    theresponse.extra_data = token;
+        theresponse.extra_data = token;
     res.send(theresponse);
 };
 
@@ -218,6 +218,7 @@ exports.akamai_token_v2_generator_tibo_mobile = function(req,res) {
 };
 
 
+
 exports.flussonic_token_generator =  function(req, res) {
     var token_key = req.app.locals.streamtokens.FLUSSONIC.TOKEN_KEY; //server side only
     var password = req.query.password || req.app.locals.streamtokens.FLUSSONIC.PASSWORD; //Can be sent as query parameter
@@ -233,7 +234,7 @@ exports.flussonic_token_generator =  function(req, res) {
     var token = "?token="+mysha1(tohash)+ "-" + salt + "-" + endtime + "-" + starttime;
 
     var theresponse = new responses.OK();
-    theresponse.extra_data = token;
+        theresponse.extra_data = token;
 
     res.send(theresponse);
 };
@@ -271,7 +272,6 @@ exports.flussonic_token__remote =  function(req, res) {
  *
  */
 
-
 exports.nimble_token_generator =  function(req, res) {
 
     var today = (new Date()).format("UTC:m/d/yyyy h:MM:ss TT");
@@ -281,7 +281,7 @@ exports.nimble_token_generator =  function(req, res) {
     var str2hash = ip + key + today + validminutes;
 
     var md5sum = crypto.createHash('md5');
-    md5sum.update(str2hash, 'ascii');
+        md5sum.update(str2hash, 'ascii');
     var base64hash = md5sum.digest('base64');
 
     var urlsignature = "server_time=" + today  + "&hash_value=" + base64hash + "&validminutes=" + validminutes;
@@ -291,7 +291,7 @@ exports.nimble_token_generator =  function(req, res) {
     var signedurlwithvalidinterval = "?wmsAuthSign=" + base64urlsignature;
 
     var thisresponse = new responses.OK();
-    thisresponse.extra_data = signedurlwithvalidinterval;
+        thisresponse.extra_data = signedurlwithvalidinterval;
 
     res.send(thisresponse);
 

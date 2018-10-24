@@ -4,9 +4,9 @@ export default function (nga, admin) {
     var mysales = admin.getEntity('MySales');
 
     mysales.listView()
-    // .url(function() {
-    //     return 'MySales/list';
-    // })
+        // .url(function() {
+        //     return 'MySales/list';
+        // })
         .title('<h4>Sale report <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
         .listActions(['<ma-edit-button entry="entry" entity="entity" label="Cancel Subscription" size="xs"></ma-edit-button><download-invoice post="entry"></download-invoice>'])
         .batchActions([])
@@ -15,12 +15,12 @@ export default function (nga, admin) {
                 .cssClasses('hidden-xs')
                 .label('ID'),
             nga.field('user_id', 'reference')
-                .targetEntity(admin.getEntity('Users'))
+                .targetEntity(admin.getEntity('ResellersUsers'))
                 .targetField(nga.field('username'))
                 .label('Sales Agent'),
 
             nga.field('login_data_id', 'reference')
-                .targetEntity(admin.getEntity('LoginData'))
+                .targetEntity(admin.getEntity('ResellersLoginData'))
                 .targetField(nga.field('username'))
                 .label('Account Username'),
 
@@ -40,7 +40,7 @@ export default function (nga, admin) {
                 .cssClasses('hidden-xs')
                 .label('Cancelation Date'),
             nga.field('cancelation_user', 'reference')
-                .targetEntity(admin.getEntity('Users'))
+                .targetEntity(admin.getEntity('ResellersUsers'))
                 .targetField(nga.field('username'))
                 .label('Cancelation User'),
             nga.field('cancelation_reason', 'text')

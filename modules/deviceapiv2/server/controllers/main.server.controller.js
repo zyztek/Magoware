@@ -20,12 +20,12 @@ var path = require('path'),
  */
 exports.device_menu = function(req, res) {
     var thisresponse = new response.OK();
-    //req.auth_obj = {} ;
-    //req.auth_obj.appid = 1;
+
+    var get_guest_menus = (req.auth_obj.username === 'guest' && req.app.locals.backendsettings.allow_guest_login === true) ? true: false;
     models.device_menu.findAll({
         attributes: ['id', 'title', 'url', 'icon_url', [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'icon'], 'menu_code', 'position',
             [db.sequelize.fn('concat', "", db.sequelize.col('menu_code')), 'menucode']],
-        where: {appid: {$like: '%'+req.auth_obj.appid+'%' }, isavailable:true},
+        where: {appid: {$like: '%'+req.auth_obj.appid+'%' }, isavailable:true, is_guest_menu: get_guest_menus},
         order: [[ 'position', 'ASC' ]]
     }).then(function (result) {
         for(var i=0; i<result.length; i++){
@@ -49,9 +49,10 @@ exports.device_menu = function(req, res) {
  */
 exports.device_menu_get = function(req, res) {
 
+    var get_guest_menus = (req.auth_obj.username === 'guest' && req.app.locals.backendsettings.allow_guest_login === true) ? true: false;
     models.device_menu.findAll({
         attributes: ['id', 'title', 'url', 'icon_url', [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'icon'], 'menu_code', 'position', ['menu_code','menucode']],
-        where: {appid: {$like: '%'+req.auth_obj.appid+'%' }, isavailable:true},
+        where: {appid: {$like: '%'+req.auth_obj.appid+'%' }, isavailable:true, is_guest_menu: get_guest_menus},
         order: [[ 'position', 'ASC' ]]
     }).then(function (result) {
         for(var i=0; i<result.length; i++){
@@ -76,12 +77,14 @@ exports.device_menu_get = function(req, res) {
  * @apiDescription Get Main Menu object for the running application.
  */
 exports.get_devicemenu_levelone = function(req, res) {
+
+    var get_guest_menus = (req.auth_obj.username === 'guest' && req.app.locals.backendsettings.allow_guest_login === true) ? true: false;
     models.device_menu.findAll({
         attributes: ['id', 'title', 'url',
             [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'icon'],
             [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'icon_url'],
             'menu_code', 'position','parent_id','menu_description', ['menu_code','menucode']],
-        where: {appid: {$like: '%'+req.auth_obj.appid+'%' }, isavailable:true},
+        where: {appid: {$like: '%'+req.auth_obj.appid+'%' }, isavailable:true, is_guest_menu: get_guest_menus},
         order: [[ 'position', 'ASC' ]]
     }).then(function (result) {
         for(var i=0; i<result.length; i++){
@@ -107,12 +110,14 @@ exports.get_devicemenu_levelone = function(req, res) {
  * @apiDescription Get Main Menu object for the running application.
  */
 exports.get_devicemenu_leveltwo = function(req, res) {
+
+    var get_guest_menus = (req.auth_obj.username === 'guest' && req.app.locals.backendsettings.allow_guest_login === true) ? true: false;
     models.device_menu_level2.findAll({
         attributes: ['id', 'title', 'url',
             [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'icon'],
             [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'icon_url'],
             'menu_code', 'position','parent_id','menu_description', ['menu_code','menucode']],
-        where: {appid: {$like: '%'+req.auth_obj.appid+'%' }, isavailable:true},
+        where: {appid: {$like: '%'+req.auth_obj.appid+'%' }, isavailable:true, is_guest_menu: get_guest_menus},
         order: [[ 'position', 'ASC' ]]
     }).then(function (result) {
 

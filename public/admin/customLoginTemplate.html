@@ -1,20 +1,20 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <link href="css/style.css" rel="stylesheet" type="text/css" media="all"/>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="keywords" content="Square login form web template, Sign up Web Templates, Flat Web Templates, Login signup Responsive web template, Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony Ericsson, Motorola web design" />
+<link href="css/style.css" rel="stylesheet" type="text/css" media="all"/>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+<meta name="keywords" content="Square login form web template, Sign up Web Templates, Flat Web Templates, Login signup Responsive web template, Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony Ericsson, Motorola web design" />
     <style type="text/css">
         .login-form .forget {
             margin-top: 25px;
             text-align: center;
         }
 
-    .login-form .forget a {
-        color: white;
-    }
+        .login-form .forget a {
+            color: white;
+        }
 
         img {
             padding: 70px;
@@ -38,40 +38,40 @@
 
 <body>
 <div class="login-form">
-    <div class="login-top">
+            <div class="login-top">
 
-        <center><img ng-app="myApp" ng-controller="envVariablesCtrl" class="img-responsive" ng-src="{{company_logo}}"></center>
+                    <center><img ng-app="myApp" ng-controller="envVariablesCtrl" class="img-responsive" ng-src="{{company_logo}}"></center>
 
-        <form name="loginController.form" ng-submit="loginController.login()">
-            <div class="login-ic">
-                <i></i>
-                <input type="text"  placeholder="Username" ng-model="loginController.data.username" ng-required="true" ng-minlength="3" ng-enter="loginController.login()"/>
-                <div class="clear"> </div>
+                <form name="loginController.form" ng-submit="loginController.login()">
+                    <div class="login-ic">
+                        <i></i>
+                        <input type="text"  placeholder="Username" ng-model="loginController.data.username" ng-required="true" ng-minlength="3" ng-enter="loginController.login()"/>
+                        <div class="clear"> </div>
+                    </div>
+                    <div class="login-ic">
+                        <i class="icon"></i>
+                        <input type="password"  placeholder="Password" ng-model="loginController.data.password" ng-required="true" ng-minlength="4" ng-enter="loginController.login()"/>
+                        <div class="clear"></div>
+                    </div>
+                
+                    <div class="log-bwn">
+                        <button class="btn btn-lg btn-success  btn-block" type="submit" ng-disabled="loginController.form.$invalid">Login</button>
+                    </div>
+
+                </form>
             </div>
-            <div class="login-ic">
-                <i class="icon"></i>
-                <input type="password"  placeholder="Password" ng-model="loginController.data.password" ng-required="true" ng-minlength="4" ng-enter="loginController.login()"/>
-                <div class="clear"></div>
-            </div>
-
-            <div class="log-bwn">
-                <button class="btn btn-lg btn-success  btn-block" type="submit" ng-disabled="loginController.form.$invalid">Login</button>
-            </div>
-
-        </form>
-    </div>
 
 
-
+                        
                         <div class="forget">
-
+                          
                           <button class="btn btn-success" ng-click="modal()">Forgot Password</button>
-
+                        
                         </div>
 
             <p class="copy">© 2017 - All right reserved | Magoware</p>
             <p ng-app="myApp" ng-controller="envVariablesCtrl" class="copy" ng-bind-html="version_number"></p>
-</div>
+</div>  
 
 </body>
 </html>

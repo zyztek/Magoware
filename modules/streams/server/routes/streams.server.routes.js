@@ -42,7 +42,7 @@ module.exports = function(app) {
         //.all(authpolicy.isAllowed)
         .post(catchupfunctions.flussonic_catchup_stream);
 
-    /*=================== encryption api URLs =================== */
+/*=================== encryption api URLs =================== */
 
     app.route('/apiv2/encryption/key1')
         //.all(authpolicy.isAllowed)

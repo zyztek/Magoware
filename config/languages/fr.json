@@ -53,6 +53,8 @@
     "REQUEST_FAILED_DESC": "Erreur lors de l'exécution de la requête",
     "UNKNOWN_STREAM_FORMAT": "Le flux de rattrapage demandé ne peut pas être desservi",
     "DEVICE_NOT_FOUND": "Impossible de trouver un périphérique avec les spécifications requises",
-    "NO_DATA_FOUND": "La liste d'articles demandée est vide"
+    "NO_DATA_FOUND": "La liste d'articles demandée est vide",
+    "GUEST_LOGIN_DISABLED_DESCRIPTION": "GUEST_LOGIN_DISABLED",
+    "GUEST_LOGIN_DISABLED_DATA": "La connexion invité a été désactivée"
   }
 }

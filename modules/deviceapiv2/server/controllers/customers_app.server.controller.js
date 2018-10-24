@@ -141,10 +141,10 @@ exports.update_user_data = function(req, res) {
                 }
                 response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
 
-            }).catch(function(error){
+                }).catch(function(error){
                 response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
-        }).catch(function(error) {
+            }).catch(function(error) {
             if(error.name === "SequelizeUniqueConstraintError" && error.errors[0].path === "email"){
                 response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'EMAIL_ALREADY_EXISTS', 'no-store');
             }
@@ -645,3 +645,4 @@ exports.edit_channel = function(req, res) {
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
+

@@ -5,7 +5,9 @@ var path = require('path'),
     subscription = db.subscription,
     dateFormat = require('dateformat'),
     moment = require('moment'),
-    response = require(path.resolve("./config/responses.js"));
+    response = require(path.resolve("./config/responses.js")),
+    winston = require(path.resolve('./config/lib/winston'));
+
 
 function add_subscription(req, res, login_id, combo_id, username){
     db.combo.findAll({
@@ -69,8 +71,19 @@ function add_subscription(req, res, login_id, combo_id, username){
 //add subscription to user
 exports.add_subscription_transaction = function(req,res,sale_or_refund,transaction_id,start_date,end_date) {
 
-    // if product_id exists in param list search combo by it, else search by combo id
-    var combo_where = (req.body.product_id) ? {product_id: req.body.product_id, isavailable: true} : {id: req.body.combo_id, isavailable: true};
+    // if product_id exists in param list search combo by product_id, else search by combo id
+    var combo_where = {}; //query parameter
+    if(req.body.product_id) {
+        combo_where = {product_id: req.body.product_id, isavailable: true}; //if product id is coming
+    }
+    else if(req.body.combo_id) {
+        combo_where = {id: req.body.combo_id, isavailable: true}; //if combo id is coming
+    }
+    else if(req.body.product_name) {
+        combo_where = {name: req.body.product_name, isavailable: true}; //if product name is coming
+    }
+
+
     var transactions_array = [];
 
     if(!sale_or_refund) sale_or_refund = 1;
@@ -93,7 +106,7 @@ exports.add_subscription_transaction = function(req,res,sale_or_refund,transacti
                     }
                 }, include: [{model: db.customer_data}, {model: db.subscription}]
             }).then(function (loginData) {
-                if (!loginData) return {status: false, message: 'no user found'}; //no username found
+                if (!loginData) return {status: false, message: 'Login data not found during subscription transaction'}; //no username found
 
                 return sequelize_t.sequelize.transaction(function (t) {
                     combo.combo_packages.forEach(function (item, i, arr) {
@@ -175,9 +188,10 @@ exports.add_subscription_transaction = function(req,res,sale_or_refund,transacti
                     return Promise.all(transactions_array, {transaction:t}); //execute transaction
 
                 }).then(function (result) {
-                    return {status: true,message:'transaction executed correctly'};
+                    return {status: true,message:'subscription transaction executed correctly'};
                 }).catch(function (err) {
-                    return {status: false,message:'error executing transaction'};
+                    winston.error('error executing subscription transaction: ',err);
+                    return {status: false, message:'error executing subscription transaction'};
                 })
             });
         } //end if combo found

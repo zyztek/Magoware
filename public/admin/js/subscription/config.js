@@ -15,11 +15,6 @@ export default function (nga, admin){
                 .targetField(nga.field('package_name'))
 				.label('Packages'),
 
-            nga.field('group_id', 'reference')
-                .targetEntity(admin.getEntity('Users'))
-                .targetField(nga.field('username'))
-				.label('Distributor'),
-
 			nga.field('start_date', 'date')
 				.template(function (entry, values) {
 					var moment = new Date().toISOString().slice(0,10);
@@ -80,7 +75,12 @@ export default function (nga, admin){
                 .targetEntity(admin.getEntity('LoginData'))
                 .targetField(nga.field('username'))
                 .attributes({ placeholder: 'Choose Username from dropdown list' })
-                .validation({ required: true })
+                .validation({validator: function(value) {
+                        if(value === null || value === ''){
+                            throw new Error('Please Select Username');
+                        }
+                    }
+                })
                 .perPage(-1)
                 .remoteComplete(true, {
                     refreshDelay: 300,
@@ -88,14 +88,19 @@ export default function (nga, admin){
                     searchQuery: function(search) { return { q: search }; }
                 })
                 .perPage(10) // limit the number of results to 10
-                .label('Username'),
+                .label('Username *'),
             nga.field('combo_id', 'reference')
                 .targetEntity(admin.getEntity('Combos'))
                 .targetField(nga.field('name'))
                 .attributes({ placeholder: 'Choose Combo from dropdown list' })
-                .validation({ required: true })
+                .validation({validator: function(value) {
+                        if(value === null || value === ''){
+                            throw new Error('Please Select Combo');
+                        }
+                    }
+                })
                 .perPage(-1)
-                .label('Combo'),
+                .label('Combo *'),
 			nga.field('on_behalf_id','reference')
 			   .targetEntity(admin.getEntity('Users'))
 				.targetField(nga.field('username'))
@@ -122,8 +127,13 @@ export default function (nga, admin){
 					.targetEntity(admin.getEntity('LoginData'))
 					.targetField(nga.field('username'))
 					.attributes({ placeholder: 'Select Account' })
-					.validation({ required: true })
-					.label('Username'),
+					.validation({validator: function(value) {
+							if(value === null || value === ''){
+								throw new Error('Please Select Username');
+							}
+						}
+					})
+					.label('Username *'),
 			nga.field('start_date','date')
 					.validation({ required: true, validator: function(start_date_input, input_list){
 						if (start_date_input > input_list.end_date) throw new Error ('Start date cannot be bigger than end date')}

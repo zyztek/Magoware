@@ -1,10 +1,10 @@
 'use strict';
 
 var path = require('path'),
-    config = require(path.resolve('./config/config')),
-    reCaptcha = require(path.resolve('./config/lib/reCaptcha')),
-    async = require('async'),
-    nodemailer = require('nodemailer');
+  config = require(path.resolve('./config/config')),
+  reCaptcha = require(path.resolve('./config/lib/reCaptcha')),
+  async = require('async'),
+  nodemailer = require('nodemailer');
 var request = require('request');
 
 var smtpTransport = nodemailer.createTransport(config.mailer.options);
@@ -12,21 +12,21 @@ var smtpTransport = nodemailer.createTransport(config.mailer.options);
 
 exports.recaptch_service = function(req, res){
 
-  if(req.body.recaptcha === undefined || req.body.recaptcha === '' || req.body.recaptcha === null ){
-    return res.json({"success": false, "msg": "Please select captcha"});
-  }
-  var secretKey = "6LfJ3Q4UAAAAAPEp1VLwEN-NRvw8KvskWD8sx0KY";
-  var verifyUrl = "https://google.com/recaptcha/api/siteverify?secret="+secretKey+"&response="+req.body.recaptcha+"";
+    if(req.body.recaptcha === undefined || req.body.recaptcha === '' || req.body.recaptcha === null ){
+        return res.json({"success": false, "msg": "Please select captcha"});
+    }
+    var secretKey = "6LfJ3Q4UAAAAAPEp1VLwEN-NRvw8KvskWD8sx0KY";
+    var verifyUrl = "https://google.com/recaptcha/api/siteverify?secret="+secretKey+"&response="+req.body.recaptcha+"";
 
-  request(verifyUrl, function(error, response, body){
-    var thebody = JSON.parse(body);
-    if(thebody.success !== undefined && !thebody.success){
-      res.send({success: false, message: "Captcha verification failed"});
-    }
-    else{
-      res.send({success: true, message: "Captcha verification succeded"});
-    }
-  });
+    request(verifyUrl, function(error, response, body){
+        var thebody = JSON.parse(body);
+        if(thebody.success !== undefined && !thebody.success){
+            res.send({success: false, message: "Captcha verification failed"});
+        }
+        else{
+            res.send({success: true, message: "Captcha verification succeded"});
+        }
+    });
 }
 
 /**
@@ -108,7 +108,7 @@ exports.contact = function(req, res, next) {
           done('Failed to send the email, please try again later.');
         } else {
           return res.send({
-            message: 'Thank you for contacting us! We will get back to you as soon as possible!'
+          message: 'Thank you for contacting us! We will get back to you as soon as possible!'
           });
         }
       });

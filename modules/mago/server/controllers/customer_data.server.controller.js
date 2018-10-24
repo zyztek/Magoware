@@ -48,7 +48,7 @@ exports.create = function(req, res) {
  * Show current
  */
 exports.read = function(req, res) {
-    res.json(req.customerData);
+  res.json(req.customerData);
 };
 
 /**
@@ -82,7 +82,7 @@ exports.update = function(req, res) {
     }).catch(function(err) {
         console.log(err)
         return res.status(400).send({
-            message: errorHandler.getErrorMessage(err)
+        message: errorHandler.getErrorMessage(err)
         });
     });
 };
@@ -91,27 +91,27 @@ exports.update = function(req, res) {
  * Delete
  */
 exports.delete = function(req, res) {
-    var deleteData = req.customerData;
+  var deleteData = req.customerData;
 
-    DBModel.findById(deleteData.id).then(function(result) {
-        if (result) {
-            result.destroy().then(function() {
-                return res.json(result);
-            }).catch(function(err) {
-                return res.status(400).send({
-                    message: errorHandler.getErrorMessage(err)
-                });
-            });
-        } else {
-            return res.status(400).send({
-                message: 'Unable to find the Data'
-            });
-        }
-    }).catch(function(err) {
+  DBModel.findById(deleteData.id).then(function(result) {
+    if (result) {
+      result.destroy().then(function() {
+        return res.json(result);
+      }).catch(function(err) {
         return res.status(400).send({
-            message: errorHandler.getErrorMessage(err)
+          message: errorHandler.getErrorMessage(err)
         });
+      });
+    } else {
+      return res.status(400).send({
+        message: 'Unable to find the Data'
+      });
+    }
+  }).catch(function(err) {
+    return res.status(400).send({
+      message: errorHandler.getErrorMessage(err)
     });
+  });
 
 };
 
@@ -120,55 +120,55 @@ exports.delete = function(req, res) {
  */
 exports.list = function(req, res) {
 
-    var qwhere = {},
-        final_where = {},
-        query = req.query;
+  var qwhere = {},
+      final_where = {},
+      query = req.query;
 
-    if(query.q) {
-        qwhere.$or = {};
-        qwhere.$or.firstname = {};
-        qwhere.$or.firstname.$like = '%'+query.q+'%';
-        qwhere.$or.lastname = {};
-        qwhere.$or.lastname.$like = '%'+query.q+'%';
-        qwhere.$or.email = {};
-        qwhere.$or.email.$like = '%'+query.q+'%';
-        qwhere.$or.address = {};
-        qwhere.$or.address.$like = '%'+query.q+'%';
-        qwhere.$or.city = {};
-        qwhere.$or.city.$like = '%'+query.q+'%';
-        qwhere.$or.country = {};
-        qwhere.$or.country.$like = '%'+query.q+'%';
-        qwhere.$or.telephone = {};
-        qwhere.$or.telephone.$like = '%'+query.q+'%';
+  if(query.q) {
+    qwhere.$or = {};
+    qwhere.$or.firstname = {};
+    qwhere.$or.firstname.$like = '%'+query.q+'%';
+    qwhere.$or.lastname = {};
+    qwhere.$or.lastname.$like = '%'+query.q+'%';
+    qwhere.$or.email = {};
+    qwhere.$or.email.$like = '%'+query.q+'%';
+    qwhere.$or.address = {};
+    qwhere.$or.address.$like = '%'+query.q+'%';
+    qwhere.$or.city = {};
+    qwhere.$or.city.$like = '%'+query.q+'%';
+    qwhere.$or.country = {};
+    qwhere.$or.country.$like = '%'+query.q+'%';
+    qwhere.$or.telephone = {};
+    qwhere.$or.telephone.$like = '%'+query.q+'%';
+  }
+
+  //start building where
+  final_where.where = qwhere;
+ if(parseInt(query._end) !== -1){
+     if(parseInt(query._start)) final_where.offset = parseInt(query._start);
+     if(parseInt(query._end)) final_where.limit = parseInt(query._end)-parseInt(query._start);
+ }
+  if(query._orderBy) final_where.order = query._orderBy + ' ' + query._orderDir;
+  final_where.include = [];
+  //end build final where
+
+  DBModel.findAndCountAll(
+
+      final_where
+
+  ).then(function(results) {
+    if (!results) {
+      return res.status(404).send({
+        message: 'No data found'
+      });
+    } else {
+
+      res.setHeader("X-Total-Count", results.count); 
+      res.json(results.rows);
     }
-
-    //start building where
-    final_where.where = qwhere;
-    if(parseInt(query._end) !== -1){
-        if(parseInt(query._start)) final_where.offset = parseInt(query._start);
-        if(parseInt(query._end)) final_where.limit = parseInt(query._end)-parseInt(query._start);
-    }
-    if(query._orderBy) final_where.order = query._orderBy + ' ' + query._orderDir;
-    final_where.include = [];
-    //end build final where
-
-    DBModel.findAndCountAll(
-
-        final_where
-
-    ).then(function(results) {
-        if (!results) {
-            return res.status(404).send({
-                message: 'No data found'
-            });
-        } else {
-
-            res.setHeader("X-Total-Count", results.count);
-            res.json(results.rows);
-        }
-    }).catch(function(err) {
-        res.jsonp(err);
-    });
+  }).catch(function(err) {
+    res.jsonp(err);
+  });
 };
 
 /**
@@ -176,30 +176,30 @@ exports.list = function(req, res) {
  */
 exports.dataByID = function(req, res, next, id) {
 
-    if ((id % 1 === 0) === false) { //check if it's integer
-        return res.status(404).send({
-            message: 'Data is invalid'
-        });
-    }
-
-    DBModel.find({
-        where: {
-            id: id
-        },
-        include: [db.login_data]
-    }).then(function(result) {
-        if (!result) {
-            return res.status(404).send({
-                message: 'No data with that identifier has been found'
-            });
-        } else {
-            req.customerData = result;
-            next();
-            return null;
-        }
-    }).catch(function(err) {
-        return next(err);
+  if ((id % 1 === 0) === false) { //check if it's integer
+    return res.status(404).send({
+      message: 'Data is invalid'
     });
+  }
+
+  DBModel.find({
+    where: {
+      id: id
+    },
+    include: [db.login_data]
+  }).then(function(result) {
+    if (!result) {
+      return res.status(404).send({
+        message: 'No data with that identifier has been found'
+      });
+    } else {
+      req.customerData = result;
+      next();
+      return null;
+    }
+  }).catch(function(err) {
+    return next(err);
+  });
 
 };
 
@@ -254,3 +254,4 @@ exports.search_customer = function(req, res){
 
 
 };
+

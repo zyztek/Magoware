@@ -114,6 +114,11 @@ module.exports = function(sequelize, DataTypes) {
         key_transition: {
             type: DataTypes.BOOLEAN
         },
+        allow_guest_login: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
+        },
         company_url: {
             type: DataTypes.STRING,
             defaultValue: 'https://magoware.tv'
@@ -127,7 +132,7 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING(45),
             defaultValue: "MAGOWARE",
             allowNull: false
-        },
+        },		
         vodlastchange :{
             type: DataTypes.BIGINT(13),
             defaultValue: 0,
@@ -144,16 +149,16 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false
         },
         googlegcmapi: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING
         },
         applekeyid: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING
         },
         appleteamid: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING
         },
         applecertificate:{
-            type: DataTypes.STRING,
+            type: DataTypes.STRING
         },
         akamai_token_key:{
             type: DataTypes.STRING,

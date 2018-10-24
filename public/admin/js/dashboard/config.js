@@ -18,11 +18,10 @@ export default function (nga, admin) {
 						.targetEntity(admin.getEntity('Combos'))
 		                .targetField(nga.field('name'))
 						.label('Product'),
-					nga.field('user_username')
+					nga.field('user_username', 'reference')
+                        .targetEntity(admin.getEntity('LoginData'))
+                        .targetField(nga.field('username'))
 						.label('Customers Username'),
-					nga.field('distributorname', 'string')
-						.cssClasses('hidden-xs')
-						.label('Distributor'),
 					nga.field('saledate', 'date')
 						.cssClasses('hidden-xs')
 						.label('Sale Date'),

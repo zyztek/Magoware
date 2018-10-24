@@ -14,7 +14,7 @@ module.exports = {
         this.timestamp = 1; //Date.now();
         this.error_description = (languages[language]) ? languages[language].language_variables[error_description] : languages['eng'].language_variables[error_description];
         this.extra_data = (languages[language]) ? languages[language].language_variables[extra_data] : extra_data;
-        this.response_object = (!data || data.length < 1) ? [{}] : data;
+        this.response_object = data;
     },
     CREATED: function(language, error_description, extra_data){
         this.code = 'CREATED';
@@ -52,7 +52,7 @@ module.exports = {
         this.timestamp = 1; //Date.now();
         this.error_description = 'OK';
         this.extra_data = '';
-        this.response_object = [{}];
+        this.response_object = [];
     },
     BAD_REQUEST: {
         "status_code": 701,
@@ -60,7 +60,7 @@ module.exports = {
         "timestamp": Date.now(),
         "error_description": 'E_BAD_REQUEST',
         "extra_data": 'The request cannot be fulfilled due to bad syntax',
-        "response_object": [{}]
+        "response_object": []
     },
     USER_NOT_FOUND: {
         "status_code": 702,
@@ -68,7 +68,7 @@ module.exports = {
         "timestamp": Date.now(),
         "error_description": 'USER_NOT_FOUND',
         "extra_data": 'User not found',
-        "response_object": [{}]
+        "response_object": []
     },
     ACCOUNT_LOCK: {
         "status_code": 703,
@@ -76,7 +76,7 @@ module.exports = {
         "timestamp": Date.now(),
         "error_description": 'ACCOUNT_LOCK',
         "extra_data": 'User account locked',
-        "response_object": [{}]
+        "response_object": []
     },
     WRONG_PASSWORD: {
         "status_code": 704,
@@ -84,7 +84,7 @@ module.exports = {
         "timestamp": Date.now(),
         "error_description": 'WRONG_PASSWORD',
         "extra_data": 'Password does not match',
-        "response_object": [{}]
+        "response_object": []
     },
     DUAL_LOGIN_ATTEMPT: {
         "status_code": 705,
@@ -92,7 +92,7 @@ module.exports = {
         "timestamp": Date.now(),
         "error_description": 'DUAL_LOGIN_ATTEMPT',
         "extra_data": 'Attempt to login on another device',
-        "response_object": [{}]
+        "response_object": []
     },
     DATABASE_ERROR: function() {
         this.status_code = 706;
@@ -100,7 +100,7 @@ module.exports = {
         this.timestamp = Date.now();
         this.error_description = 'DATABASE_ERROR';
         this.extra_data = 'Error connecting to database';
-        this.response_object = [{}];
+        this.response_object = [];
     },
     UPDATE_FAILED: function(language, status_code, error_code, error_description, extra_data) {
         this.status_code = status_code;
@@ -116,7 +116,7 @@ module.exports = {
         "timestamp": Date.now(),
         "error_description": 'EMAIL SENT',
         "extra_data": 'Email successfuly sent',
-        "response_object": [{}]
+        "response_object": []
     },
     EMAIL_NOT_SENT: {
         "status_code": 801,
@@ -124,7 +124,7 @@ module.exports = {
         "timestamp": Date.now(),
         "error_description": 'EMAIL ERROR',
         "extra_data": 'Error sending email',
-        "response_object": [{}]
+        "response_object": []
     },
     REGISTRATION_ERROR: {
         "status_code": 803,
@@ -132,7 +132,7 @@ module.exports = {
         "timestamp": Date.now(),
         "error_description": 'REGISTRATION_FAILED',
         "extra_data": '',
-        "response_object": [{}]
+        "response_object": []
     },
     BAD_TOKEN: {
         "status_code": 888,
@@ -140,7 +140,7 @@ module.exports = {
         "timestamp": Date.now(),
         "error_description": 'BAD TOKEN',
         "extra_data": 'Token cannot be decrypted',
-        "response_object": [{}]
+        "response_object": []
     },
 
     send_res: function(req, res, result, status, error, description, extra_data, header){
