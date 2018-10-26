@@ -111,13 +111,12 @@ exports.get_devicemenu_levelone = function(req, res) {
  */
 exports.get_devicemenu_leveltwo = function(req, res) {
 
-    var get_guest_menus = (req.auth_obj.username === 'guest' && req.app.locals.backendsettings.allow_guest_login === true) ? true: false;
     models.device_menu_level2.findAll({
         attributes: ['id', 'title', 'url',
             [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'icon'],
             [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'icon_url'],
             'menu_code', 'position','parent_id','menu_description', ['menu_code','menucode']],
-        where: {appid: {$like: '%'+req.auth_obj.appid+'%' }, isavailable:true, is_guest_menu: get_guest_menus},
+        where: {appid: {$like: '%'+req.auth_obj.appid+'%' }, isavailable:true},
         order: [[ 'position', 'ASC' ]]
     }).then(function (result) {
 
