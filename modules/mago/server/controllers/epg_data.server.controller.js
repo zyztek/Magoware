@@ -25,12 +25,22 @@ var download = require('download-file')
  */
 exports.create = function(req, res) {
 
-    DBModel.create(req.body).then(function(result) {
-        if (!result) {
-            return res.status(400).send({message: 'fail create data'});
-        } else {
-            return res.jsonp(result);
-        }
+    db.channels.findOne({
+        attributes: ['id'], where: {channel_number: req.body.channel_number}
+    }).then(function(result) {
+        req.body.channels_id = result.id;
+        DBModel.create(req.body).then(function(result) {
+            if (!result) {
+                return res.status(400).send({message: 'fail create data'});
+            } else {
+                return res.jsonp(result);
+            }
+        }).catch(function(err) {
+            return res.status(400).send({
+                message: errorHandler.getErrorMessage(err)
+            });
+        });
+        return null;
     }).catch(function(err) {
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
