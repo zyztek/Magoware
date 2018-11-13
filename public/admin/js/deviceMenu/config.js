@@ -38,6 +38,7 @@ export default function (nga, admin) {
 						{ value: 10, label: 'Network Test' },
 						{ value: 11, label: 'Vod' },
 						{ value: 12, label: 'Application menu' },
+						{ value: 14, label: 'Video Url' },
 						{ value: 20, label: 'Personal' },
 						{ value: 21, label: 'Catchup' }
 					])
@@ -128,6 +129,7 @@ export default function (nga, admin) {
                     { value: 10, label: 'Network Test' },
                     { value: 11, label: 'Vod' },
 					{ value: 12, label: 'Application menu' },
+					{ value: 14, label: 'Video Url' },
                     { value: 20, label: 'Personal' },
                     { value: 21, label: 'Catchup' }
                 ])
