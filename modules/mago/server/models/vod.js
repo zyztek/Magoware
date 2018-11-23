@@ -44,12 +44,17 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false,
             defaultValue: ''
         },
+        homepage: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            defaultValue: ''
+        },
         spoken_languages: {
             type: DataTypes.STRING,
             allowNull: false,
-            defaultValue: '[{"iso_639_1": "en", "name": "English"}]',
+            defaultValue: '[]',
             get: function () {
-                return JSON.parse(this.getDataValue('spoken_languages'));
+                if(this.getDataValue('spoken_languages')) return JSON.parse(this.getDataValue('spoken_languages'));
             },
             set: function (value) {
                 return this.setDataValue('spoken_languages', JSON.stringify(value));
@@ -135,7 +140,12 @@ module.exports = function(sequelize, DataTypes) {
         },
         price: {
             type: DataTypes.DOUBLE,
-            allowNull: true
+            defaultValue: 1.0,
+            allowNull: false
+        },
+        mandatory_ads: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false
         },
         revenue: {
             type: DataTypes.INTEGER(11),
@@ -158,7 +168,7 @@ module.exports = function(sequelize, DataTypes) {
         status: {
             type: DataTypes.STRING(15),
             allowNull: false,
-            defaultValue: 'unknown'
+            defaultValue: 'released'
         }
     }, {
         tableName: 'vod',
@@ -172,10 +182,12 @@ module.exports = function(sequelize, DataTypes) {
             if(models.vod_stream){
                 Vod.hasMany(models.vod_stream, {foreignKey: 'vod_id'});
             }
+            if(models.t_vod_sales) Vod.hasMany(models.t_vod_sales, {foreignKey: 'vod_id'});
             Vod.belongsTo(models.vod, { as: 'tv_show_filter', foreignKey: 'vod_parent_id', useJunctionTable: false })
             Vod.belongsTo(models.vod, { as: 'season_filter', foreignKey: 'vod_parent_id', useJunctionTable: false })
             Vod.hasMany(models.vod, { as: 'seasons', foreignKey: 'vod_parent_id', useJunctionTable: false })
             Vod.hasMany(models.vod, { as: 'episodes', foreignKey: 'vod_parent_id', useJunctionTable: false })
+            if (models.vod_resume) Vod.hasMany(models.vod_resume, {foreignKey: 'vod_id'});
         }
     });
     return Vod;

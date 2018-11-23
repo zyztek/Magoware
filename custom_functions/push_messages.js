@@ -74,33 +74,26 @@ function send_notification(fcm_token, firebase_key, user, message, ttl, push_mes
 function save_message(user, googleappid, message, action, title){
 
     db.messages.create({
-            username: user,
-            googleappid: googleappid,
-            message: message,
-            action: action,
-            title: title
-        },
-        {
-            logging: console.log
-        }).then(function(result) {
-        if (!result) {
-            console.log('Fail to create data')
-        } else {
-            console.log('Messages saved')
-        }
+        username: user,
+        googleappid: googleappid,
+        message: message,
+        action: action,
+        title: title
+    }).then(function(result) {
+        winston.info('Push notifications saved')
     }).catch(function(err) {
-        console.log(err);
+        winston.error(err);
     });
 
 }
 
-function INFO_PUSH(title, body, type){
+function INFO_PUSH(title, body, type, parameters){
     return {
         data: {
             title   : title,
             body    : body,
             type    : type,
-            values  : {}
+            values  : parameters
         },
         notification : {
             title   : title,
@@ -171,14 +164,15 @@ function COMMAND_PUSH(title, body, type, command, param1, param2, param3) {
     };
 }
 
-function ACTION_PUSH(title, body, type, action) {
+function ACTION_PUSH(title, body, type, action, parameters) {
     return {
         data: {
             title   : title,
             body    : body,
             type    : type,
             values  : {
-                action : action
+                action : action,
+                parameters : parameters
             }
         },
         notification: {

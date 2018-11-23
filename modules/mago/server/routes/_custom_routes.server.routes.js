@@ -20,17 +20,30 @@ module.exports = function(app) {
     //.all(policy.isAllowed)
         .post(customController.create_customer_with_login);
 
-    app.route('/api/createcustomerlogin')
-        //.all(policy.isAllowed)
-        .post(customController.create_customer_with_login);
 
     app.route('/api/accountslist')
         //.all(policy.isAllowed)
         .get(customController.list_logins_with_customer);
 
 
+
+    ///third party integration API Routes
+    app.route('/api/productslist')
+        .all(policy.isApiKeyAllowed)
+        .get(customController.products_list);
+
+
+    ///third party integration API Routes
+    app.route('/api/createcustomerlogin')
+        .all(policy.isApiKeyAllowed)
+        .post(customController.create_customer_with_login);
+
     app.route('/api/upsertsubscription')
-        .all(policy.isAllowed)
+        .all(policy.isApiKeyAllowed)
         .post(customController.insert_or_update_user_subscription);
+
+    app.route('/api/upsertuserandsubscription')
+        .all(policy.isApiKeyAllowed)
+        .post(customController.insert_or_update_user_and_subscription);
 
 };

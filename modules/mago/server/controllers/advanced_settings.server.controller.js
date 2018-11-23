@@ -7,6 +7,7 @@ var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     logHandler = require(path.resolve('./modules/mago/server/controllers/logs.server.controller')),
     db = require(path.resolve('./config/lib/sequelize')).models,
+    merge = require('merge'),
     DBModel = db.advanced_settings;
 
 /**
@@ -41,12 +42,15 @@ exports.read = function(req, res) {
 exports.update = function(req, res) {
     var updateData = req.advancedsettings;
 
-    logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
-    updateData.updateAttributes(req.body).then(function(result) {
-        var edited_config_index = req.app.locals.configurations.findIndex(function(obj) {return obj.id === req.body.id;}); //find position of updated record in local variable
+    var new_advancedsetting = {}; //temporary timestamps will be stored here
 
-        delete req.app.locals.configurations[edited_config_index]; //delete old value
-        req.app.locals.configurations[edited_config_index] = req.body; //update with new one
+    new_advancedsetting = merge(req.body, new_advancedsetting); //merge values left @req.body with values stored @temp object into a new object
+    logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(new_advancedsetting)); //write new values in logs
+
+    updateData.updateAttributes(new_advancedsetting).then(function(result) {
+
+        //refresh advanced settings in app memory
+        req.app.locals.advancedsettings[result.id - 1] = result.toJSON();
 
         res.json(result);
     }).catch(function(err) {

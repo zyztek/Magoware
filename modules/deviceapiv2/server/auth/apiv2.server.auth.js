@@ -45,7 +45,6 @@ function auth_decrypt(encryptedText, key) {
 }
 
 function auth_decrypt1(token_string, key) {
-    console.log(token_string);
     var C = CryptoJS;
     token_string = token_string.replace(/(,\+)/g, ',').replace(/\\r|\\n|\n|\r/g, ''); //remove all occurrences of '+' characters before each token component, remove newlines and carriage returns
     var token_object = querystring.parse(token_string,",","="); //convert token string into token object. library
@@ -75,7 +74,7 @@ function auth_veryfyhash(password,salt,hash) {
 
     const key = crypto.pbkdf2Sync(password, b, iterations, clength, 'sha1');
 
-    return hash == console.log(key.toString('base64'));
+    return hash == winston.info(key.toString('base64'));
 }
 
 exports.plainAuth = function(req, res, next) {
@@ -108,6 +107,7 @@ exports.emptyCredentials = function(req, res, next) {
 exports.isAllowed = function(req, res, next) {
 
 
+
     if(req.body.auth){  //serach for auth
         var auth = decodeURIComponent(req.body.auth);
     }
@@ -121,6 +121,10 @@ exports.isAllowed = function(req, res, next) {
     //
 
     if(req.headers.auth){
+
+        auth = auth.replace("{","");
+        auth = auth.replace("}","");
+
         if(missing_params(querystring.parse(auth_decrypt1(auth,req.app.locals.settings.new_encryption_key),";","=")) === false){
             var auth_obj = querystring.parse(auth_decrypt1(auth,req.app.locals.settings.new_encryption_key),";","=");
         }

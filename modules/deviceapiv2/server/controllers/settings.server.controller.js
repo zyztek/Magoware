@@ -447,7 +447,6 @@ exports.get_settings = function(req, res) {
         var daysleft = Math.ceil(Number(Math.ceil(seconds_left / 86400).toFixed(0)));
 
     }).catch(function(error) {
-        winston.error('error getting subscriptin status ',error);
         res.send(error);
     });
 

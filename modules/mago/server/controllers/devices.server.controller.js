@@ -98,6 +98,8 @@ exports.list = function(req, res) {
     qwhere.$or.device_ip.$like = '%'+query.q+'%';
     qwhere.$or.device_brand = {};
     qwhere.$or.device_brand.$like = '%'+query.q+'%';
+    qwhere.$or.device_mac_address = {};
+    qwhere.$or.device_mac_address.$like = '%'+query.q+'%';
     qwhere.$or.os = {};
     qwhere.$or.os.$like = '%'+query.q+'%';
     }

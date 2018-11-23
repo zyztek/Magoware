@@ -28,7 +28,6 @@ function approveReview(Restangular, $state, notification) {
 
                 Restangular.one('grouprights').customPUT(theobj)
                     .then(function successCallback(response) {
-                        console.log(scope);
                         notification.log('Updated successfully', { addnCls: 'humane-flatty-success' });
                         }, function errorCallback(response) {
                         notification.log('Could not save changes', { addnCls: 'humane-flatty-error' });

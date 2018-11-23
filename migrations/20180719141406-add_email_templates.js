@@ -2,7 +2,7 @@
 
 module.exports = {
     up: function (queryInterface, Sequelize) {
-        queryInterface.createTable('email_templates', {
+        return queryInterface.createTable('email_templates', {
                 id: {
                     type: Sequelize.INTEGER(11),
                     allowNull: false,
@@ -35,12 +35,12 @@ module.exports = {
                     templateid_language: {fields: ['template_id', 'language']}
                 }
             })
-            .catch(function(err) {console.log('Creating new table email_templates failed with error message: ',err.message);});
+            .catch(function(err) {winston.error('Creating new table email_templates failed with error message: ',err.message);});
     },
 
     down: function (queryInterface, Sequelize) {
-        queryInterface.dropTable('email_templates')
-            .catch(function(err) {console.log('Deleting the table email_templates failed with error message: ',err.message);});
+        return queryInterface.dropTable('email_templates')
+            .catch(function(err) {winston.error('Deleting the table email_templates failed with error message: ',err.message);});
     }
 
 };

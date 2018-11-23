@@ -12,7 +12,7 @@ module.exports = function(app) {
 
     app.use('/apiv2',function (req, res, next) {
         winston.info(req.originalUrl +'  '+ JSON.stringify(req.body));
-        res.header("Access-Control-Allow-Origin", "*");
+        //res.header("Access-Control-Allow-Origin", "*");
         next();
     });
 

@@ -103,7 +103,6 @@ exports.list = function(req, res) {
     }
     if(query._orderBy) final_where.order = query._orderBy + ' ' + query._orderDir;
     final_where.distinct = 'id';
-
     final_where.include = [db.combo_packages];
 
     DBModel.findAndCountAll(

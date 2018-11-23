@@ -11,16 +11,20 @@ module.exports = function(sequelize, DataTypes) {
         },
         login_id: {
             type: DataTypes.INTEGER(11),
-            allowNull: false,
-            unique: true
+            allowNull: false
         },
         vod_id: {
             type: DataTypes.INTEGER(11),
             allowNull: false
         },
-        resume_position: {
+        resume_position: { //range should be [0-100]%
             type: DataTypes.INTEGER(11),
             allowNull: false
+        },
+        reaction: { //value set should be [-1, 0, 1]
+            type: DataTypes.INTEGER(11),
+            allowNull: false,
+            defaultValue: 0
         },
         device_id: {
             type: DataTypes.STRING,

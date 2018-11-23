@@ -85,7 +85,7 @@ exports.list_logins_with_customer = function(req,res) {
  * @api {post} /api/upsertsubscription Insert or updated subscription status
  * @apiVersion 0.2.0
  * @apiName Upsert Subscription
- * @apiGroup Backoffice
+ * @apiGroup API KEY CALLs
  * @apiHeader {String} authorization Token string acquired from login api.
  * @apiParam {string} username  Mandatory field username
  * @apiParam {number} product_id  Mandatory field product_id.
@@ -99,7 +99,7 @@ exports.list_logins_with_customer = function(req,res) {
 
 exports.insert_or_update_user_subscription = function(req,res) {
 
-    var sale_or_refund = req.body.sale_or_refund;
+    var sale_or_refund = req.body.sale_or_refund || 1;
     var start_date = req.body.start_date;
     var end_date = req.body.end_date;
     var transaction_id = req.body.transaction_id;
@@ -113,3 +113,80 @@ exports.insert_or_update_user_subscription = function(req,res) {
         }
     });
 }
+
+
+
+/**
+ * @api {post} /api/upsertuserandsubscription?apikey={apikey} Upserts user and subscription
+ * @apiVersion 0.2.0
+ * @apiName Upsert User And Subscription
+ * @apiGroup API KEY CALLs
+ * @apiParam {String} apikey API Key query string.
+ * @apiParam {string} username  Mandatory field username
+ * @apiParam {string} product_id  Mandatory field product_id.
+ * @apiParam {date} start_date  Optional field, if missing today's date is used.
+ * @apiParam {String} transaction_id  Optional field, payment transation id. If missing random number is used.
+ * @apiSuccess (200) {String} message Transaction executed successfuly
+ * @apiError (40x) {String} message Error message on transaction.
+ */
+
+exports.insert_or_update_user_and_subscription = function(req,res) {
+
+    var sale_or_refund = req.body.sale_or_refund || 1;
+    var start_date = req.body.start_date;
+    var end_date = req.body.end_date;
+    var transaction_id = req.body.transaction_id;
+
+    if(!req.body.username.trim()) {
+        return res.status(404).send({status: false, message: "Username is missing"}); //return if username found
+    }
+    else {
+        var customer_username = req.body.username.trim();
+    }
+
+    customerFunctions.create_login_data(req,res,customer_username).then(function(user_result) {
+
+        if(user_result.status) { //if username found or created
+
+            subscription_functions.add_subscription_transaction(req, res, sale_or_refund, transaction_id).then(function(result) {
+                if (result.status) {
+                    res.send(result);
+                }
+                else {
+                    res.status(404).send(result);
+                }
+            });
+            //res.send(user_result)
+        }
+        else {
+            res.send(user_result)
+        }
+    });
+};
+
+
+/**
+ * @api {get} /api/productslist Get Products List
+ * @apiVersion 0.2.0
+ * @apiName Get products list
+ * @apiGroup Backoffice
+ * @apiParam {String} apikey  API Key as query parameter.
+ * @apiSuccess (200) {String} message Successful response
+ * @apiError (40x) {String} message No data found.
+ */
+
+exports.products_list = function(req, res) {
+    db.combo.findAll({
+        where: {isavailable: true}
+    }).then(function(results) {
+        if (!results) {
+            return res.status(404).send({
+                message: 'No product found on database'
+            });
+        } else {
+            res.send(results);
+        }
+    }).catch(function(err) {
+        res.jsonp(err);
+    });
+};

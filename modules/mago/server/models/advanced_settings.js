@@ -29,6 +29,10 @@ module.exports = function(sequelize, DataTypes) {
         duration: {
             type: DataTypes.INTEGER(50),
             allowNull: true
+        },
+        description: {
+            type: DataTypes.STRING(500),
+            allowNull: true
         }
     }, {
         tableName: 'advanced_settings',

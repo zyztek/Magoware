@@ -15,6 +15,7 @@ function details($stateProvider) {
                                 email: response.email,
                                 telephone: response.telephone,
                                 role: localStorage.userRole,
+                                apikey: response.jwtoken
                             };
 
                           }, function errorCallback(response) {

@@ -39,7 +39,7 @@ function sale(Restangular, $uibModal, $q, notification, $state) {
                                     closeModal();
                                     $q.all(scope.selection.map(e => Restangular.one('annul')
                                             .customPOST({ sale_id: e.values.id,  username: e.values.user_username, login_id: e.values.login_data_id, product: e.values.combo_id})))
-                                    .then(success => notification.log(success[0].data.message +'', { addnCls: 'humane-flatty-success' }) && console.log("The response is ", success))
+                                    .then(success => notification.log(success[0].data.message +'', { addnCls: 'humane-flatty-success' }) && winston.info("The response is ", success))
                                     $state.reload(); //action is performed, reload page with latest data
                                 }
 

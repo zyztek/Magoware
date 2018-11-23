@@ -35,7 +35,7 @@ function link_vod_with_genres(vod_id,array_category_ids, db_model) {
                         category_id: array_category_ids[i],
                         is_available: true
                     }, {transaction: t}).catch(function(error){
-                        console.log(error)
+                        winston.error(error)
                     })
                 )
             }

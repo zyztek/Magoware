@@ -1110,7 +1110,7 @@ exports.get_vod_item_details = function(req, res) {
             raw_obj[0].vod_type = result.vod_type;
             raw_obj[0].duration =result.duration;
             raw_obj[0].pin_protected = result.pin_protected;
-            raw_obj[0].vod_subtitles = result.vod_subtitles;
+            raw_obj[0].subtitles = result.vod_subtitles;
             raw_obj[0].drm_platform = result.vod_streams[0].drm_platform;
             raw_obj[0].stream_format = result.vod_streams[0].stream_format;
             raw_obj[0].url = result.vod_streams[0].url;
@@ -1453,7 +1453,6 @@ exports.get_vod_items_recommended = function(req, res) {
  * @apiParam {Number} [category] Filter records to this category id
  * @apiParam {Number} [_start] Record pointer start
  * @apiParam {Number} [_end] Limit number of records
- * @apiParam {Number} [_end] Limit number of records
  * @apiParam {String} [_orderBy] Database field name to order records.
  * @apiParam {String} [_orderDir] (ASC or DESC) Sorting directions.
  *
@@ -1578,7 +1577,7 @@ exports.get_vod_list = function(req, res) {
                     }
                     callback(null);
                 },function(error, result){
-                    res.setHeader("X-Total-Count", vod_list.length);
+                    res.setHeader("X-Total-Count", results.count);
                     response.send_res_get(req, res, vod_list, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
                 });
             }).catch(function(err) {
@@ -1670,12 +1669,13 @@ exports.searchvod = function(req, res) {
  *
  */
 exports.resume_movie = function(req, res) {
-    //perdor upsert qe nje user te kete vetem 1 film. nese nuk ka asnje te shtohet, ne te kundert te ndryshohet
+    //upsert must ensure that the combination [vod_id, login_id] is unique
     models.vod_resume.upsert(
         {
             login_id: req.thisuser.id,
             vod_id: req.body.vod_id,
             resume_position: req.body.resume_position,
+            reaction: 0,
             device_id: req.auth_obj.boxid
         }
     ).then(function (result) {
@@ -1716,12 +1716,7 @@ exports.get_movie_details = function(req, res) {
                 model: models.vod_subtitles,
                 attributes: ['id', 'title', [db.sequelize.fn("concat", req.app.locals.settings.assets_url, db.sequelize.col('subtitle_url')), 'url'], ['vod_id', 'vodid']]
             },
-            {
-                model: models.vod_vod_categories,
-                attributes: ['id'],
-                required: true,
-                include: [{model: models.vod_category, attributes: ['id', 'name'], required: true}]
-            }
+            {model: models.vod_vod_categories, attributes: ['id'], required: true, include: [{model: models.vod_category, attributes: ['id', 'name'], required: true}]}
         ],
         where: {id: req.params.vod_id, vod_type: {$in: ['film', 'tv_episode']}}
     }).then(function (result) {
@@ -1762,6 +1757,8 @@ exports.get_movie_details = function(req, res) {
             vod_data.encryption = (result.vod_streams[0] && result.vod_streams[0].encryption) ? "1" : "0";
             vod_data.encryption_url = (result.vod_streams[0] && result.vod_streams[0].encryption_url) ? result.vod_streams[0].encryption_url : "";
 
+	        vod_data.subtitles = vod_data.vod_subtitles;
+            delete vod_data.vod_subtitles;
         }
         response.send_res_get(req, res, [vod_data], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
@@ -1868,7 +1865,6 @@ exports.get_tv_series_data = function(req, res){
 
 function delete_resume_movie(user_id, vod_id){
 
-    //perdor upsert qe nje user te kete vetem 1 film. nese nuk ka asnje te shtohet, ne te kundert te ndryshohet
     models.vod_resume.destroy(
         {
             where: {
@@ -1905,6 +1901,37 @@ function add_click(movie_title){
 
 exports.delete_resume_movie = delete_resume_movie;
 exports.add_click = add_click;
+
+/**
+ * @api {get} /apiv2/vod/vod_menu  GetVodMenu
+ * @apiName GetVodMenu
+ * @apiGroup VOD
+ *
+ * @apiUse header_auth
+ *
+ *@apiDescription GET list of vod menu
+ *
+ * Copy paste this auth for testing purposes
+ *auth=%7Bapi_version%3D22%2C+appversion%3D1.1.4.2%2C+screensize%3D480x800%2C+appid%3D2%2C+devicebrand%3D+SM-G361F+Build%2FLMY48B%2C+language%3Deng%2C+ntype%3D1%2C+app_name%3DMAGOWARE%2C+device_timezone%3D2%2C+os%3DLinux%3B+U%3B+Android+5.1.1%2C+auth%3D8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A%2C+hdmi%3Dfalse%2C+firmwareversion%3DLMY48B.G361FXXU1APB1%7D
+ *
+ */
+
+exports.vod_menu_list = function(req, res) {
+
+    models.vod_menu.findAll({
+        attributes: ['id', 'name', 'description','order','pin_protected','isavailable'],
+        include: [{
+            model: models.vod_menu_carousel, attributes: ['id','name','description','order','url','isavailable'], required: false
+        }]
+    }).then(function (result) {
+
+        response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
+
+    }).catch(function(error) {
+        winston.error('error getting two level menu: ',error);
+        response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+    });
+};
 
 
 

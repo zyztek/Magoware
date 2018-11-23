@@ -45,7 +45,7 @@ function move(Restangular, $uibModal, $q, notification, $state,$http) {
                         },function (data, status, headers, config) {
                             notification.log('Something Wrong', { addnCls: 'humane-flatty-error' });
                         }).on(error, function(error){
-                            console.log("The error during post request is ")
+                            winston.error("The error during post request is ")
                         });
                     }
                 };

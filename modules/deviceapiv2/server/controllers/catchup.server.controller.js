@@ -237,7 +237,6 @@ exports.catchup_stream =  function(req, res) {
         response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
 
     }).catch(function(error) {
-        winston.error('error catchup_stream',error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };

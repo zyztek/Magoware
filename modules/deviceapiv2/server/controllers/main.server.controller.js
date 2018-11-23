@@ -94,7 +94,6 @@ exports.get_devicemenu_levelone = function(req, res) {
         }
         response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
-        winston.error('error getting two level menu: ',error)
         response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
@@ -123,7 +122,6 @@ exports.get_devicemenu_leveltwo = function(req, res) {
         response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
 
     }).catch(function(error) {
-        winston.error('error getting two level menu: ',error)
         response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };

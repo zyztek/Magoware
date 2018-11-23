@@ -5,6 +5,7 @@
 <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
 <link rel="stylesheet" type="text/css" href="css/payment1.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
 <script src="https://js.stripe.com/v3/"></script>
 <script src="js/spatial_navigation.js"></script>
 <script src="js/util.js"></script>
@@ -70,6 +71,12 @@
 
 <style>
 
+    #server-results{
+        color: red;
+        padding-top: 10px;
+        font-weight: bold;
+    }
+
 
     .success, .error {
         display: none;
@@ -93,6 +100,28 @@
         font-size: 13px;
     }
 
+    .grid-container {
+        display: grid;
+        grid-template-columns: auto auto auto auto;
+        grid-gap: 10px;
+        /*background-color: #2196F3;*/
+        padding: 10px;
+    }
+    .grid-container > div {
+        /*background-color: rgba(255, 255, 255, 0.8);*/
+        text-align: center;
+        padding: 20px 0;
+        font-size: 30px;
+    }
+    #description{
+        margin-bottom: -25px;
+        font-size: 22px;
+    }
+    #price{
+        margin-top: -10px;
+        font-size: 24px;
+    }
+
 </style>
 
 <body>
@@ -110,31 +139,23 @@
 <form id="regForm" action="/apiv2/payments/stripe/charge" method="post">
     <h1 class="text-center">Payment</h1>
 
+
     <!-- First Tab -->
-    <div class="tab">
-        <h1>Select Your Packge</h1>
-        <div class="cc-selector" id="sidebox" style="display: inline-flex;">
+    <div class="tab" style="overflow: hidden;">
+        <!--<h1>Select Your Packge</h1>-->
 
-          <span class="focusable">
-            <input id="plan1" type="radio" name="product_id" value="plan1"/>
-            <label class="drinkcard-cc visa" for="plan1"></label>
-          </span>
+        <div class="cc-selector" id="sidebox" ng-app="app" ng-controller="fee_control" style="display: inline-flex;" align="center">
 
-           <span class="focusable">
-            <input id="plan2" type="radio" name="product_id" value="plan2"/>
-            <label class="drinkcard-cc mastercard" for="plan2"></label>
-          </span>
-
-           <span class="focusable">
-            <input id="plan3" type="radio" name="product_id" value="plan3"/>
-            <label class="drinkcard-cc mastercard" for="plan3"></label>
-          </span>
-
-
-
+                <span class="focusable" ng-repeat="record in fees" style="margin: 30px;">
+                    <p id="description">{{record.name}}</p>
+                    <input id="{{record.name}}" type="radio" name="product_id" value="{{record.product_id}}"/>
+                    <label class="drinkcard-cc visa" for="{{record.name}}"></label>
+                    <p id="price">Price: {{record.value}}</p>
+                  </span>
         </div>
         <p id="error_required" style="color: red;margin-left: 21px;display: none;">Please Select Package</p>
     </div>
+
     <!-- First Tab -->
 
     <!-- Second Tab -->
@@ -145,6 +166,7 @@
             <i class="fa fa-cc-amex" style="color:blue;"></i>
             <i class="fa fa-cc-mastercard" style="color:red;"></i>
             <i class="fa fa-cc-discover" style="color:orange;"></i>
+            <h3 id="selected_package"></h3><!-- Selected Package -->
         </div><br/>
 
         <label>
@@ -185,8 +207,8 @@
     <!-- Second Tab -->
 
     <!--Buttons-->
-    <div style="overflow:auto;">
-        <div style="float:right; display: -webkit-inline-box;margin-top: 15px;">
+    <div style="overflow:auto;" align="center">
+        <div style="display: inline-flex;margin-top: 40px;">
             <div id="div4">
                 <button class="focusable" type="button" id="prevBtn" onclick="nextPrev(-1)">Previous</button>
             </div>
@@ -209,6 +231,20 @@
         <span class="step"></span>
     </div>
 </form>
+
+<script>
+
+    var app = angular.module('app', []);
+    app.controller('fee_control', ['$scope','$http',function($scope,$http) {
+        $http.get("https://devapp.magoware.tv/api/combos").then(function (response,data, status, headers, config,file) {
+            $scope.fees = response.data;
+        },function (data, status, headers, config) {
+            winston.error("error");
+        });
+
+
+    }]);
+</script>
 
 <script>
     var currentTab = 0; // Current tab is set to be the first tab (0)
@@ -273,6 +309,17 @@
         if(validateRadio (document.forms["regForm"]["product_id"]))
         {
             document.getElementById("error_required").style.display = "none";
+            var radios = document.getElementsByName('product_id');
+
+            for (var u = 0, length = radios.length; u < length; u++) {
+                if (radios[u].checked) {
+                    // do whatever you want with the checked radio
+                    var package_name = radios[u].id;
+                    document.getElementById("selected_package").innerHTML  = 'You have selected: '+package_name;
+                    // only one radio can be logically checked, don't check the rest
+                    break;
+                }
+            }
             return true;
         }
         else
@@ -399,49 +446,20 @@
         var form_data = $(form).serialize(); //Encode form elements for submission
 
         $.post( post_url, form_data, function( response ) {
-            $("#server-results").html(response.extra_data);
+            var send_to_android;
+            if (response.error_code === 1){
+                send_to_android = response.response_object.metadata.username;
+                Android.sendData(send_to_android);
+                document.getElementById("server-results").style.color = "green";
+                $("#server-results").html(response.extra_data);
+            } else {
+                send_to_android = '';
+                Android.sendData(send_to_android);
+                $("#server-results").html(response.extra_data);
+            }
         });
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
 </script>
 
 </body>

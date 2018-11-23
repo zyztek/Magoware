@@ -65,7 +65,7 @@ exports.authenticate = function(req, res) {
                     id: result.id,
                     iss: jwtIssuer,
                     sub: result.username,
-                    //username: result.username,
+                    username: result.username,
                     uid: result.id,
                     role: group
                 }, jwtSecret,{

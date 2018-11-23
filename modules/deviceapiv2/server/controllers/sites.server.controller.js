@@ -94,9 +94,10 @@ exports.createaccount = function(req,res) {
 						pin:					  1234,
 						show_adult:				  0,
 						auto_timezone:			  1,
-						player:					  'default',
+						player:					  (company_configurations.default_player) ? company_configurations.default_player : 'default',
 						activity_timeout:		  10800,
-						get_messages:			  0,
+						get_messages:			  (company_configurations.get_messages) ? company_configurations.get_messages : false,
+						get_ads:			      (company_configurations.get_ads) ? company_configurations.get_ads : false,
 						force_upgrade:			  0,
 						account_lock:			  0,
 						resetPasswordToken:		  token,
@@ -123,7 +124,7 @@ exports.createaccount = function(req,res) {
 
 				email_templates.findOne({
                 attributes:['title','content'],
-                where: {template_id: 'new-account', language: req.body.language }
+                where: {template_id: 'new-account' }
             }).then(function (result,err) {
             	if(!result){
                     res.render(path.resolve('modules/deviceapiv2/server/templates/new-account'), {

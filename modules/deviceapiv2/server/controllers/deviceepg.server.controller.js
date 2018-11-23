@@ -1179,7 +1179,6 @@ exports.get_epg_data = function(req, res) {
     ).then(function (result) {
         res.send(result);
     }).catch(function(error) {
-        winston.error('error reading epg data: ',error);
         res.send(error);
     });
 };

@@ -281,10 +281,9 @@ exports.save_epg_records = function(req, res){
 
         download(origin_url, options, function(err){
             if (err){
-                console.log("error donwloading? "+err);
+                winston.error("error donwloading? "+err);
             }
             else{
-                console.log("done");
                 req.body.epg_file = req.body.epg_file+',/files/epg/'+epg_filename; //append filename to req.body.epg_file
             }
             start_epg_import();
@@ -384,7 +383,6 @@ function import_csv(req, res, current_time, epg_file, import_log, callback){
                 }).then(function (result) {
                     callback(null); // future epg was deleted for channels on our list. pass control to next function
                 }).catch(function(error) {
-                    console.log(error);
                     if(error.message.split(': ')[0] === 'ER_ROW_IS_REFERENCED_2') import_file_log.error_log.push('Error deleting future events. At least one of these events is scheduled');
                     else import_file_log.error_log.push('Error deleting future events.');
                     callback(null); // error occured while deleting future epg. pass control to the end
@@ -466,7 +464,6 @@ function import_xml_dga(req, res, current_time, epg_file, import_log, callback){
             var parser = new xml2js.Parser();
             parser.parseString(results.read_file, function (err, epg_data) {
                 if(err) {
-                    console.log(err)
                     import_file_log.error_log.push('Error parsing this xml file');
                     callback(true); //file was not parsed. add error into logs and stop import for this file
                 }
@@ -536,7 +533,6 @@ function import_xml_dga(req, res, current_time, epg_file, import_log, callback){
                     }
                     return null;
                 }).catch(function(error) {
-                    console.log(error)
                     import_file_log.error_log.push("Error searching for channel "+error);
                     callback(null);
                 });
@@ -556,7 +552,6 @@ exports.create_sample = function(req, res) {
 }
 
 function import_xmltv(req, res, current_time, epg_file, import_log, callback){
-    console.log('enter xmltv import function');
 
     var import_file_log = {
         file_name: epg_file,
@@ -588,7 +583,7 @@ function import_xmltv(req, res, current_time, epg_file, import_log, callback){
         input.pipe(parser);
         return null;
     }).catch(function(err) {
-        console.log(err);
+        winston.error(err);
     });
 
     parser.on('programme', function (programme) {
@@ -615,7 +610,6 @@ function import_xmltv(req, res, current_time, epg_file, import_log, callback){
     });
 
     parser.on('end', function (programme) {
-        console.log('the end');
         DBModel.bulkCreate(epgdata,{ignoreDuplicates: true})
             .then(function(data) {
                 import_file_log.saved_records = data.length;

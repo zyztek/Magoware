@@ -2,7 +2,7 @@
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-    queryInterface.addColumn(
+    return queryInterface.addColumn(
         'api_url',
         'api_group_id',
         {
@@ -10,7 +10,7 @@ module.exports = {
           allowNull: true
         }
     ).catch(function(err) {
-        console.log('Migration failed with error message: ',err.message);
+        winston.error('Migration failed with error message: ',err.message);
     });
   },
 

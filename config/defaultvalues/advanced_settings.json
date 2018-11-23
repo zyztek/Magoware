@@ -1,10 +1,18 @@
 [
-  {
-    "id": 1,
-    "parameter_id": "max_multilogin_nr",
-    "parameter_value": "2",
-    "parameter1_value": "",
-    "parameter2_value": "",
-    "duration": 1
-  }
+    {
+        "id": 1,
+        "parameter_id": "max_multilogin_nr",
+        "parameter_value": "2",
+        "parameter1_value": "",
+        "parameter2_value": "",
+        "duration": 1
+    },
+    {
+        "id": 2,
+        "parameter_id": "transaction_vod_duration",
+        "parameter_value": "24",
+        "parameter1_value": "",
+        "parameter2_value": "",
+        "duration": 1
+    }
 ]

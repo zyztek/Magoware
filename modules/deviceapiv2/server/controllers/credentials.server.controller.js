@@ -230,10 +230,12 @@ exports.lock_account = function lock_account(login_id, username) {
             attributes: ['googleappid', 'app_version', 'appid'], where: {login_data_id: login_id, device_active: true}
         }).then(function (result) {
             if(result && result.length>0){
+                var min_ios_version = (company_configurations.ios_min_version) ? parseInt(company_configurations.ios_min_version) : parseInt('1.3957040');
+                var min_stb_version = (company_configurations.stb_min_version) ? parseInt(company_configurations.stb_min_version) : parseInt('2.2.2');
                 for(var i=0; i<result.length; i++){
                     if(result[i].appid === 1 && result[i].app_version >= '2.2.2') var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
-                    else if(result[i].appid === 2 && result[i].app_version >= '1.1.2.2') var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
-                    else if(parseInt(result[i].appid) === parseInt('3') && parseInt(result[i].app_version) >= parseInt('1.3957040'))
+                    else if(result[i].appid === 2 && result[i].app_version >= min_stb_version) var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
+                    else if(parseInt(result[i].appid) === parseInt('3') && parseInt(result[i].app_version) >= min_ios_version)
                         var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
                     else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0') var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
                     else if(['5', '6'].indexOf(result[i].appid))

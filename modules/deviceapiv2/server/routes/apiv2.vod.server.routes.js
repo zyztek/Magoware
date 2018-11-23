@@ -127,5 +127,11 @@ module.exports = function(app) {
         .all(authpolicy.isAllowed)
         .get(vodController.get_tv_series_data)
 
+
+    app.route('/apiv2/vod/vod_menu')
+        .all(authpolicy.isAllowed)
+        .get(vodController.vod_menu_list)
+
+
 };
 

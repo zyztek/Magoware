@@ -38,7 +38,7 @@ function sale(Restangular, $uibModal, $q, notification, $state) {
                                     closeModal();
                                     $q.all(scope.selection.map(e => Restangular.one('update_film/'+e.values.id)
                                             .customPUT({title: e.values.title, year: e.values.year})))
-                                    .then(success => notification.log(success[0].data.message +'', { addnCls: 'humane-flatty-success' }) && console.log("The response is ", success))
+                                    .then(success => notification.log(success[0].data.message +'', { addnCls: 'humane-flatty-success' }) && winston.info("The response is ", success))
                                     $state.reload(); //action is performed, reload page with latest data
                                 }
 

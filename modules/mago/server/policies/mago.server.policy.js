@@ -100,7 +100,6 @@ exports.isAllowed = function(req, res, next) {
                             message: 'User not authorized'
                         });
                     }
-
                 } else {
                     next();
                     return null;
@@ -110,8 +109,36 @@ exports.isAllowed = function(req, res, next) {
                     message: 'User is not authorized'
                 });
             });
-
         }
-
     });
 };
+
+
+// function to verify API KEY for third party integrations.
+
+exports.isApiKeyAllowed = function(req, res, next) {
+
+    let apikey = req.query.apikey;
+
+    db.users.findOne({
+        where: {
+                jwtoken: apikey,
+                isavailable: true
+                }
+    }).then(function(result) {
+        if(result) {
+           req.token = result;
+           next()
+        }
+        else {
+           return res.status(403).json({
+            message: 'API key not authorized'
+           });
+        }
+        return null;
+    }).catch(function(err) {
+        return res.status(404).json({
+            message: 'API key not authorized'
+        });
+    });
+}

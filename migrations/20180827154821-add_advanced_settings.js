@@ -2,7 +2,7 @@
 
 module.exports = {
     up: function (queryInterface, Sequelize) {
-        queryInterface.createTable('advanced_settings', {
+        return queryInterface.createTable('advanced_settings', {
             id: {
                 type: Sequelize.INTEGER(11),
                 allowNull: false,
@@ -31,12 +31,12 @@ module.exports = {
                 type: Sequelize.INTEGER(50),
                 allowNull: false
             }
-        }).catch(function(err) {console.log('Creating new table advanced_settings failed with error message: ',err.message);});
+        }).catch(function(err) {winston.error('Creating new table advanced_settings failed with error message: ',err.message);});
     },
 
     down: function (queryInterface, Sequelize) {
-        queryInterface.dropTable('advanced_settings')
-            .catch(function(err) {console.log('Deleting the table advanced_settings failed with error message: ',err.message);});
+        return queryInterface.dropTable('advanced_settings')
+            .catch(function(err) {winston.error('Deleting the table advanced_settings failed with error message: ',err.message);});
     }
 
 };

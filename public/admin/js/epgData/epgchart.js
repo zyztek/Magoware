@@ -22,22 +22,22 @@ export default function ($stateProvider) {
 
             $scope.onSelect = function(items) {
                 // debugger;
-                console.log('onselect: ',items);
+                winston.info('onselect: ',items);
             };
 
             $scope.onClick = function(items) {
                 //debugger;
-                console.log('click: ', items);
+                winston.info('click: ', items);
             };
 
             $scope.dragEnd = function(items) {
                 //debugger;
-                console.log('drag end: ',items);
+                winston.info('drag end: ',items);
             };
 
             $scope.onRangeChange = function(items) {
                 //debugger;
-                console.log('enter onrangechange: ',items);
+                winston.info('enter onrangechange: ',items);
             };
 
 

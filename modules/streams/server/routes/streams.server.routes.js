@@ -7,6 +7,7 @@ var path = require('path'),
     authpolicy = require(path.resolve('./modules/deviceapiv2/server/auth/apiv2.server.auth.js')),
     tokenGenerators = require(path.resolve('./modules/streams/server/controllers/token_generators.server.controller.js')),
     catchupfunctions = require(path.resolve('./modules/streams/server/controllers/catchup_functions.server.controller.js')),
+    keyDelivery = require(path.resolve('./modules/streams/server/controllers/streamkeydelivery.server.controller.js')),
     encryptionFunctions = require(path.resolve('./modules/streams/server/controllers/encryption_functions.server.controller.js'));
 
 
@@ -47,4 +48,14 @@ module.exports = function(app) {
     app.route('/apiv2/encryption/key1')
         //.all(authpolicy.isAllowed)
         .all(encryptionFunctions.free_default_key);
+
+
+    //streams key delivery
+    app.route('/apiv2/generic/getinternalhashtoken')
+        .all(authpolicy.isAllowed)
+        .all(keyDelivery.generate_internal_hash_token);
+
+    app.route('/apiv2/generic/getinternalkey')
+        .get(keyDelivery.generate_internal_key);
+
 };

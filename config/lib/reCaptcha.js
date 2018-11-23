@@ -14,7 +14,7 @@ exports.verify = function(response, cb) {
     json: true
   }, function(err, httpResponse, body) {
     if (err) {
-      console.log('reCaptcha error', err);
+      winston.error('reCaptcha error', err);
       cb(err);
     } else if (body.success !== true) {
       cb(body);

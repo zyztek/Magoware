@@ -2,7 +2,7 @@
 
 module.exports = {
     up: function (queryInterface, Sequelize) {
-        queryInterface.createTable(
+        return queryInterface.createTable(
             'commands',
             {
                 id: {
@@ -41,11 +41,11 @@ module.exports = {
                 updatedAt: {
                     type: Sequelize.DATE
                 }
-            }).catch(function(err) {console.log('Creating table commands failed with error message: ',err.message);});
+            }).catch(function(err) {winston.error('Creating table commands failed with error message: ',err.message);});
     },
 
     down: function (queryInterface, Sequelize) {
-        queryInterface.dropTable ('commands')
-            .catch(function(err) {console.log('Deleting table commands failed with error message: ',err.message);});
+        return queryInterface.dropTable ('commands')
+            .catch(function(err) {winston.error('Deleting table commands failed with error message: ',err.message);});
     }
 };

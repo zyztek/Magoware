@@ -97,8 +97,6 @@ exports.list = function(req, res) {
     var qwhere = {};
     if(query.package_id) qwhere.package_id = query.package_id;
 
-    console.log("@ vod list", req.query)
-
     DBModel.findAndCountAll({
         where: qwhere,
         offset: offset_start,

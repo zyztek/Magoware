@@ -80,7 +80,6 @@ exports.update = function(req, res) {
     updateData.updateAttributes(req.body).then(function(result) {
         res.json(result);
     }).catch(function(err) {
-        console.log(err)
         return res.status(400).send({
         message: errorHandler.getErrorMessage(err)
         });

@@ -3,6 +3,12 @@ import edit_button from '../edit_button.html';
 
 export default function (nga, admin) {
     var vod = admin.getEntity('Vods');
+    var language_list = [
+        {value: {"iso_639_1":"en","name":"English"}, label: 'English'},
+        {value: {"iso_639_1":"sp","name":"Spanish"}, label: 'Spanish'},
+        {value: {"iso_639_1":"gr","name":"German"}, label: 'German'},
+        {value: {"iso_639_1":"fr","name":"French"}, label: 'French'}
+    ];
     vod.listView()
         .title('<h4>Vods <i class="fa fa-angle-right" aria-hidden="true"></i> List</h4>')
         .batchActions([
@@ -122,7 +128,6 @@ export default function (nga, admin) {
                 .validation({ required: true })
                 .label('Title'),
             nga.field('original_title', 'string')
-                .validation({required: true, placeholder: ' '})
                 .label('Original title'),
             nga.field('imdb_id', 'string')
                 .attributes({ placeholder: 'Movie Imdb Id' })
@@ -182,9 +187,8 @@ export default function (nga, admin) {
                 .label('Duration'),
             nga.field('tagline', 'string')
                 .defaultValue('')
-                .validation({required: true})
-                .attributes({placeholder: 'Trailer url'})
-                .label('Trailer url'),
+                .attributes({placeholder: 'Short description'})
+                .label('Short description'),
             nga.field('description', 'text')
                 .transform(function lineBreaks(value, entry) {
                     return value.split("\n").join("<br/>");
@@ -203,6 +207,10 @@ export default function (nga, admin) {
                 .defaultValue('')
                 .attributes({ placeholder: 'Trailer url' })
                 .label('Trailer url'),
+            nga.field('homepage', 'string')
+                .defaultValue('')
+                .attributes({placeholder: 'Movie website'})
+                .label('Movie website'),
             nga.field('vod_preview_url', 'file')
                 .uploadInformation({ 'url': '/file-upload/single-file/video_scrubbing_url/vod_preview_url','apifilename': 'result'})
                 .template('<div class="row">'+
@@ -271,11 +279,15 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'Pin Protected' })
                 .validation({ required: true })
                 .label('Pin Protected'),
-
-            nga.field('adult_content', 'number')
-                .validation({required: true})
-                .label('Adult content'),
-
+            nga.field('adult_content', 'choice')
+                .defaultValue(false)
+                .choices([
+                    { value: true, label: 'Yes' },
+                    { value: false, label: 'No' }
+                ])
+                .attributes({ placeholder: 'Choose from dropdown list' })
+                .validation({ required: true})
+                .label('Has adult content'),
             nga.field('isavailable','boolean')
                 .attributes({ placeholder: 'Is Available' })
                 .validation({ required: true })
@@ -285,7 +297,16 @@ export default function (nga, admin) {
                 .defaultValue(new Date())
                 .label('Expiration date'),
             nga.field('price', 'float')
+                .template('<ma-input-field field="field" value="entry.values.price"></ma-input-field>'+
+                    '<small id="emailHelp" class="form-text text-muted">*Set price to 0 for movies that are not for sale</small>')
+                .validation({required: true})
                 .label('Price'),
+            nga.field('mandatory_ads', 'choice')
+                .defaultValue(false)
+                .choices([{value: true, label: 'Enabled'}, {value: false, label: 'Disabled'}])
+                .attributes({placeholder: 'Choose from dropdown list'})
+                .validation({required: true})
+                .label('Mandatory ads'),
             nga.field('revenue', 'number')
                 .validation({required: true})
                 .label('Revenues'),
@@ -295,11 +316,24 @@ export default function (nga, admin) {
             nga.field('original_language', 'string')
                 .validation({required: true}).defaultValue('en')
                 .label('Original language'),
+            nga.field('spoken_languages', 'choices')
+                .choices(language_list)
+                .label('Spoken languages'),
             nga.field('release_date', 'date')
                 .validation({required: true}).defaultValue('1896-12-28')
                 .label('Release date'),
             nga.field('status', 'string')
                 .validation({required: true}).defaultValue('unknown')
+                .label('Status'),
+            nga.field('status', 'choice')
+                .defaultValue('released')
+                .choices([
+                    { value: 'filming', label: 'Filming' },
+                    { value: 'post-production', label: 'Post-production' },
+                    {value: 'released', label: 'Released'}
+                ])
+                .attributes({ placeholder: 'Choose from dropdown list' })
+                .validation({ required: true})
                 .label('Status'),
             nga.field('template')
                 .label('')
@@ -316,7 +350,6 @@ export default function (nga, admin) {
                 .validation({ required: true })
                 .label('Title'),
             nga.field('original_title', 'string')
-                .validation({required: true, placeholder: ' '})
                 .label('Original title'),
             nga.field('imdb_id', 'string')
                 .attributes({ placeholder: 'Movie Imdb Id' })
@@ -388,6 +421,10 @@ export default function (nga, admin) {
                 .validation({ required: true })
                 .attributes({ placeholder: 'Duration of movie in minutes' })
                 .label('Duration'),
+            nga.field('tagline', 'string')
+                .defaultValue('')
+                .attributes({placeholder: 'Short description'})
+                .label('Short description'),
             nga.field('description', 'text')
                 .transform(function lineBreaks(value, entry) {
                     return value.split("\n").join("<br/>");
@@ -405,6 +442,10 @@ export default function (nga, admin) {
             nga.field('trailer_url', 'string')
                 .attributes({ placeholder: 'Trailer url' })
                 .label('Trailer url'),
+            nga.field('homepage', 'string')
+                .defaultValue('')
+                .attributes({placeholder: 'Movie website'})
+                .label('Movie website'),
             nga.field('vod_preview_url', 'file')
                 .uploadInformation({ 'url': '/file-upload/single-file/video_scrubbing_url/vod_preview_url','apifilename': 'result'})
                 .template('<div class="row">'+
@@ -473,9 +514,15 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'Pin Protected' })
                 .validation({ required: true })
                 .label('Pin Protected'),
-            nga.field('adult_content', 'number')
-                .validation({required: true})
-                .label('Adult content'),
+            nga.field('adult_content', 'choice')
+                .defaultValue(false)
+                .choices([
+                    { value: true, label: 'Yes' },
+                    { value: false, label: 'No' }
+                ])
+                .attributes({ placeholder: 'Choose from dropdown list' })
+                .validation({ required: true})
+                .label('Has adult content'),
             nga.field('isavailable','boolean')
                 .attributes({ placeholder: 'Is Available' })
                 .validation({ required: true })
@@ -485,7 +532,16 @@ export default function (nga, admin) {
                 .defaultValue(new Date())
                 .label('Expires in'),
             nga.field('price', 'float')
+                .template('<ma-input-field field="field" value="entry.values.price"></ma-input-field>'+
+                    '<small id="emailHelp" class="form-text text-muted">*Set price to 0 for movies that are not for sale</small>')
+                .validation({required: true})
                 .label('Price'),
+            nga.field('mandatory_ads', 'choice')
+                .defaultValue(false)
+                .choices([{value: true, label: 'Enabled'}, {value: false, label: 'Disabled'}])
+                .attributes({placeholder: 'Choose from dropdown list'})
+                .validation({required: true})
+                .label('Mandatory ads'),
             nga.field('revenue', 'number')
                 .validation({required: true})
                 .label('Revenues'),
@@ -495,11 +551,21 @@ export default function (nga, admin) {
             nga.field('original_language', 'string')
                 .validation({required: true}).defaultValue('en')
                 .label('Original language'),
+            nga.field('spoken_languages', 'choices')
+                .choices(language_list)
+                .label('Spoken languages'),
             nga.field('release_date', 'date')
                 .validation({required: true}).defaultValue('1896-12-28')
                 .label('Release date'),
-            nga.field('status', 'string')
-                .validation({required: true}).defaultValue('unknown')
+            nga.field('status', 'choice')
+                .defaultValue('released')
+                .choices([
+                    { value: 'filming', label: 'Filming' },
+                    { value: 'post-production', label: 'Post-production' },
+                    { value: 'released', label: 'Released' }
+                ])
+                .attributes({ placeholder: 'Choose from dropdown list' })
+                .validation({ required: true})
                 .label('Status'),
             //default subtitle field is exclusive to the edition view
             nga.field('default_subtitle_id', 'choice')

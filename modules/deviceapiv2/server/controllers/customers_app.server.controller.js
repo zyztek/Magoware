@@ -107,7 +107,7 @@ exports.update_user_data = function(req, res) {
 
             models.email_templates.findOne({
                 attributes:['title','content'],
-                where: {template_id: 'new-email', language: req.body.language }
+                where: {template_id: 'new-email' }
             }).then(function(template_result) {
 
                 if(!template_result){
@@ -136,7 +136,7 @@ exports.update_user_data = function(req, res) {
                         html: '<b>'+email_body+'</b>' // html body
                     };
                     smtpTransport.sendMail(mailOptions, function(error, info){
-                        if(error) console.log(error);
+                        if(error) winston.error(error);
                     });
                 }
                 response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
@@ -226,7 +226,7 @@ exports.reset_pin = function(req, res) {
 
         models.email_templates.findOne({
             attributes:['title','content'],
-            where: {template_id: 'code-pin-email', language: req.body.language }
+            where: {template_id: 'code-pin-email' }
         }).then(function(template_result) {
             var email_body;
             if(!template_result){
@@ -253,12 +253,13 @@ exports.reset_pin = function(req, res) {
                 html: '<b>'+email_body+'</b>' // html body
             };
             smtpTransport.sendMail(mailOptions, function(error, info){
-                if(error) console.log(error);
+                if(error) winston.error(error);
             });
             response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'RESET_PIN_DATA', 'no-store');
         }).catch(function(error){
             response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
+        return null;
     }).catch(function(error) {
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });

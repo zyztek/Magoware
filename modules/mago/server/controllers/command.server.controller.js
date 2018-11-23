@@ -54,7 +54,11 @@ exports.create = function(req, res) {
     else{
         var where = {}; //the device filters will be passed here
 
-        if(req.body.type === "one") where.login_data_id = req.body.username; //if only one user is selected, filter devices of that user
+        if(req.body.type === "one") {
+            if(req.body.macadress) where.device_mac_address = req.body.macadress;
+            else if(req.body.wifi) where.device_wifimac_address = req.body.wifi;
+            else where.login_data_id = req.body.username; //if only one user is selected, filter devices of that user
+        }
 
         if (req.body.appid && req.body.appid.length > 0) {
             var device_types = [];
@@ -69,8 +73,7 @@ exports.create = function(req, res) {
             {
                 attributes: ['googleappid', 'appid', 'app_version'],
                 where: where,
-                include: [{model: db.login_data, attributes: ['username'], required: true, raw: true, where: {get_messages: true}}],
-                logging: console.log
+                include: [{model: db.login_data, attributes: ['username'], required: true, raw: true, where: {get_messages: true}}]
             }
         ).then(function(result) {
             if (!result || result.length === 0) {
@@ -78,26 +81,53 @@ exports.create = function(req, res) {
                     message: 'No devices found with these filters'
                 });
             } else {
-                var fcm_tokens = [];
-                var users = [];
-                for(var i=0; i<result.length; i++){
-                    if(result[i].appid === 1 && result[i].app_version >= '2.2.2')
-                        var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
-                    else if(result[i].appid === 2 && result[i].app_version >= '1.1.2.2')
-                        var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
-                    else if(parseInt(result[i].appid) === parseInt('3') && parseInt(result[i].app_version) >= parseInt('1.3957040'))
-                        var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
-                    else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0')
-                        var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
-                    else if(['5', '6'].indexOf(result[i].appid))
-                        var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
-                    else var message = {
-                            "action": req.body.command,
-                            "parameter1": req.body.parameter1,
-                            "parameter2": req.body.parameter2,
-                            "parameter3": req.body.parameter3
-                        };
-                    push_msg.send_notification(result[i].googleappid, req.app.locals.settings.firebase_key, result[i].login_datum.id, message, req.body.timetolive, false, true, function(result){});
+                if(req.body.command === 'login_user'){
+                    var fcm_tokens = [];
+                    var users = [];
+                    var parameters = {
+                            "username": result[0].login_datum.username,
+                            "password": req.body.password
+                    };
+                    var message = new push_msg.ACTION_PUSH("Action", "Running action", '5', req.body.command, parameters);
+                    for(var i=0; i<result.length; i++)
+                        push_msg.send_notification(result[i].googleappid, req.app.locals.settings.firebase_key, result[i].login_datum.id, message, 5000, false, false, function(result){});
+                }
+                else if(req.body.command === 'show_username'){
+                    var fcm_tokens = [];
+                    var users = [];
+                    var parameters = {
+                            "username": result[0].login_datum.username,
+                            "top": req.body.top,
+                            "left": req.body.left
+                    };
+                    var message = new push_msg.INFO_PUSH("Action", "Performing an action", '6', parameters);
+                    for(var i=0; i<result.length; i++)
+                    push_msg.send_notification(result[i].googleappid, req.app.locals.settings.firebase_key, result[i].login_datum.id, message, 5000, true, false, function(result){});
+                }
+                else{
+                    var fcm_tokens = [];
+                    var users = [];
+                    var min_ios_version = (company_configurations.ios_min_version) ? parseInt(company_configurations.ios_min_version) : parseInt('1.3957040');
+                    var min_stb_version = (company_configurations.stb_min_version) ? parseInt(company_configurations.stb_min_version) : parseInt('2.2.2');
+                    for(var i=0; i<result.length; i++){
+                        if(result[i].appid === 1 && result[i].app_version >= '2.2.2')
+                            var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
+                        else if(result[i].appid === 2 && result[i].app_version >= min_stb_version)
+                            var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
+                        else if(parseInt(result[i].appid) === parseInt('3') && parseInt(result[i].app_version) >= min_ios_version)
+                            var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
+                        else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0')
+                            var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
+                        else if(['5', '6'].indexOf(result[i].appid))
+                            var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
+                        else var message = {
+                                "action": req.body.command,
+                                "parameter1": req.body.parameter1,
+                                "parameter2": req.body.parameter2,
+                                "parameter3": req.body.parameter3
+                            };
+                        push_msg.send_notification(result[i].googleappid, req.app.locals.settings.firebase_key, result[i].login_datum.id, message, req.body.timetolive, false, true, function(result){});
+                    }
                 }
                 return res.status(200).send({
                     message: 'Message sent'

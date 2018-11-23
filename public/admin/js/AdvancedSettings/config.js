@@ -19,7 +19,9 @@ export default function (nga, admin) {
             nga.field('parameter2_value')
                 .label('Parameter 2'),
             nga.field('duration')
-                .label('Duration')
+                .label('Duration'),
+            nga.field('description','text')
+                .label('Description'),
         ])
         .listActions(['edit']);
 
@@ -39,6 +41,13 @@ export default function (nga, admin) {
                 .label('Parameter 2'),
             nga.field('duration','number')
                 .label('Duration'),
+
+            nga.field('description','text')
+                .attributes({ placeholder: 'Usage Description' })
+                .validation({ maxlength: 1000})
+                .label('Description'),
+
+
             nga.field('template')
                 .label('')
                 .template(edit_button)

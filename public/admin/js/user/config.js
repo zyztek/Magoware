@@ -58,20 +58,26 @@ export default function (nga, admin) {
 				.validation({ required: true })
 				.label('Telephone'),
             nga.field('jwtoken', 'string')
-                .attributes({ placeholder: 'JWToken' })
+                .attributes({ placeholder: 'Api Key', readOnly: true })
 				.defaultValue('')
-                .label('JWToken'),
-			nga.field('third_party_api_token', 'string')
-                .attributes({ placeholder: 'Third party token' })
-                .defaultValue('')
-				.label('Third party token'),
+                .label('Api Key'),
+			nga.field('template')
+                .label('')
+                .template('<generate post="entry"></generate>'),
 			nga.field('isavailable', 'boolean')
 				.validation({ required: true })
 				.label('Is Available'),
             nga.field('template')
             	.label('')
             	.template(edit_button),
+            //hidden from UI
+            nga.field('third_party_api_token', 'string')
+                .cssClasses('hidden')
+                .attributes({ placeholder: 'Third party token' })
+                .defaultValue('')
+                .label(''),
 		])
+
 
     user.editionView()
     	.title('<h4>Users <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.username }}</h4>')  

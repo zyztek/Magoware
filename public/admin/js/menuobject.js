@@ -265,6 +265,20 @@ export default [{
             "link":'/Vods/list?search=%7B"pin_protected":"0"%7D',
             "group_roles":["admin","administrator","vod","management","guest"]
         },
+            {
+                "entity":"vodMenu",
+                "title":"VOD Menu",
+                "icon":'<span class="fa fa-film fa-fw"></span>',
+                "link":'/vodMenu/list',
+                "group_roles":["admin","administrator","vod","management","guest"]
+            },
+            {
+                "entity":"vodMenuCarousel",
+                "title":"VOD Menu Carousel",
+                "icon":'<span class="fa fa-film fa-fw"></span>',
+                "link":'/vodMenuCarousel/list',
+                "group_roles":["admin","administrator","vod","management","guest"]
+            },
         {
             "entity":"Vods",
             "title":"Not Active VOD Movies",
@@ -353,6 +367,16 @@ export default [{
         "group_roles":["admin","administrator","customercare","management","guest"],
         "children": []
     },
+
+    {
+        "entity":"htmlContent",
+        "title":"HTML Content",
+        "icon":'<span class="fa fa-code fa-fw"></span>',
+        "link":'/htmlContent/list',
+        "group_roles":["admin","administrator","customercare","management","guest"],
+        "children": []
+    },
+
     {
         "entity":"appmanagement",
         "title":"APP Management",

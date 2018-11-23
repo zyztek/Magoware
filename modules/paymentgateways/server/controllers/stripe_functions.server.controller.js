@@ -67,7 +67,7 @@ exports.stripe_one_off_charge = function(req,res) {
         currency: "usd",
         //description: "Example charge",
         //statement_descriptor: "Descriptor 22char",
-        metadata: {Firstname: req.body.firstname, Lastname: req.body.lastname, product_id: req.body.product_id, username:req.body.username},
+        metadata: {product_id: req.body.product_id, username:req.body.username},
         source: req.body.stripetoken
     };
 
@@ -100,7 +100,7 @@ exports.stripe_one_off_charge = function(req,res) {
             return null;
         }
     }).catch(function(error) {
-       console.log(error);
+       winston.error(error);
     });
 };
 
@@ -177,7 +177,7 @@ exports.stripe_subscription_charge = function(req,res) {
         return null;
         }
     }).catch(function(error) {
-        console.log('some error',error);
+        winston.error('some error',error);
     });
 
 };
@@ -261,7 +261,6 @@ exports.stripe_add_subscription = function(req,res) {
         }
 
     ], function (err, result) {
-        //console.log(err,result);
 
         if(result.status) {
             subscription_functions.add_subscription_transaction(req, res, sale_or_refund, transaction_id).then(function(result) {

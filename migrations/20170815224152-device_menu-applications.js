@@ -3,7 +3,7 @@
 module.exports = {
   up: function (queryInterface, Sequelize) {
 
-    queryInterface.addColumn(
+      return queryInterface.addColumn(
         'device_menu',
         'applications',
         {
@@ -12,9 +12,9 @@ module.exports = {
           defaultValue: '1,2,3,4,5'
         }
     ).then(function () {
-        queryInterface.sequelize.query('delete from device_menu where appid > 1;');
+          return queryInterface.sequelize.query('delete from device_menu where appid > 1;');
     }).catch(function(err) {
-      console.log('Migration failed with error message: ',err.message);
+        winston.error('Migration failed with error message: ',err.message);
     });
 
 

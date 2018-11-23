@@ -2,7 +2,7 @@
 
 module.exports = {
   up: function (queryInterface, Sequelize) {
-    queryInterface.createTable('vod_vod_categories', {
+      return queryInterface.createTable('vod_vod_categories', {
           id: {
             type: Sequelize.INTEGER(11),
             allowNull: false,
@@ -41,7 +41,7 @@ module.exports = {
             vod_vod_category_unique: {fields: ['category_id', 'vod_id']}
           }
         })
-        .catch(function(err) {console.log('Creating new table vod_vod_categories failed with error message: ',err.message);});
+        .catch(function(err) {winston.error('Creating new table vod_vod_categories failed with error message: ',err.message);});
   }
 };
 

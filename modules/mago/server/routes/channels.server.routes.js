@@ -14,6 +14,7 @@ module.exports = function(app) {
 
     /* ===== channels ===== */
     app.route('/api/channels')
+        .all(policy.isAllowed)
         .get(channels.list);
 
     app.route('/api/channels')

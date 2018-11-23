@@ -636,7 +636,6 @@ exports.invoice = function(req, res) {
                 ],
                 order: [ [ db.salesreport, 'saledate', 'DESC' ] ]
             }).then(function(invoice) {
-                console.log("the length ", invoice[0].salesreports.length)
                 if (!invoice) {
                     return res.status(404).send({
                         message: 'No sales found for this user'
@@ -665,7 +664,7 @@ exports.invoice = function(req, res) {
             });
         }
         catch(error){
-            console.log(error)
+            winston.error(error)
         }
     }
     else {

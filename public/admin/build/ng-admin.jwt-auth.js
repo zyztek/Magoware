@@ -1,35 +1,42 @@
+
+
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
   var ngAdminJWTAuthService = function($http, jwtHelper, ngAdminJWTAuthConfigurator) {
 
     return {
       authenticate: function(data, successCallback, errorCallback) {
+
         var url = ngAdminJWTAuthConfigurator.getAuthURL();
 
-        return $http({
-          url: url,
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          data: data
-        }).then(function(response) {
-          var payload = jwtHelper.decodeToken(response.data.token);
+              //make request towards the authentication api
+              return $http({
+                  url: url,
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  data: data
+              }).then(function(response) {
+                  var payload = jwtHelper.decodeToken(response.data.token);
 
-            localStorage.userToken = response.data.token;
-            localStorage.userRole = payload.role;
-            localStorage.userName = payload.sub;
+                  localStorage.userToken = response.data.token;
+                  localStorage.userRole = payload.role;
+                  localStorage.userName = payload.sub;
 
-          successCallback(response);
+                  successCallback(response);
 
-          var customAuthHeader = ngAdminJWTAuthConfigurator.getCustomAuthHeader();
-          if (customAuthHeader) {
-            $http.defaults.headers.common[customAuthHeader.name] = customAuthHeader.template.replace('{{token}}', response.data.token);
-          } else {
-            $http.defaults.headers.common.Authorization = 'Basic ' + response.data.token;
-          }
-        } , errorCallback);
+                  var customAuthHeader = ngAdminJWTAuthConfigurator.getCustomAuthHeader();
+                  if (customAuthHeader) {
+                      $http.defaults.headers.common[customAuthHeader.name] = customAuthHeader.template.replace('{{token}}', response.data.token);
+                  } else {
+                      $http.defaults.headers.common.Authorization = 'Basic ' + response.data.token;
+                  }
+              } , errorCallback);
+
+
+
       },
 
       isAuthenticated: function() {
-        var token = localStorage.userToken;
+        var token = localStorage.userToken; //todo: ketu kontrollohet prezenca e token
         if (!token) {
           return false;
         }
@@ -128,6 +135,7 @@
   loginController.prototype.login = function() {
     var that = this;
 
+
     var success = this.ngAdminJWTAuthConfigurator.getLoginSuccessCallback() || function(response) {
            //that.notification.log(`You are logged in! `, { addnCls: 'humane-flatty-success' });        
           //that.$location.path('/dashboard').location['reload']();
@@ -154,13 +162,21 @@
 
   module.exports = loginController;
 },{}],4:[function(require,module,exports){
-  var loginTemplate = '<div class=\"container\">\n    <form style=\"max-width: 330px; padding: 15px; margin: 0 auto;\" class=\"form-login\" name=\"loginController.form\"  ng-submit=\"loginController.login()\">\n        <h2 class=\"form-login-heading\">Please log in<\/h2>\n        <div class=\"form-group\">\n            <label for=\"inputLogin\" class=\"sr-only\">Login<\/label>\n            <input type=\"text\" id=\"inputLogin\" class=\"form-control\" placeholder=\"Login\" ng-model=\"loginController.data.login\" ng-required=\"true\" ng-minlength=\"3\" ng-enter=\"loginController.login()\">\n        <\/div>\n        <div class=\"form-group\">\n            <label for=\"inputPassword\" class=\"sr-only\">Password<\/label>\n            <input type=\"password\" id=\"inputPassword\" class=\"form-control\" placeholder=\"Password\" ng-model=\"loginController.data.password\" ng-required=\"true\" ng-minlength=\"4\" ng-enter=\"loginController.login()\">\n        <\/div>\n\n        <button class=\"btn btn-lg btn-primary btn-block\" type=\"submit\" ng-disabled=\"loginController.form.$invalid\">Login<\/button>\n    <\/form>\n<\/div>';
+  var loginTemplate = '<div class=\"container\">\n    ' +
+      '<form style=\"max-width: 330px; padding: 15px; margin: 0 auto;\" class=\"form-login\" name=\"loginController.form\"  ng-submit=\"loginController.login()\">\n       ' +
+      ' <h2 class=\"form-login-heading\">Please log in<\/h2>\n ' +
+      '<div class=\"form-group\">\n <label for=\"inputLogin\" class=\"sr-only\">Login<\/label>\n  <input type=\"text\" id=\"inputLogin\" class=\"form-control\" placeholder=\"Login\" ng-model=\"loginController.data.login\" ng-required=\"true\" ng-minlength=\"3\" ng-enter=\"loginController.login()\">\n        <\/div>\n  ' +
+      '<div class=\"form-group\">\n <label for=\"inputPassword\" class=\"sr-only\">Password<\/label>\n <input type=\"password\" id=\"inputPassword\" class=\"form-control\" placeholder=\"Password\" ng-model=\"loginController.data.password\" ng-required=\"true\" ng-minlength=\"4\" ng-enter=\"loginController.login()\">\n  <\/div>\n\n' +
+      '<button class=\"btn btn-lg btn-primary btn-block\" type=\"submit\" ng-disabled=\"loginController.form.$invalid\">Login<\/button>\n    <\/form>\n<\/div>';
+
+
+
 
   module.exports = loginTemplate;
 },{}],5:[function(require,module,exports){
   var logoutController = function($scope, ngAdminJWTAuthService, $location) {
-    ngAdminJWTAuthService.logout();
-    $location.path('/login');
+      ngAdminJWTAuthService.logout();
+      $location.path('/CustomLoginTemplate');
   };
 
   logoutController.$inject = ['$scope', 'ngAdminJWTAuthService', '$location'];
@@ -169,25 +185,13 @@
 },{}],6:[function(require,module,exports){
   'use strict';
 
-        //MUST USE TO WORK CORRECT IN IE
-        String.prototype.endsWith = function(pattern) {
-            var d = this.length - pattern.length;
-            return d >= 0 && this.lastIndexOf(pattern) === d;
-        };
-
-        String.prototype.includes = function(pattern) {
-            var d = this.length - pattern.length;
-            return d >= 0 && this.lastIndexOf(pattern) === d;
-        };
-        //./MUST USE TO WORK CORRECT IN IE
-
   var ngAdminJWTAuth = angular.module('ng-admin.jwt-auth', ['angular-jwt']);
 
   ngAdminJWTAuth.config(['$stateProvider', '$httpProvider', function ($stateProvider, $httpProvider) {
 
     $stateProvider.state('login', {
       parent: '',
-      url: '/dashboard',
+      url: '/login',
       controller: 'loginController',
       controllerAs: 'loginController',
       templateProvider: ['ngAdminJWTAuthConfigurator', '$http', 'notification', function(configurator, $http, notification) {

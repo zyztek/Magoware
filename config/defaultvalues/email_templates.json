@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "template_id": "code-pin-email",
+    "title": "Forgot Pin",
+    "language": "eng",
+    "content": "Dear {{result.firstname}} {{result.lastname}}, your current pin is {{req.thisuser.pin}}"
+  },
+  {
+    "id": 2,
+    "template_id": "reset-password-email",
+    "title": "Reset Password",
+    "language": "eng",
+    "content": "<body><p>Dear {{name}},</p><p>You have requested to have your password reset for your account at {{appName}}</p><p>Your new password for login is {{password}}</p><strong>If you didn't make this request, you can ignore this email.</strong><br /><br /><p>The {{appName}} Support Team</p></body>"
+  },
+  {
+    "id": 3,
+    "template_id": "new-account",
+    "title": "New Account",
+    "language": "eng",
+    "content": "<body><p>Dear {{name}},</p><p>Welcome to {{appName}}</p><p>Please click the link below to confirm your account creation:</p><p>{{url}}</p><br /><br /><p>The {{appName}} Support Team</p></body>"
+  },
+  {
+    "id": 4,
+    "template_id": "new-email",
+    "title": "New Email",
+    "language": "eng",
+    "content": "Dear {{customer_data.firstname}} {{customer_data.lastname}}, the email address associated to your Magoware account has been changed to {{req.body.email}}"
+  }
+]

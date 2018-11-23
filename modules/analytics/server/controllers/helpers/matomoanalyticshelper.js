@@ -82,7 +82,7 @@ exports.trackevent = function(req, res) {
     }
 
     trackobject(object_data, req, function (err) {
-        if (err) {console.log(err)}
+        if (err) {winston.error(err)}
     });
     //var lang = (languages[req.body.language]) ? req.body.language : 'eng'; //handle missing language variables, serving english as default
     //res.send(languages[lang].language_variables['OK']);
@@ -113,7 +113,7 @@ exports.trackscreen = function(req, res) {
         })
     };
     trackobject(object_data, req, function (err) {
-        if (err) {winston.info(err)}
+        if (err) {winston.error(err)}
     });
 };
 
@@ -140,7 +140,7 @@ exports.tracktiming = function(req, res) {
         })
     };
     trackobject(object_data, req, function (err) {
-        if (err) {console.log(err)}
+        if (err) {winston.error(err)}
     });
 
 };

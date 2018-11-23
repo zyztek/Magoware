@@ -97,7 +97,7 @@ exports.forgot = function(req, res, next) {
                     include: [{model:db.customer_data, required:true}]
                 }).then(function(user) {
                     if (!user) {
-                        return res.status(400).send(response.USER_NOT_FOUND);
+                        return res.status(400).send(response.APPLICATION_RESPONSE(req.body.language, 702, -1, 'USER_NOT_FOUND', 'User not found', []));
                     }  else {
                         //generate new password
                         var plaintext_password = randomstring.generate({ length: 4, charset: 'alphanumeric' });
@@ -145,7 +145,7 @@ exports.forgot = function(req, res, next) {
 
             email_templates.findOne({
                 attributes:['title','content'],
-                where: {template_id: 'reset-password-email', language: req.body.language }
+                where: {template_id: 'reset-password-email' }
             }).then(function (result,err) {
                 if(!result){
                     res.render(path.resolve('modules/deviceapiv2/server/templates/reset-password-email'), {

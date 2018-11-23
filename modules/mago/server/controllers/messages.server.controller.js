@@ -18,9 +18,9 @@ function save_messages(obj, messagein, ttl, action, callback){
         action: action
     }).then(function(result) {
         if (!result) {
-            console.log('Fail to create data')
+            winston.error('Fail to create data')
         } else {
-            console.log('Messages saved')
+            winston.info('Messages saved')
         }
     }).catch(function(err) {
 
@@ -97,14 +97,16 @@ exports.create = function(req, res) {
                     message: 'No devices found with these filters'
                 });
             } else {
+                var min_ios_version = (company_configurations.ios_min_version) ? parseInt(company_configurations.ios_min_version) : parseInt('1.3957040');
+                var min_stb_version = (company_configurations.stb_min_version) ? parseInt(company_configurations.stb_min_version) : parseInt('2.2.2');
                 for(var i=0; i<result.length; i++){
-                    if(result[i].appid === 1 && result[i].app_version >= '2.2.2') var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1');
-                    else if(result[i].appid === 2 && result[i].app_version >= '1.1.2.2') var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1');
-                    else if(parseInt(result[i].appid) === parseInt('3') && parseInt(result[i].app_version) >= parseInt('1.3957040'))
-                        var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1');
-                    else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0') var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1');
+                    if(result[i].appid === 1 && result[i].app_version >= '2.2.2') var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1', {});
+                    else if(result[i].appid === 2 && result[i].app_version >= min_stb_version) var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1',{});
+                    else if(parseInt(result[i].appid) === parseInt('3') && parseInt(result[i].app_version) >= min_ios_version)
+                        var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1',{});
+                    else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0') var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1',{});
                     else if(['5', '6'].indexOf(result[i].appid))
-                        var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1');
+                        var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1',{});
                     else var message = {"action": "notification", "parameter1": req.body.message, "parameter2": req.body.message, "parameter3": ""};
                     push_msg.send_notification(result[i].googleappid, req.app.locals.settings.firebase_key, result[i].login_datum.username, message, req.body.timetolive, true, true, function(result){});
                 }

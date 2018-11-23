@@ -1,7 +1,8 @@
 var fs = require('fs'),
     mkdirp = require('mkdirp'),
     path = require('path'),
-    dbModel = require(path.resolve('./config/lib/sequelize'));
+    dbModel = require(path.resolve('./config/lib/sequelize')),
+    response = require(path.resolve("./config/responses.js"));
 
 var folder;
 
@@ -209,7 +210,7 @@ function uploadFile (req, res){
                         //send response
                         res.json({err: 0, result: uploadLinkPath});
                     }).catch(function (error) {
-                        res.send(response.DATABASE_ERROR); //request not executed
+                        response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
                     });
                 }
                 else {

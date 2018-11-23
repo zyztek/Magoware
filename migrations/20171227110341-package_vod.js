@@ -28,11 +28,11 @@ module.exports = {
               type: Sequelize.DATE,
               allowNull: false
           }
-      }).catch(function(err) {console.log('Creation of table package_vod failed with error message: ',err.message);});
+      }).catch(function(err) {winston.error('Creation of table package_vod failed with error message: ',err.message);});
   },
 
   down: function (queryInterface, Sequelize) {
-    queryInterface.deleteTable('package_vod')
-        .catch(function(err) {console.log('Deleting the table package_vod failed with error message: ',err.message);});
+      return queryInterface.deleteTable('package_vod')
+        .catch(function(err) {winston.error('Deleting the table package_vod failed with error message: ',err.message);});
   }
 };

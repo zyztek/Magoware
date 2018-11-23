@@ -30,10 +30,6 @@ function mysha1( data ) {
 
 
 exports.free_default_key = function(req,res) {
-    console.log('--------------------- headers ------------------',req.headers);
-    console.log('------------------- query params ---------------',req.query);
-    console.log('------------------- body  ---------------',req.body);
-
     var keyStr = "31313131313131313131313131313131";
 
     var keyBuffer = [];
@@ -41,6 +37,5 @@ exports.free_default_key = function(req,res) {
     for (var i = 0; i < keyStr.length-1; i += 2)
         keyBuffer.push(parseInt(keyStr.substr(i,2), 16));
     var content = String.fromCharCode.apply(String, keyBuffer);
-    console.log(content);
     res.end(content);
 };

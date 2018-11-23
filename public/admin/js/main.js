@@ -98,7 +98,7 @@ myApp.controller("logsCtrl", ['$scope','$http', function($scope,$http) {
                 "Error Log"
             ];
         },function (data, status, headers, config) {
-            console.log("error");
+            winston.error("error");
         });
     };
 }]);
@@ -237,7 +237,6 @@ myApp.controller('main', function ($scope, $rootScope, $location, notification) 
 
 myApp.controller('languageCtrl', ['$translate', '$scope','$cookies', function ($translate, $scope,$cookies) {
     $scope.serve_language = function (langKey) {
-        console.log("preferred language "+preferred_language);
         $translate.use(langKey);
         preferred_language = langKey;
     };
@@ -387,6 +386,7 @@ myApp.directive('sendpush', require('./smsbatch/sendpush'));
 myApp.directive('sale', require('./smsbatch/sale'));
 myApp.directive('vod', require('./smsbatch/vod'));
 myApp.directive('move', require('./smsbatch/move'));
+myApp.directive('generate', require('./smsbatch/generate'));
 myApp.directive('approveReview', require('./groups/approveReview'));
 
 //myApp.directive('roles', require('./grouprights/radioRoles'));
@@ -468,22 +468,23 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     admin.addEntity(nga.entity('Submenu'));
     admin.addEntity(nga.entity('VodEpisode'));
     admin.addEntity(nga.entity('ResellersLoginData'));
-
     admin.addEntity(nga.entity('ResellersUsers'));
-
     admin.addEntity(nga.entity('Series'));
     admin.addEntity(nga.entity('Season'));
-
+    admin.addEntity(nga.entity('vodMenu'));
+    admin.addEntity(nga.entity('vodMenuCarousel'));
+    admin.addEntity(nga.entity('htmlContent'));
 
 
     //Config
+
+    require('./htmlContent/config')(nga, admin);
+    require('./vodMenuCarousel/config')(nga, admin);
+    require('./vodmenu/config')(nga, admin);
     require('./Season/config')(nga, admin);
     require('./Series/config')(nga, admin);
-
-
     require('./resellers_user/config')(nga, admin);
     require('./Resellers_loginData/config')(nga, admin);
-
     require('./VodEpisode/config')(nga, admin);
     require('./Submenu/config')(nga, admin);
     require('./AdvancedSettings/config')(nga, admin);

@@ -95,7 +95,6 @@ exports.list = function(req, res) {
   }
 
   if(req.query.root === 'true') qwhere.parent_menu_code = 'root';
-  console.log(req.query);
 
   //start building where
   final_where.where = qwhere;
@@ -162,13 +161,6 @@ exports.list1 = function(req, res) {
  */
 exports.dataByID = function(req, res, next, id) {
 
-  //if ((id % 1 === 0) === false) { //check if it's integer
-  //  return res.status(404).send({
-  //    message: 'Data is invalid'
-  //  });
- // }
-
-  console.log('enter function data by id');
   DBModel.find({
     where: {
       id: id

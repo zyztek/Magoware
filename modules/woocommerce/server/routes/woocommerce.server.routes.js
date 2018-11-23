@@ -12,6 +12,6 @@ module.exports = function(app) {
 
     //woocommerce webhook order status complete
     app.route('/apiv2/woocommerce/order_status_change')
-    //.all(authpolicy.isAllowed)
+       .all(authpolicy.isAllowed)
        .post(wooFunctions.woocommerce_order_status_change);
 }

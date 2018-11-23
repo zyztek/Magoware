@@ -60,7 +60,7 @@ module.exports = function(sequelize, DataTypes) {
         player: {
             type: DataTypes.STRING(45),
             allowNull: false,
-            defaultValue: 'default'
+            defaultValue: (company_configurations.default_player) ? company_configurations.default_player : 'default'
         },
         activity_timeout: {
             type: DataTypes.INTEGER(11),
@@ -70,12 +70,12 @@ module.exports = function(sequelize, DataTypes) {
         get_messages: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
-            defaultValue: true
+            defaultValue: (company_configurations.get_ads) ? company_configurations.get_ads : true
         },
         get_ads: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
-            defaultValue: true
+            defaultValue: (company_configurations.get_messages) ? company_configurations.get_messages : true
         },
         resetPasswordToken: {
             type: DataTypes.STRING(128),
