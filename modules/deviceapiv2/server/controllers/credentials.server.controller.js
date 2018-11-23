@@ -72,7 +72,7 @@ exports.login = function(req, res) {
                 }).then(function(device){
                     //if record is found then device is found
 
-                    var max_multilogin_nr = req.app.locals.configurations.filter(function(obj) {
+                    var max_multilogin_nr = req.app.locals.advancedsettings.filter(function(obj) {
                         return obj.parameter_id === "max_multilogin_nr"
                     })[0].parameter_value;
 
