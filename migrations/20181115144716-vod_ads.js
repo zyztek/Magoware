@@ -1,4 +1,6 @@
 'use strict';
+var winston = require('winston');
+
 module.exports = {
     up: function (queryInterface, Sequelize) {
         return queryInterface.addColumn('vod', 'mandatory_ads', {type: Sequelize.BOOLEAN, allowNull: false, after: 'price'})

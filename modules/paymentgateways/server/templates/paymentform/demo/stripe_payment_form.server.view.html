@@ -239,7 +239,7 @@
         $http.get("https://devapp.magoware.tv/api/combos").then(function (response,data, status, headers, config,file) {
             $scope.fees = response.data;
         },function (data, status, headers, config) {
-            winston.error("error");
+            console.log("error");
         });
 
 

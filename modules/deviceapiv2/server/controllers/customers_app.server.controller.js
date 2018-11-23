@@ -1,4 +1,5 @@
 'use strict';
+var winston = require('winston');
 var path = require('path'),
     db = require(path.resolve('./config/lib/sequelize')),
     sequelize = require('sequelize'),

@@ -1,5 +1,6 @@
 'use strict';
 var winston = require('winston');
+
 module.exports = {
     up: function (queryInterface, Sequelize) {
 
