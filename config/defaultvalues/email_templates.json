@@ -11,7 +11,7 @@
     "template_id": "reset-password-email",
     "title": "Reset Password",
     "language": "eng",
-    "content": "<body><p>Dear {{name}},</p><p>You have requested to have your password reset for your account at {{appName}}</p><p>Your new password for login is {{password}}</p><strong>If you didn't make this request, you can ignore this email.</strong><br /><br /><p>The {{appName}} Support Team</p></body>"
+    "content": "<body><p>Dear {{name}},</p><p>You have requested to have your password reset for your account {{username}} at {{appName}}</p><p>Your new password for login is {{password}}</p><strong>If you didn't make this request, you can ignore this email.</strong><br /><br /><p>The {{appName}} Support Team</p></body>"
   },
   {
     "id": 3,

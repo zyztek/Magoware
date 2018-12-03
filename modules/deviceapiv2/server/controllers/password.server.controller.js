@@ -151,13 +151,14 @@ exports.forgot = function(req, res, next) {
                     res.render(path.resolve('modules/deviceapiv2/server/templates/reset-password-email'), {
                         name: user.customer_datum.firstname + ' '+ user.customer_datum.lastname, //user info
                         appName: config.app.title,
+                        username: req.body.username,
                         password: new_password //plaintext random password that was generated
                     }, function(err, emailHTML) {
                         done(err, emailHTML, user);
                     });
                 } else {
                     var response = result.content;
-                    var emailHTML = response.replace(new RegExp('{{name}}', 'gi'), user.customer_datum.firstname + ' ' + user.customer_datum.lastname).replace(new RegExp('{{appName}}', 'gi'),config.app.title).replace(new RegExp('{{password}}', 'gi'),new_password);
+                    var emailHTML = response.replace(new RegExp('{{name}}', 'gi'), user.customer_datum.firstname + ' ' + user.customer_datum.lastname).replace(new RegExp('{{username}}', 'gi'),req.body.username).replace(new RegExp('{{appName}}', 'gi'),config.app.title).replace(new RegExp('{{password}}', 'gi'),new_password);
                     done(err,emailHTML, user);
                 }
             });
