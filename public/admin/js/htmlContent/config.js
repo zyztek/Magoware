@@ -19,12 +19,18 @@ export default function (nga, admin) {
                     if (!value) return '';
                     return value.length > 80 ? value.substr(0, 80) + '...' : value;
                 })
-                .label('Content')
+                .label('Content'),
+            nga.field('url')
+                .label('Url')
         ]);
 
     htmlContent.creationView()
         .title('<h4>HTML Content <i class="fa fa-angle-right" aria-hidden="true"></i> Create: Template</h4>')
         .fields([
+            nga.field('id','number')
+                .attributes({ placeholder: 'ID' })
+                .validation({required: true})
+                .label('ID'),
             nga.field('name','string')
                 .attributes({ placeholder: 'Name' })
                 .validation({required: true})
@@ -42,6 +48,13 @@ export default function (nga, admin) {
                     }
                 })
                 .label('Content *'),
+            nga.field('url')
+                .transform(function (value,entry) {
+                    var url = window.location.origin + '/api/htmlContent/' + entry.id;
+                    return url;
+                })
+                .cssClasses('hidden')
+                .label(''),
             nga.field('template')
                 .label('')
                 .template(edit_button)
@@ -69,6 +82,7 @@ export default function (nga, admin) {
                     }
                 })
                 .label('Content *'),
+
             nga.field('template')
                 .label('')
                 .template(edit_button)

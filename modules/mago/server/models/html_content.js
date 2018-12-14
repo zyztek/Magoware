@@ -20,6 +20,10 @@ module.exports = function(sequelize, DataTypes) {
         content: {
             type: DataTypes.STRING(5000),
             allowNull: false
+        },
+        url: {
+            type: DataTypes.STRING(255),
+            allowNull: true
         }
     }, {
         tableName: 'html_content'
