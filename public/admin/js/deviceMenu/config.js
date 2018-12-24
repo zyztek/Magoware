@@ -114,7 +114,7 @@ export default function (nga, admin) {
                     if(isNaN(value)){
                         return value;
                     }else{
-                        var url = window.location.origin + '/api/htmlContent/' + value;
+                        var url = window.location.origin + '/api/htmlContentApp/' + value;
                         return url;
                     }
                 })

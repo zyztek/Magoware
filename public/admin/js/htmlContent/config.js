@@ -50,7 +50,7 @@ export default function (nga, admin) {
                 .label('Content *'),
             nga.field('url')
                 .transform(function (value,entry) {
-                    var url = window.location.origin + '/api/htmlContent/' + entry.id;
+                    var url = window.location.origin + '/api/htmlContentApp/' + entry.id;
                     return url;
                 })
                 .cssClasses('hidden')

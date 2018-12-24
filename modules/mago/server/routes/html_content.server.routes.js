@@ -18,5 +18,11 @@ module.exports = function(app) {
         .put(htmlContent.update)
         .delete(htmlContent.delete);
 
+    app.route('/api/htmlContentApp/:contentID')
+    //.all(policy.isAllowed)
+        .get(htmlContent.read);
+
+    app.param('contentID', htmlContent.htmlcontent_to_app);
+
     app.param('htmlContentId', htmlContent.dataByID);
 };

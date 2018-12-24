@@ -18361,7 +18361,7 @@
 	            }
 	        }
 	    }).label('Content *'), nga.field('url').transform(function (value, entry) {
-	        var url = window.location.origin + '/api/htmlContent/' + entry.id;
+	        var url = window.location.origin + '/api/htmlContentApp/' + entry.id;
 	        return url;
 	    }).cssClasses('hidden').label(''), nga.field('template').label('').template(_edit_buttonHtml2['default'])]);
 
@@ -20006,7 +20006,7 @@
 	        if (isNaN(value)) {
 	            return value;
 	        } else {
-	            var url = window.location.origin + '/api/htmlContent/' + value;
+	            var url = window.location.origin + '/api/htmlContentApp/' + value;
 	            return url;
 	        }
 	    }).template('<ma-field ng-if="entry.values.url_type === \'external\' " field="::field" value="entry.values[field.name()]" entry="entry" entity="::entity" form="formController.form" datastore="::formController.dataStore"></ma-field>', true), nga.field('icon_url', 'file').uploadInformation({ 'url': '/file-upload/single-file/device_menu/icon_url', 'apifilename': 'result' }).template('<div class="row">' + '<div class="col-xs-12 col-sm-1"><img src="{{ entry.values.icon_url }}" height="40" width="40" /></div>' + '<div class="col-xs-12 col-sm-8"><ma-file-field field="field" value="entry.values.icon_url"></ma-file-field></div>' + '</div>' + '<div class="row"><small id="emailHelp" class="form-text text-muted">240x240 px, not larger than 600 KB</small></div>').validation({
