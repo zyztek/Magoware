@@ -128,16 +128,12 @@ exports.get_devicemenu_leveltwo = function(req, res) {
 
 exports.get_weather_widget = function(req, res) {
 
-    if (fs.existsSync('public/weather_widget/index.html')) {
-        var url= req.app.locals.settings.assets_url;
-        var file = '/weather_widget/index.html';
-        var response_Array = {
-            "widget_url": url+file
-        };
-        return res.send(response_Array);
-    }else {
-        return res.status(404).send({
-            message: 'Image Not Found'
-        });
-    }
+    models.html_content.findOne({
+        attributes:['content'],
+        where: {name: 'Weather Widget'}
+    }).then(function(weather_template){
+        res.send(weather_template.content);
+    }).catch(function(error){
+        res.send("error occured");
+    });
 };

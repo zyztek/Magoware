@@ -256,7 +256,7 @@ module.exports = function(app) {
 
     /* ===== weather widget ===== */
 
-    app.route('/apiv2/weather_widget')
+    app.route('/api/htmlContentApp')
         // .all(authpolicy.isAllowed)
         .get(mainController.get_weather_widget);
 
