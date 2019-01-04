@@ -40,7 +40,8 @@ export default function (nga, admin) {
                     { value: 12, label: 'Application menu' },
                     { value: 14, label: 'Video Url' },
                     { value: 20, label: 'Personal' },
-                    { value: 21, label: 'Catchup' }
+                    { value: 21, label: 'Catchup' },
+                    { value: 22, label: 'Language' }
                 ])
                 .validation({ required: true })
                 .label('Menu Code'),
@@ -158,7 +159,8 @@ export default function (nga, admin) {
                     { value: 12, label: 'Application menu' },
                     { value: 14, label: 'Video Url' },
                     { value: 20, label: 'Personal' },
-                    { value: 21, label: 'Catchup' }
+                    { value: 21, label: 'Catchup' },
+                    { value: 22, label: 'Language' }
                 ])
                 .validation({validator: function(value) {
                         if(value === null || value === ''){
@@ -270,7 +272,8 @@ export default function (nga, admin) {
                     { value: 12, label: 'Application menu' },
                     { value: 14, label: 'Video Url' },
                     { value: 20, label: 'Personal' },
-                    { value: 21, label: 'Catchup' }
+                    { value: 21, label: 'Catchup' },
+                    { value: 22, label: 'Language' }
                 ])
                 .validation({validator: function(value) {
                         if(value === null || value === ''){
