@@ -41,7 +41,7 @@ export default function (nga, admin) {
                     { value: 14, label: 'Video Url' },
                     { value: 20, label: 'Personal' },
                     { value: 21, label: 'Catchup' },
-                    { value: 22, label: 'Language' }
+                    { value: 6, label: 'Language' }
                 ])
                 .validation({ required: true })
                 .label('Menu Code'),
@@ -160,7 +160,7 @@ export default function (nga, admin) {
                     { value: 14, label: 'Video Url' },
                     { value: 20, label: 'Personal' },
                     { value: 21, label: 'Catchup' },
-                    { value: 22, label: 'Language' }
+                    { value: 6, label: 'Language' }
                 ])
                 .validation({validator: function(value) {
                         if(value === null || value === ''){
@@ -273,7 +273,7 @@ export default function (nga, admin) {
                     { value: 14, label: 'Video Url' },
                     { value: 20, label: 'Personal' },
                     { value: 21, label: 'Catchup' },
-                    { value: 22, label: 'Language' }
+                    { value: 6, label: 'Language' }
                 ])
                 .validation({validator: function(value) {
                         if(value === null || value === ''){

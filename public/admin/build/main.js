@@ -19989,7 +19989,7 @@
 	            return '';
 	        }
 	        return value.length > 25 ? value.substr(0, 25) + '...' : value;
-	    }).cssClasses('hidden-xs').label('Url'), nga.field('menu_code', 'choice').attributes({ placeholder: 'Menu Code' }).choices([{ value: 0, label: 'Url' }, { value: 1, label: 'Live TV' }, { value: 2, label: 'EPG' }, { value: 3, label: 'Logout' }, { value: 4, label: 'Apps' }, { value: 8, label: 'Webview url' }, { value: 10, label: 'Network Test' }, { value: 11, label: 'Vod' }, { value: 12, label: 'Application menu' }, { value: 14, label: 'Video Url' }, { value: 20, label: 'Personal' }, { value: 21, label: 'Catchup' }, { value: 22, label: 'Language' }]).validation({ required: true }).label('Menu Code'), nga.field('position', 'string').label('Position'), nga.field('appid', 'template').map(function toarray(value) {
+	    }).cssClasses('hidden-xs').label('Url'), nga.field('menu_code', 'choice').attributes({ placeholder: 'Menu Code' }).choices([{ value: 0, label: 'Url' }, { value: 1, label: 'Live TV' }, { value: 2, label: 'EPG' }, { value: 3, label: 'Logout' }, { value: 4, label: 'Apps' }, { value: 8, label: 'Webview url' }, { value: 10, label: 'Network Test' }, { value: 11, label: 'Vod' }, { value: 12, label: 'Application menu' }, { value: 14, label: 'Video Url' }, { value: 20, label: 'Personal' }, { value: 21, label: 'Catchup' }, { value: 6, label: 'Language' }]).validation({ required: true }).label('Menu Code'), nga.field('position', 'string').label('Position'), nga.field('appid', 'template').map(function toarray(value) {
 	        var thearray = JSON.parse("[" + value + "]");
 	        var returnobj = {};
 	        thearray.forEach(function (element) {
@@ -20022,7 +20022,7 @@
 	                }
 	            }
 	        }
-	    }).label('Icon *'), nga.field('menu_code', 'choice').attributes({ placeholder: 'Choose from dropdown list the type of main menu item you are creating' }).choices([{ value: 0, label: 'Url' }, { value: 1, label: 'Live TV' }, { value: 2, label: 'EPG' }, { value: 3, label: 'Logout' }, { value: 4, label: 'Apps' }, { value: 8, label: 'Webview url' }, { value: 10, label: 'Network Test' }, { value: 11, label: 'Vod' }, { value: 12, label: 'Application menu' }, { value: 14, label: 'Video Url' }, { value: 20, label: 'Personal' }, { value: 21, label: 'Catchup' }, { value: 22, label: 'Language' }]).validation({ validator: function validator(value) {
+	    }).label('Icon *'), nga.field('menu_code', 'choice').attributes({ placeholder: 'Choose from dropdown list the type of main menu item you are creating' }).choices([{ value: 0, label: 'Url' }, { value: 1, label: 'Live TV' }, { value: 2, label: 'EPG' }, { value: 3, label: 'Logout' }, { value: 4, label: 'Apps' }, { value: 8, label: 'Webview url' }, { value: 10, label: 'Network Test' }, { value: 11, label: 'Vod' }, { value: 12, label: 'Application menu' }, { value: 14, label: 'Video Url' }, { value: 20, label: 'Personal' }, { value: 21, label: 'Catchup' }, { value: 6, label: 'Language' }]).validation({ validator: function validator(value) {
 	            if (value === null || value === '') {
 	                throw new Error('Please Select Menu Code');
 	            }
@@ -20047,7 +20047,7 @@
 	                }
 	            }
 	        }
-	    }).label('Icon *'), nga.field('menu_code', 'choice').attributes({ placeholder: 'Choose from dropdown list the type of main menu item you are creating' }).choices([{ value: 0, label: 'Url' }, { value: 1, label: 'Live TV' }, { value: 2, label: 'EPG' }, { value: 3, label: 'Logout' }, { value: 4, label: 'Apps' }, { value: 8, label: 'Webview url' }, { value: 10, label: 'Network Test' }, { value: 11, label: 'Vod' }, { value: 12, label: 'Application menu' }, { value: 14, label: 'Video Url' }, { value: 20, label: 'Personal' }, { value: 21, label: 'Catchup' }, { value: 22, label: 'Language' }]).validation({ validator: function validator(value) {
+	    }).label('Icon *'), nga.field('menu_code', 'choice').attributes({ placeholder: 'Choose from dropdown list the type of main menu item you are creating' }).choices([{ value: 0, label: 'Url' }, { value: 1, label: 'Live TV' }, { value: 2, label: 'EPG' }, { value: 3, label: 'Logout' }, { value: 4, label: 'Apps' }, { value: 8, label: 'Webview url' }, { value: 10, label: 'Network Test' }, { value: 11, label: 'Vod' }, { value: 12, label: 'Application menu' }, { value: 14, label: 'Video Url' }, { value: 20, label: 'Personal' }, { value: 21, label: 'Catchup' }, { value: 6, label: 'Language' }]).validation({ validator: function validator(value) {
 	            if (value === null || value === '') {
 	                throw new Error('Please Select Menu Code');
 	            }
