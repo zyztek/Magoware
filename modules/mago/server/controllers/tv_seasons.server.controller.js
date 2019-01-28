@@ -1,5 +1,5 @@
 'use strict';
-var winston = require('winston');
+var winston = require("winston");
 
 /**
  * Module dependencies.
@@ -9,77 +9,10 @@ var path = require('path'),
     logHandler = require(path.resolve('./modules/mago/server/controllers/logs.server.controller')),
     db = require(path.resolve('./config/lib/sequelize')).models,
     sequelize_t = require(path.resolve('./config/lib/sequelize')),
-    DBModel = db.vod,
+    DBModel = db.tv_season,
     refresh = require(path.resolve('./modules/mago/server/controllers/common.controller.js')),
     request = require("request"),
     fs = require('fs');
-
-function link_vod_with_genres(vod_id,array_category_ids, db_model) {
-    var transactions_array = [];
-    //todo: references must be updated to non-available, not deleted
-    return db_model.update(
-        {
-            is_available: false
-        },
-        {
-            where: {
-                vod_id: vod_id,
-                category_id: {$notIn: array_category_ids}
-            }
-        }
-    ).then(function (result) {
-        return sequelize_t.sequelize.transaction(function (t) {
-            for (var i = 0; i < array_category_ids.length; i++) {
-                transactions_array.push(
-                    db_model.upsert({
-                        vod_id: vod_id,
-                        category_id: array_category_ids[i],
-                        is_available: true
-                    }, {transaction: t}).catch(function(error){
-                        winston.error(error)
-                    })
-                )
-            }
-            return Promise.all(transactions_array, {transaction: t}); //execute transaction
-        }).then(function (result) {
-            return {status: true, message:'transaction executed correctly'};
-        }).catch(function (err) {
-            return {status: false, message:'error executing transaction'};
-        })
-    }).catch(function (err) {
-        return {status: false, message:'error deleting existing packages'};
-    })
-}
-
-function link_vod_with_packages(item_id, data_array, model_instance) {
-    var transactions_array = [];
-    var destroy_where = (data_array.length > 0) ? {
-        vod_id: item_id,
-        package_id: {$notIn: data_array}
-    } : {vod_id: item_id};
-
-    return model_instance.destroy({
-        where: destroy_where
-    }).then(function (result) {
-        return sequelize_t.sequelize.transaction(function (t) {
-            for (var i = 0; i < data_array.length; i++) {
-                transactions_array.push(
-                    model_instance.upsert({
-                        vod_id: item_id,
-                        package_id: data_array[i]
-                    }, {transaction: t})
-                )
-            }
-            return Promise.all(transactions_array, {transaction: t}); //execute transaction
-        }).then(function (result) {
-            return {status: true, message:'transaction executed correctly'};
-        }).catch(function (err) {
-            return {status: false, message:'error executing transaction'};
-        })
-    }).catch(function (err) {
-        return {status: false, message:'error deleteting existing packages'};
-    })
-}
 
 /**
  * Create
@@ -88,34 +21,15 @@ exports.create = function(req, res) {
     if(!req.body.clicks) req.body.clicks = 0;
     if(!req.body.duration) req.body.duration = 0;
 
-    var array_vod_vod_categories = req.body.vod_vod_categories || [];
-    delete req.body.vod_vod_categories;
-
-    var array_package_vod = req.body.package_vods || [];
-    delete req.body.package_vods;
-
     DBModel.create(req.body).then(function(result) {
         if (!result) {
             return res.status(400).send({message: 'fail create data'});
         } else {
             logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
-            return link_vod_with_genres(result.id,array_vod_vod_categories, db.vod_vod_categories).then(function(t_result) {
-                if (t_result.status) {
-                    return link_vod_with_packages(result.id, array_package_vod, db.package_vod).then(function(t_result) {
-                        if (t_result.status) {
-                            return res.jsonp(result);
-                        }
-                        else {
-                            return res.send(t_result);
-                        }
-                    })
-                }
-                else {
-                    return res.send(t_result);
-                }
-            })
+            return res.jsonp(result);
         }
     }).catch(function(err) {
+        winston.error(err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -127,7 +41,7 @@ exports.create = function(req, res) {
  * Show current
  */
 exports.read = function(req, res) {
-    res.json(req.vod);
+    res.json(req.tv_season);
 };
 
 /**
@@ -135,19 +49,13 @@ exports.read = function(req, res) {
  */
 exports.update = function(req, res) {
 
-    var updateData = req.vod;
+    var updateData = req.tv_season;
     if(updateData.icon_url != req.body.icon_url) {
         var deletefile = path.resolve('./public'+updateData.icon_url);
     }
     if(updateData.image_url != req.body.image_url) {
         var deleteimage = path.resolve('./public'+updateData.image_url);
     }
-
-    var array_vod_vod_categories = req.body.vod_vod_categories || [];
-    delete req.body.vod_vod_categories;
-
-    var array_package_vod = req.body.package_vods || [];
-    delete req.body.package_vods;
 
     updateData.updateAttributes(req.body).then(function(result) {
         if(deletefile) {
@@ -161,22 +69,9 @@ exports.update = function(req, res) {
                 //todo: return some warning
             });
         }
-        return link_vod_with_genres(req.body.id,array_vod_vod_categories, db.vod_vod_categories).then(function(t_result) {
-            if (t_result.status) {
-                return link_vod_with_packages(req.body.id, array_package_vod, db.package_vod).then(function(t_result) {
-                    if (t_result.status) {
-                        return res.jsonp(result);
-                    }
-                    else {
-                        return res.send(t_result);
-                    }
-                })
-            }
-            else {
-                return res.send(t_result);
-            }
-        })
+        return res.jsonp(result);
     }).catch(function(err) {
+        winston.error(err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -188,40 +83,22 @@ exports.update = function(req, res) {
  * Delete
  */
 exports.delete = function(req, res) {
-    //delete single vod item and it's dependencies, as long as the item doesn't belong to a package
-    db.package_vod.findAll({
-        where: {vod_id: req.vod.id}
-    }).then(function (delete_vod) {
-        if (delete_vod && delete_vod.length > 0) {
-            return res.status(400).send({message: 'This item belongs to at least one package. Please remove it from the packages and try again'});
-        }
-        else {
-            return sequelize_t.sequelize.transaction(function (t) {
-                return db.vod_vod_categories.destroy({where: {vod_id: req.vod.id}}, {transaction: t}).then(function (removed_genres) {
-                    return db.vod_stream.destroy({where: {vod_id: req.vod.id}}, {transaction: t}).then(function (removed_genres) {
-                        return db.vod_subtitles.destroy({where: {vod_id: req.vod.id}}, {transaction: t}).then(function (removed_subtitles) {
-                            return db.vod.destroy({where: {id: req.vod.id}}, {transaction: t});
-                        });
-                    });
-                });
-            }).then(function (result) {
-                return res.json(result);
-            }).catch(function (err) {
-                return res.status(400).send({message: 'Deleting this vod item failed : ' + error});
-            });
-        }
-    }).catch(function (error) {
-        return res.status(400).send({message: 'Searching for this vod item failed : ' + error});
+    return sequelize_t.sequelize.transaction(function (t) {
+        return db.tv_episode.destroy({where: {tv_season_id: req.tv_season.id}}, {transaction: t}).then(function (removed_genres) {
+            return db.tv_season.destroy({where: {id: req.tv_season.id}}, {transaction: t});
+        });
+    }).then(function (result) {
+        return res.json(result);
+    }).catch(function (err) {
+        winston.error(err);
+        return res.status(400).send({message: 'Deleting this tv season item failed : ' + error});
     });
-
 };
 
 exports.list = function(req, res) {
     var qwhere = {},
         final_where = {},
         query = req.query;
-
-    var package_where = (query.not_id) ? {id: {$notIn: [query.not_id]}} : {id: {$gt: 0}};
 
     if(query.q) {
         qwhere.$or = {};
@@ -232,7 +109,6 @@ exports.list = function(req, res) {
         qwhere.$or.director = {};
         qwhere.$or.director.$like = '%'+query.q+'%';
     }
-    if(query.vod_type) qwhere.vod_type = query.vod_type;
     if(query.title) qwhere.title = {like: '%'+query.title+'%'};
 
     //filter films added in the following time interval
@@ -244,8 +120,8 @@ exports.list = function(req, res) {
     else if(query.updated_before) qwhere.createdAt = {lt: query.updated_before};
     else if(query.updated_after) qwhere.createdAt = {gt: query.updated_after};
     if(query.expiration_time) qwhere.expiration_time = query.expiration_time;
-    if(query.isavailable === 'true') qwhere.isavailable = true;
-    else if(query.isavailable === 'false') qwhere.isavailable = false;
+    if(query.is_available === 'true') qwhere.is_available = true;
+    else if(query.is_available === 'false') qwhere.is_available = false;
 
     //start building where
     final_where.where = qwhere;
@@ -255,70 +131,21 @@ exports.list = function(req, res) {
     }
     if(query._orderBy) final_where.order = query._orderBy + ' ' + query._orderDir;
 
-    var category_filter = (req.query.category) ? {
-        where: {category_id: Number(req.query.category), is_available: true},
-        required: true
-    } : {where: {category_id: {gt: 0}, is_available: true}, required: false};
-    var package_filter = (req.query.package_id) ? {
-        where: {package_id: Number(req.query.package_id)},
-        required: true
-    } : {where: {package_id: {gt: 0}}, required: false};
-    final_where.include = [
-        {
-            model: db.vod_vod_categories,
-            attributes: ['category_id'],
-            where: category_filter.where,
-            required: category_filter.required
-        },
-        {
-            model: db.package_vod,
-            attributes: ['package_id'],
-            required: package_filter.required,
-            where: package_filter.where
-        }
-    ];
-
-    final_where.where.vod_type = 'tv_season';
-
-    final_where.distinct = true; //avoids wrong count number when using includes
-    //end build final where
-
-    if(query.not_id){
-        db.package_vod.findAll({attributes: [ 'vod_id'], where: {package_id: query.not_id}}).then(function(excluded_vod_items){
-            //prepare array with id's of all vod items that belong to specified package
-            var excluded_item_list = [];
-            for(var i=0; i<excluded_vod_items.length; i++) excluded_item_list.push(excluded_vod_items[i].vod_id);
-            if(excluded_item_list.length > 0) qwhere.id = {$notIn: excluded_item_list}; //if there are items to be excluded, add notIn filter
-
-            DBModel.findAndCountAll(final_where).then(function(results) {
-                if (!results) return res.status(404).send({message: 'No data found'});
-                else {
-                    res.setHeader("X-Total-Count", results.count);
-                    res.json(results.rows);
-                }
-            }).catch(function(err) {
-                res.jsonp(err);
+    DBModel.findAndCountAll(
+        final_where
+    ).then(function(results) {
+        if (!results) {
+            return res.status(404).send({
+                message: 'No data found'
             });
-        });
-    }
-    else{
-        DBModel.findAndCountAll(
-            final_where
-        ).then(function(results) {
-            if (!results) {
-                return res.status(404).send({
-                    message: 'No data found'
-                });
-            } else {
-                res.setHeader("X-Total-Count", results.count);
-                res.json(results.rows);
-            }
-        }).catch(function(err) {
-            res.jsonp(err);
-        });
-    }
-
-
+        } else {
+            res.setHeader("X-Total-Count", results.count);
+            res.json(results.rows);
+        }
+    }).catch(function(err) {
+        winston.error(err);
+        res.jsonp(err);
+    });
 
 };
 
@@ -336,22 +163,19 @@ exports.dataByID = function(req, res, next, id) {
     DBModel.find({
         where: {
             id: id
-        },
-        include: [
-            {model: db.vod_vod_categories, where: {is_available: true}, required: false}, //outer join, to display also movies that don't belong to any category
-            {model: db.package_vod, required: false},{model: db.vod_subtitles, attributes: ['id', 'title', ['id', 'value'], ['title', 'label']]},{model: db.vod_stream}
-        ]
+        }
     }).then(function(result) {
         if (!result) {
             return res.status(404).send({
                 message: 'No data with that identifier has been found'
             });
         } else {
-            req.vod = result;
+            req.tv_season = result;
             next();
             return null;
         }
     }).catch(function(err) {
+        winston.error(err);
         return next(err);
     });
 
@@ -393,20 +217,20 @@ exports.dataByID = function(req, res, next, id) {
 exports.update_film = function(req, res) {
 
     //todo: take care of case when param list is empty.
-    var vod_where = {};
-    if(req.body.imdb_id) vod_where.imdb_id = req.body.imdb_id;
-    else if(req.body.vod_id) vod_where.id = req.body.vod_id;
+    var tv_season_where = {};
+    if(req.body.imdb_id) tv_season_where.imdb_id = req.body.imdb_id;
+    else if(req.body.tv_season_id) tv_season_where.id = req.body.tv_season_id;
     else {
-        if(req.body.title) vod_where.title = req.body.title;
-        if(req.body.year) vod_where.year = req.body.year;
+        if(req.body.title) tv_season_where.title = req.body.title;
+        if(req.body.year) tv_season_where.year = req.body.year;
     }
 
     DBModel.findOne({
-        attributes: ['title', 'imdb_id'], where: vod_where
-    }).then(function(vod_data){
-        if(vod_data){
-            var search_params = {"vod_title": vod_data.title};
-            if(vod_data.imdb_id !== null) search_params.imdb_id = vod_data.imdb_id; //only use if it is not null
+        attributes: ['title', 'imdb_id'], where: tv_season_where
+    }).then(function(tv_season_data){
+        if(tv_season_data){
+            var search_params = {"tv_season_title": tv_season_data.title};
+            if(tv_season_data.imdb_id !== null) search_params.imdb_id = tv_season_data.imdb_id; //only use if it is not null
             omdbapi(search_params, function(error, response){
                 if(error){
                     return res.status(404).send({
@@ -415,10 +239,11 @@ exports.update_film = function(req, res) {
                 }
                 else{
                     DBModel.update(
-                        response, {where: vod_where}
+                        response, {where: tv_season_where}
                     ).then(function(result){
                         res.send(response);
                     }).catch(function(error){
+                        winston.error(error);
                         return res.status(404).send({
                             message: "An error occurred while updating this movie"
                         });
@@ -431,6 +256,7 @@ exports.update_film = function(req, res) {
             message: "Could not find this movie"
         });
     }).catch(function(error){
+        winston.error(error);
         return res.status(404).send({
             message: "An error occurred while searching for this movie"
         });
@@ -440,14 +266,14 @@ exports.update_film = function(req, res) {
 
 };
 
-function omdbapi(vod_data, callback){
+function omdbapi(tv_season_data, callback){
 
     var api_key = "a421091c"; //todo: dynamic value
     var search_params = "";
-    if(vod_data.imdb_id) search_params = search_params+'&'+'i='+vod_data.imdb_id;
+    if(tv_season_data.imdb_id) search_params = search_params+'&'+'i='+tv_season_data.imdb_id;
     else{
-        if(vod_data.vod_title) search_params = search_params+'&'+'t='+vod_data.vod_title;
-        if(vod_data.year) search_params = search_params+'&'+'&y='+vod_data.year;
+        if(tv_season_data.tv_season_title) search_params = search_params+'&'+'t='+tv_season_data.tv_season_title;
+        if(tv_season_data.year) search_params = search_params+'&'+'&y='+tv_season_data.year;
     }
 
     if(search_params !== ""){
@@ -465,7 +291,7 @@ function omdbapi(vod_data, callback){
                 callback(true, "An error occurred while trying to get this movie's data");
             }
             else try {
-                var vod_data = {
+                var tv_season_data = {
                     title: JSON.parse(response.body).Title,
                     imdb_id: JSON.parse(response.body).imdbID,
                     //category: JSON.parse(response.body).Genre, //todo:get categories list, match them with our list
@@ -478,7 +304,7 @@ function omdbapi(vod_data, callback){
                     starring: JSON.parse(response.body).Actors,
                     //pin_protected: (['R', 'X', 'PG-13'].indexOf(JSON.parse(response.body).Rated) !== -1) ? 1 : 0 //todo: will this rate be taken into consideration?
                 };
-                callback(null, vod_data);
+                callback(null, tv_season_data);
             }
             catch(error){
                 callback(true, "Unable to parse response");

@@ -8,6 +8,7 @@ var path = require('path'),
     winston = require(path.resolve('./config/lib/winston'));
 var sequelizes =  require(path.resolve('./config/lib/sequelize'));
 var async = require('async');
+var dateformat = require('dateformat');
 
 
 
@@ -19,6 +20,7 @@ var async = require('async');
  *
  * @apiUse header_auth
  * @apiHeader {String[]} etag Timestamp when last successful request was made to get saved data
+ * @apiParam {String} [show_adult]  If set to true, include items with adult content. Value set ['true']
  *
  * @apiDescription Returns a chunk of video on demand assets/movies that have been modified after specifik time
  *
@@ -44,6 +46,7 @@ exports.list_get_newdata = function(req, res) {
                 package_list.push(result[i].package_id); //list of packages into array
             }
             var allowed_content = [0,1]; //(req.thisuser.show_adult === true) ? [0, 1] : [0];
+            var show_adult = (req.query.show_adult === 'true') ? {$in: [true, false]} : false; //adult content returned only if request explicitly asks for it
 
             var offset = (!req.params.pagenumber || req.params.pagenumber === '-1') ? 0 : ((parseInt(req.params.pagenumber)-1)*req.app.locals.settings.vod_subset_nr); //for older versions of vod, start query at first record
             var limit = (!req.params.pagenumber || req.params.pagenumber === '-1') ? 99999999999 : req.app.locals.settings.vod_subset_nr; //for older versions of vod, set limit to 99999999999
@@ -58,13 +61,17 @@ exports.list_get_newdata = function(req, res) {
 
 
             models.vod.findAll({
-                attributes: ['id', 'title', 'pin_protected', 'duration', 'description', 'director', 'vod_type', 'starring', 'createdAt', 'rate', 'year', 'icon_url', 'image_url', 'isavailable'],
+                attributes: ['id', 'title', 'pin_protected', 'duration', 'description', 'director', 'vod_type', 'starring', 'createdAt', 'rate', 'icon_url', 'image_url', 'isavailable', //todo: zevendeso type me vlere statike perkatese
+                    [db.sequelize.fn('YEAR', db.sequelize.col('release_date')), "release_date"]],
                 include: [
-                    {model: models.vod_stream, required: true, attributes: ['url', 'drm_platform', 'encryption', 'token', 'stream_format', 'token_url'], where: {stream_source_id: req.thisuser.vod_stream_source}},
+                    {
+                        model: models.vod_stream, required: true, attributes: ['url', 'drm_platform', 'encryption', 'token', 'stream_format', 'token_url'],
+                        where: {stream_source_id: req.thisuser.vod_stream_source, stream_resolution: {$like: "%"+req.auth_obj.appid+"%"}}
+                    },
                     {model: models.vod_vod_categories, required: true, attributes: ['category_id'], where:{is_available: true}, include: [{model: models.vod_category, attributes: ['name']}]},
                     {model: models.package_vod, required: true, attributes: [], where: {package_id: {in: package_list}}}
                 ],
-                where: {pin_protected:{in: allowed_content}, isavailable: true, updatedAt:{gt: tmptimestamp}, expiration_time: {$gte: Date.now()}},
+                where: {pin_protected:{in: allowed_content}, adult_content: show_adult, isavailable: true, updatedAt:{gt: tmptimestamp}, expiration_time: {$gte: Date.now()}},
                 offset: offset,
                 limit: limit
             }).then(function (result) {
@@ -83,7 +90,7 @@ exports.list_get_newdata = function(req, res) {
                                 }
                                 raw_obj.id = String(obj.id);
                                 raw_obj.title = obj.title;
-                                raw_obj.vod_type = obj.vod_type;
+                                raw_obj.vod_type = obj.vod_type; //todo:this params should still be returned. will there be mixed reslts?
                                 raw_obj.pin_protected = obj.pin_protected;
                                 raw_obj.duration = obj.duration;
                                 raw_obj.stream_format = obj.vod_streams[0].stream_format;
@@ -96,7 +103,7 @@ exports.list_get_newdata = function(req, res) {
                                 raw_obj.categories = category_list;
                                 raw_obj.dataadded = obj.createdAt.getTime();
                                 raw_obj.rate = (raw_obj.rate > 0 && raw_obj.rate <=10) ? String(obj.rate) : "5"; // rate should be in the interval ]0:10]
-                                raw_obj.year = String(obj.year);
+                                raw_obj.year = String(obj.release_date);
                                 raw_obj.token = (obj[k][j].token) ? "1" : "0";
                                 raw_obj.TokenUrl = (obj.vod_streams[0].token_url) ? obj.vod_streams[0].token_url : "";
                                 raw_obj.encryption = (obj.vod_streams[0].encryption) ? "1" : "0";
@@ -118,6 +125,7 @@ exports.list_get_newdata = function(req, res) {
                 response.send_res_get(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
 
             }).catch(function(error) {
+                winston.error("Getting a list of vod items failed with error: ", error);
                 response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
         }
@@ -126,6 +134,7 @@ exports.list_get_newdata = function(req, res) {
         }
         return null;
     }).catch(function(error){
+        winston.error("Searching for the client's subscription failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
@@ -138,6 +147,7 @@ exports.list_get_newdata = function(req, res) {
  * @apiGroup VOD
  *
  * @apiUse header_auth
+ * @apiParam {String} [show_adult]  If set to true, include items with adult content. Value set ['true']
  *
  * @apiDescription Returns a chunk of video on demand items
  *
@@ -147,13 +157,15 @@ exports.list_get_newdata = function(req, res) {
  */
 exports.list_get = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+    var show_adult = (req.query.show_adult === 'true') ? {$in: [true, false]} : false; //adult content returned only if request explicitly asks for it
 
     var offset = (!req.params.pagenumber || req.params.pagenumber === '-1') ? 0 : ((parseInt(req.params.pagenumber)-1)*req.app.locals.settings.vod_subset_nr); //for older versions of vod, start query at first record
     var limit = (!req.params.pagenumber || req.params.pagenumber === '-1') ? 99999999999 : req.app.locals.settings.vod_subset_nr; //for older versions of vod, set limit to 99999999999
 
 
     models.vod.findAll({
-        attributes: ['id', 'title', 'pin_protected', 'vod_type', 'duration', 'description', 'director', 'starring', 'createdAt', 'rate', 'year', 'icon_url', 'image_url'],
+        attributes: ['id', 'title', 'pin_protected', 'vod_type', 'duration', 'description', 'director', 'starring', 'createdAt', 'rate', 'icon_url', 'image_url', //todo: zevendeso type me vlere statike perkatese
+            [db.sequelize.fn('YEAR', db.sequelize.col('release_date')), "release_date"]],
         include: [
             {model: models.vod_stream, required: true, attributes: ['url', 'drm_platform','encryption', 'token', 'stream_format', 'token_url']},
             {model: models.vod_vod_categories, required: true, attributes: ['category_id'], where:{is_available: true},
@@ -170,7 +182,7 @@ exports.list_get = function(req, res) {
                 }]
             }
         ],
-        where: {pin_protected:{in: allowed_content}, isavailable: true, expiration_time: {$gte: Date.now()}},
+        where: {pin_protected:{in: allowed_content}, adult_content: show_adult, isavailable: true, expiration_time: {$gte: Date.now()}},
         offset: offset,
         limit: limit,
         subQuery: false
@@ -187,7 +199,7 @@ exports.list_get = function(req, res) {
             }
             raw_obj.id = String(obj.id);
             raw_obj.title = obj.title;
-            raw_obj.vod_type = obj.vod_type;
+            raw_obj.vod_type = obj.vod_type; //this param should still be returned. will there be mixed results?
             raw_obj.pin_protected = obj.pin_protected;
             raw_obj.duration = obj.duration;
             raw_obj.stream_format = obj.vod_streams[0].stream_format;
@@ -200,7 +212,7 @@ exports.list_get = function(req, res) {
             raw_obj.categories = category_list;
             raw_obj.dataadded = obj.createdAt.getTime();
             raw_obj.rate = (raw_obj.rate > 0 && raw_obj.rate <=10) ? String(obj.rate) : "5"; // rate should be in the interval ]0:10]
-            raw_obj.year = String(obj.year);
+            raw_obj.year = String(obj.release_date);
             raw_obj.token = (obj.vod_streams[0].token) ? "1" : "0";
             raw_obj.TokenUrl = (obj.vod_streams[0].token_url) ? obj.vod_streams[0].token_url : "";
             raw_obj.encryption = (obj.vod_streams[0].encryption) ? "1" : "0";
@@ -209,9 +221,11 @@ exports.list_get = function(req, res) {
         });
         response.send_res_get(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Getting list of vod items failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
+
 
 //RETURNS LIST OF VOD PROGRAMS
 /**
@@ -220,20 +234,24 @@ exports.list_get = function(req, res) {
  * @apiGroup VOD
  *
  * @apiUse body_auth
+ * @apiParam {String} [show_adult]  If set to true, include items with adult content. Value set ['true']
  *
  * @apiDescription Returns video on demand assets/movies
  *
  * Copy paste this auth for testing purposes
- *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ *auth=8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A
  *
  */
 exports.list = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+    var show_adult = (req.body.show_adult === 'true') ? {$in: [true, false]} : false; //adult content returned only if request explicitly asks for it
+
     var offset = (!req.body.subset_number || req.body.subset_number === '-1') ? 0 : ((parseInt(req.body.subset_number)-1)*req.app.locals.settings.vod_subset_nr); //for older versions of vod, start query at first record
     var limit = (!req.body.subset_number || req.body.subset_number === '-1') ? 99999999999 : req.app.locals.settings.vod_subset_nr; //for older versions of vod, set limit to 99999999999
 
     models.vod.findAll({
-        attributes: ['id', 'title', 'vod_type', 'pin_protected', 'duration', 'description', 'director', 'starring', 'createdAt', 'rate', 'year', 'icon_url', 'image_url'],
+        attributes: ['id', 'title', 'vod_type', 'pin_protected', 'duration', 'description', 'director', 'starring', 'createdAt', 'rate', 'icon_url', 'image_url', //todo: zevendeso type me vlere statike perkatese
+            [db.sequelize.fn('YEAR', db.sequelize.col('release_date')), "release_date"]],
         include: [
             {model: models.vod_stream, required: true, attributes: ['url', 'encryption', 'token', 'stream_format', 'token_url']},
             {model: models.vod_vod_categories, required: true, attributes: ['category_id'], where: {is_available: true}, include: [{model: models.vod_category, attributes: ['name'], where: {isavailable: true} }]},
@@ -246,7 +264,7 @@ exports.list = function(req, res) {
                 }]
             }
         ],
-        where: {pin_protected:{in: allowed_content}, isavailable: true, expiration_time: {$gte: Date.now()}},
+        where: {pin_protected:{in: allowed_content}, adult_content: show_adult, isavailable: true, expiration_time: {$gte: Date.now()}},
         offset: offset,
         limit: limit,
         subQuery: false
@@ -266,7 +284,7 @@ exports.list = function(req, res) {
                         }
                         raw_obj.id = String(obj.id);
                         raw_obj.title = obj.title;
-                        raw_obj.vod_type = obj.vod_type;
+                        raw_obj.vod_type = obj.vod_type; //this param should still be returned. will there be mixed results?
                         raw_obj.pin_protected = obj.pin_protected;
                         raw_obj.duration = obj.duration;
                         raw_obj.stream_format = obj[k][j].stream_format;
@@ -278,7 +296,7 @@ exports.list = function(req, res) {
                         raw_obj.categories = category_list;
                         raw_obj.dataadded = obj.createdAt.getTime();
                         raw_obj.rate = (raw_obj.rate > 0 && raw_obj.rate <=10) ? String(obj.rate) : "5"; // rate should be in the interval ]0:10]
-                        raw_obj.year = String(obj.year);
+                        raw_obj.year = String(obj.release_date);
                         raw_obj.token = (obj[k][j].token) ? "1" : "0";
                         raw_obj.TokenUrl = (obj[k][j].token_url) ? obj[k][j].token_url : "";
                         raw_obj.encryption = (obj[k][j].encryption) ? "1" : "0";
@@ -290,10 +308,12 @@ exports.list = function(req, res) {
         });
         response.send_partial_res(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Getting list of vod items failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
+
 
 //RETURNS FULL LIST OF CATEGORIES
 /**
@@ -302,21 +322,23 @@ exports.list = function(req, res) {
  * @apiGroup VOD
  *
  * @apiUse body_auth
+ * @apiParam {String} [show_adult]  If set to true, include items with adult content. Value set ['true']
  *
  * @apiDescription Returns list of categories
  *
  * Copy paste this auth for testing purposes
- *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ *auth=8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A
  *
  */
 exports.categories = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+    var show_adult = (req.body.show_adult === 'true') ? {$in: [true, false]} : false; //adult content returned only if request explicitly asks for it
 
     models.vod_category.findAll({
         attributes: [ 'id', 'name', 'password', 'sorting', 'icon_url', 'small_icon_url'],
         include: [{
             model: models.vod_vod_categories, attributes: [], where: {is_available: true}, include: [
-                {model: models.vod, attributes: [], required: true, where: {pin_protected:{in: allowed_content}, isavailable: true, expiration_time: {$gte: Date.now()}},
+                {model: models.vod, attributes: [], required: true, where: {pin_protected:{in: allowed_content}, adult_content: show_adult, isavailable: true, expiration_time: {$gte: Date.now()}},
                     include: [
                         {model: models.vod_stream,  required: true, attributes: []},
                         {model: models.package_vod, required: true, attributes: [],
@@ -349,9 +371,11 @@ exports.categories = function(req, res) {
         }
         response.send_res(req, res, category_list, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Getting list of vod genres failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
+
 
 //RETURNS FULL LIST OF CATEGORIES GET
 /**
@@ -360,6 +384,7 @@ exports.categories = function(req, res) {
  * @apiGroup VOD
  *
  * @apiUse header_auth
+ * @apiParam {String} [show_adult]  If set to true, include items with adult content. Value set ['true']
  *
  * @apiDescription Returns list of vod categories
  *
@@ -369,12 +394,13 @@ exports.categories = function(req, res) {
  */
 exports.categories_get = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+    var show_adult = (req.query.show_adult === 'true') ? {$in: [true, false]} : false; //adult content returned only if request explicitly asks for it
 
     models.vod_category.findAll({
         attributes: [ 'id', 'name', 'password', 'sorting', 'icon_url', 'small_icon_url'],
         include: [{
             model: models.vod_vod_categories, attributes: [], where: {is_available: true}, include: [
-                {model: models.vod, attributes: [], required: true, where: {pin_protected:{in: allowed_content}, isavailable: true, expiration_time: {$gte: Date.now()}},
+                {model: models.vod, attributes: [], required: true, where: {pin_protected:{in: allowed_content}, adult_content: show_adult, isavailable: true, expiration_time: {$gte: Date.now()}},
                     include: [
                         {model: models.vod_stream,  required: true, attributes: []},
                         {model: models.package_vod, required: true, attributes: [],
@@ -407,9 +433,11 @@ exports.categories_get = function(req, res) {
         }
         response.send_res_get(req, res, category_list, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Getting list of vod categories failed with error: ", error);
         response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
+
 
 //RETURNS SUBTITLE DATA FOR A ITEM IF SPECIFIED, OR FOR ALL ITEMS OTHERWISE
 /**
@@ -475,6 +503,7 @@ exports.subtitles = function(req, res) {
         }
         response.send_res(req, res, vod_subtitles, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Getting list of vod subtitles failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
@@ -524,12 +553,10 @@ exports.subtitles_get = function(req, res) {
         }
         response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Getting list of vod subtitles failed with error: ", error);
         response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
-
-
-
 
 
 //RETURNS CLICKS FOR THE SELECTED PROGRAM
@@ -540,21 +567,23 @@ exports.subtitles_get = function(req, res) {
  *
  * @apiUse body_auth
  * @apiParam {Number} id_vod VOD item ID
+ * @apiParam {String} [show_adult]  If set to true, include items with adult content. Value set ['true']
  *
  * @apiDescription Returns number of clicks for selected vod item
  *
  * Copy paste this auth for testing purposes
- *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ *auth=8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A
  *
  */
 exports.totalhits = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+    var show_adult = (req.body.show_adult === 'true') ? {$in: [true, false]} : false; //adult content returned only if request explicitly asks for it
 
     //if hits for a specific movie are requested
     if(req.body.id_vod != "all"){
         models.vod.findAll({
             attributes: [ ['id', 'id_vod'], ['clicks', 'hits'] ],
-            where: {id: req.body.id_vod, pin_protected: {in: allowed_content}, isavailable: true, expiration_time: {$gte: Date.now()}},
+            where: {id: req.body.id_vod, pin_protected: {in: allowed_content}, adult_content: show_adult, isavailable: true, expiration_time: {$gte: Date.now()}},
             include: [
                 {model: models.vod_stream, required: true, attributes: []},
                 {model: models.vod_vod_categories, required: true, attributes: [], where:{is_available: true},
@@ -565,6 +594,7 @@ exports.totalhits = function(req, res) {
         }).then(function (result) {
             response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
         }).catch(function(error) {
+            winston.error("Getting number of clicks for a vod item failed with error: ", error);
             response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
     }
@@ -592,11 +622,13 @@ exports.totalhits = function(req, res) {
         }).then(function (result) {
             response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
         }).catch(function(error) {
+            winston.error("Getting the list of vod clicks failed with error: ", error);
             response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
     }
 
 };
+
 
 /**
  * @api {post} /apiv2/vod/mostwatched VodMostWatched
@@ -604,11 +636,12 @@ exports.totalhits = function(req, res) {
  * @apiGroup VOD
  *
  * @apiUse body_auth
+ * @apiParam {String} [show_adult]  If set to true, include items with adult content. Value set ['true']
  *
  * @apiDescription Returns most played movies.
  *
  * Copy paste this auth for testing purposes
- *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ *auth=8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A
  *
  * @apiSuccessExample Success-Response:
  *     HTTP/1.1 200 OK
@@ -619,13 +652,14 @@ exports.totalhits = function(req, res) {
  */
 exports.mostwatched = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+    var show_adult = (req.body.show_adult === 'true') ? {$in: [true, false]} : false; //adult content returned only if request explicitly asks for it
 
     //if hits for a specific movie are requested
     models.vod.findAll({
         attributes: ['id', 'clicks'],
         limit: 30, subQuery: false,
         order: [[ 'clicks', 'DESC' ]],
-        where: {pin_protected: {in: allowed_content}, isavailable: true, expiration_time: {$gte: Date.now()}},
+        where: {pin_protected: {in: allowed_content}, adult_content: show_adult, isavailable: true, expiration_time: {$gte: Date.now()}},
         include: [
             {model: models.vod_stream, required: true, attributes: []},
             {model: models.vod_vod_categories, required: true, attributes: [], where: {is_available: true},
@@ -646,10 +680,12 @@ exports.mostwatched = function(req, res) {
         }
         response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Getting list of most watched vod items failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
+
 
 /**
  * @api {get} /apiv2/vod/mostwatched VodMostWatchedGet
@@ -657,6 +693,8 @@ exports.mostwatched = function(req, res) {
  * @apiGroup VOD
  *
  * @apiUse header_auth
+ * @apiParam {String} [show_adult]  If set to true, include items with adult content. Value set ['true']
+ *
  * @apiDescription Returns most played movies.
  *
  * Copy paste this auth for testing purposes
@@ -671,13 +709,14 @@ exports.mostwatched = function(req, res) {
  */
 exports.mostwatched_get = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+    var show_adult = (req.query.show_adult === 'true') ? {$in: [true, false]} : false; //adult content returned only if request explicitly asks for it
 
     //if hits for a specific movie are requested
     models.vod.findAll({
         attributes: ['id', 'clicks'],
         limit: 30, subQuery: false,
         order: [[ 'clicks', 'DESC' ]],
-        where: {pin_protected: {in: allowed_content}, isavailable: true, expiration_time: {$gte: Date.now()}},
+        where: {pin_protected: {in: allowed_content}, adult_content: show_adult, isavailable: true, expiration_time: {$gte: Date.now()}},
         include: [
             {model: models.vod_stream, required: true, attributes: []},
             {model: models.vod_vod_categories, required: true, attributes: [], where: {is_available: true},
@@ -698,10 +737,12 @@ exports.mostwatched_get = function(req, res) {
         }
         response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Getting list of most watched movies failed with error: ", error);
         response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
+
 
 /**
  * @api {post} /apiv2/vod/mostrated VodMostRated
@@ -709,20 +750,22 @@ exports.mostwatched_get = function(req, res) {
  * @apiGroup VOD
  *
  * @apiUse body_auth
+ * @apiParam {String} [show_adult]  If set to true, include items with adult content. Value set ['true']
  *
  * @apiDescription Returns list of most rated vod items
  *
  * Copy paste this auth for testing purposes
- *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ *auth=8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A
  *
  */
 exports.mostrated = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+    var show_adult = (req.body.show_adult === 'true') ? {$in: [true, false]} : false; //adult content returned only if request explicitly asks for it
 
     //if most rated movies are requested
     models.vod.findAll({
         attributes: ['id', 'rate'], order: [[ 'rate', 'DESC' ]],
-        where: {pin_protected: {in: allowed_content}, isavailable: true, expiration_time: {$gte: Date.now()}},
+        where: {pin_protected: {in: allowed_content}, adult_content: show_adult, isavailable: true, expiration_time: {$gte: Date.now()}},
         limit: 30, subQuery: false,
         include: [
             {model: models.vod_stream, required: true, attributes: []},
@@ -750,10 +793,12 @@ exports.mostrated = function(req, res) {
 
         response.send_res(req, res, mostrated, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Getting list of most rated movies failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
+
 
 /**
  * @api {get} /apiv2/vod/mostrated VodMostRatedGet
@@ -761,6 +806,7 @@ exports.mostrated = function(req, res) {
  * @apiGroup VOD
  *
  * @apiUse header_auth
+ * @apiParam {String} [show_adult]  If set to true, include items with adult content. Value set ['true']
  *
  * @apiDescription Returns list of most rated vod items
  *
@@ -770,11 +816,12 @@ exports.mostrated = function(req, res) {
  */
 exports.mostrated_get = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+    var show_adult = (req.query.show_adult === 'true') ? {$in: [true, false]} : false; //adult content returned only if request explicitly asks for it
 
     //if most rated movies are requested
     models.vod.findAll({
         attributes: ['id', 'rate'], order: [[ 'rate', 'DESC' ]],
-        where: {pin_protected: {in: allowed_content}, isavailable: true, expiration_time: {$gte: Date.now()}},
+        where: {pin_protected: {in: allowed_content}, adult_content: show_adult, isavailable: true, expiration_time: {$gte: Date.now()}},
         limit: 30, subQuery: false,
         include: [
             {model: models.vod_stream, required: true, attributes: []},
@@ -800,9 +847,11 @@ exports.mostrated_get = function(req, res) {
         }
         response.send_res_get(req, res, mostrated, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("getting list of most rated vod items failed with error: ", error);
         response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
+
 
 /**
  * @api {post} /apiv2/vod/related VodRelated
@@ -810,12 +859,13 @@ exports.mostrated_get = function(req, res) {
  * @apiGroup VOD
  *
  * @apiUse body_auth
+ * @apiParam {String} [show_adult]  If set to true, include items with adult content. Value set ['true']
  * @apiParam {Number} vod_id Id for specidied vod item
  *
  * @apiDescription Returns id's of vod items related to specified item
  *
  * Copy paste this auth for testing purposes
- *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ *auth=8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A
  *
  */
 exports.related = function(req, res) {
@@ -839,12 +889,15 @@ exports.related = function(req, res) {
         }
 
         var where_condition =  " vod.id <> "+req.body.vod_id+" AND isavailable = true AND vod_stream.stream_source_id = "+req.thisuser.vod_stream_source+" AND expiration_time > NOW() ";
+        where_condition += "AND vod_stream.stream_resolution LIKE '%"+req.auth_obj.appid+"%' ";
         if(req.thisuser.show_adult === true) where_condition = where_condition + " AND pin_protected = false ";
+        if(!req.body.show_adult || req.body.show_adult !== 'true') where_condition = where_condition + " AND adult_content = false ";
+
         where_condition += " AND subscription.login_id = "+req.thisuser.id+" and subscription.end_date > NOW() AND package.package_type_id = "+ Number(req.auth_obj.screensize + 2) +" ";
 
         var related_query = "SELECT DISTINCT vod.id, "+
             " ( "+
-                //" IF( (category_id = "+result[0].category_id+"), 1, 0) + "+ //category matching score
+            //" IF( (category_id = "+result[0].category_id+"), 1, 0) + "+ //category matching score
             " ( "+director_matching_score+" ) + "+ //director matching score
             " ( "+actor_matching_score+" ) "+ //actor matching score
             " ) AS matching_score "+
@@ -869,14 +922,17 @@ exports.related = function(req, res) {
                 response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
             }
         }).catch(function(error){
+            winston.error("Getting the list of related movies failed with error: ", error);
             response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
         return null;
     }).catch(function(error) {
+        winston.error("Searching for atirbutes of this movie failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
+
 
 /**
  * @api {post} /apiv2/vod/suggestions VodSuggestions
@@ -884,19 +940,21 @@ exports.related = function(req, res) {
  * @apiGroup VOD
  *
  * @apiUse body_auth
+ * @apiParam {String} [show_adult]  If set to true, include items with adult content. Value set ['true']
  *
  * @apiDescription Returns suggestions based on user preferences
  *
  * Copy paste this auth for testing purposes
- *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ * auth=8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A
  *
  */
 exports.suggestions = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+    var show_adult = (req.body.show_adult === 'true') ? {$in: [true, false]} : false; //adult content returned only if request explicitly asks for it
 
     models.vod.findAll({
         attributes: ['id'],
-        where: {pin_protected: {in: allowed_content}, isavailable: true, expiration_time: {$gte: Date.now()}},
+        where: {pin_protected: {in: allowed_content}, adult_content: show_adult, isavailable: true, expiration_time: {$gte: Date.now()}},
         include: [
             {model: models.vod_stream, required: true, attributes: []},
             {
@@ -918,10 +976,12 @@ exports.suggestions = function(req, res) {
     }).then(function (result) {
         response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Searching for suggested movies failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
+
 
 /**
  * @api {get} /apiv2/vod/suggestions VodSuggestionsGet
@@ -929,6 +989,7 @@ exports.suggestions = function(req, res) {
  * @apiGroup VOD
  *
  * @apiUse header_auth
+ * @apiParam {String} [show_adult]  If set to true, include items with adult content. Value set ['true']
  *
  * @apiDescription Returns suggestions based on user preferences
  *
@@ -938,10 +999,11 @@ exports.suggestions = function(req, res) {
  */
 exports.suggestions_get = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+    var show_adult = (req.query.show_adult === 'true') ? {$in: [true, false]} : false; //adult content returned only if request explicitly asks for it
 
     models.vod.findAll({
         attributes: ['id'],
-        where: {pin_protected: {in: allowed_content}, isavailable: true, expiration_time: {$gte: Date.now()}},
+        where: {pin_protected: {in: allowed_content}, adult_content: show_adult, isavailable: true, expiration_time: {$gte: Date.now()}},
         include: [
             {model: models.vod_stream, required: true, attributes: []},
             {
@@ -963,10 +1025,12 @@ exports.suggestions_get = function(req, res) {
     }).then(function (result) {
         response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Searching for suggested movies failed with error: ", error);
         response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
+
 
 /**
  * @api {post} /apiv2/vod/categoryfilms VodCategoryFilms
@@ -975,19 +1039,21 @@ exports.suggestions_get = function(req, res) {
  *
  * @apiUse body_auth
  * @apiParam {Number} category_id  Id of specified category
+ * @apiParam {String} [show_adult]  If set to true, include items with adult content. Value set ['true']
  *
  * @apiDescription Returns id's of vod items that belong to a specific category
  *
  * Copy paste this auth for testing purposes
- *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ * auth=8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A
  *
  */
 exports.categoryfilms = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+    var show_adult = (req.body.show_adult === 'true') ? {$in: [true, false]} : false; //adult content returned only if request explicitly asks for it
 
     models.vod.findAll({
         attributes: ['id'],
-        where: {pin_protected: {in: allowed_content}, isavailable: true, expiration_time: {$gte: Date.now()}},
+        where: {pin_protected: {in: allowed_content}, adult_content: show_adult, isavailable: true, expiration_time: {$gte: Date.now()}},
         include: [
             {model: models.vod_stream, required: true, attributes: []},
             {model: models.vod_vod_categories, required: true, attributes: [], where: {category_id: req.body.category_id, is_available: true},
@@ -1012,10 +1078,12 @@ exports.categoryfilms = function(req, res) {
         });
         response.send_res(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Searching for movies of specific genre failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
+
 
 /**
  * @api {get} /apiv2/vod/categoryfilms VodCategoryFilmsGet
@@ -1023,6 +1091,7 @@ exports.categoryfilms = function(req, res) {
  * @apiGroup VOD
  *
  * @apiUse header_auth
+ * @apiParam {String} [show_adult]  If set to true, include items with adult content. Value set ['true']
  * @apiParam {Number} category_id  Id of specified category
  *
  * @apiDescription Returns id's of vod items that belong to a specific category
@@ -1033,10 +1102,11 @@ exports.categoryfilms = function(req, res) {
  */
 exports.categoryfilms_get = function(req, res) {
     var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
+    var show_adult = (req.query.show_adult === 'true') ? {$in: [true, false]} : false; //adult content returned only if request explicitly asks for it
 
     models.vod.findAll({
         attributes: ['id'],
-        where: {pin_protected: {in: allowed_content}, isavailable: true, expiration_time: {$gte: Date.now()}},
+        where: {pin_protected: {in: allowed_content}, adult_content: show_adult, isavailable: true, expiration_time: {$gte: Date.now()}},
         include: [
             {model: models.vod_stream, required: true, attributes: []},
             {model: models.vod_vod_categories, required: true, attributes: [], where: {category_id: req.query.category_id, is_available: true},
@@ -1061,10 +1131,12 @@ exports.categoryfilms_get = function(req, res) {
         });
         response.send_res(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("eraching for movies of specific category failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
+
 
 /**
  * @api {get} /apiv2/vod/voditem/:vodID GetVodItemDetails
@@ -1084,15 +1156,15 @@ exports.get_vod_item_details = function(req, res) {
     models.vod.find({
         where: {
             id: vodID,
-			expiration_time: {$gte: Date.now()}
+            expiration_time: {$gte: Date.now()}
         },
         include: [{model: models.vod_subtitles},
             {
                 model: models.vod_vod_categories, required: true, attributes: ['category_id'], where: {is_available: true},
                 include: [{model: models.vod_category, required: true, attributes: ['name'], where: {isavailable: true}}]
             },
-            {model: models.vod_stream, where:{stream_source_id: req.thisuser.vod_stream_source}}],
-
+            {model: models.vod_stream, where:{stream_source_id: req.thisuser.vod_stream_source, stream_resolution: {$like: "%"+req.auth_obj.appid+"%"}}}
+        ]
     }).then(function(result) {
         if (!result) {
             response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'NO DATA FOUND', 'no-store');
@@ -1107,8 +1179,8 @@ exports.get_vod_item_details = function(req, res) {
 
             raw_obj[0].id=result.id;
             raw_obj[0].title=result.title;
-            raw_obj[0].vod_type = result.vod_type;
-            raw_obj[0].duration =result.duration;
+            raw_obj[0].vod_type = result.vod_type; //this param should still be returned. will there be mixed results?
+            raw_obj[0].duration =result.duration ;
             raw_obj[0].pin_protected = result.pin_protected;
             raw_obj[0].subtitles = result.vod_subtitles;
             raw_obj[0].drm_platform = result.vod_streams[0].drm_platform;
@@ -1120,7 +1192,7 @@ exports.get_vod_item_details = function(req, res) {
             raw_obj[0].categoryid = String(result.vod_vod_categories[0].category_id);
             raw_obj[0].category_names = category_names;
             raw_obj[0].rate = (result.rate > 0 && result.rate <=10) ? String(result.rate) : "5"; // rate should be in the interval ]0:10]
-            raw_obj[0].year = String(result.year);
+            raw_obj[0].year = dateformat(result.release_date, 'yyyy');
             raw_obj[0].token = (result.vod_streams[0].token) ? "1" : "0";
             raw_obj[0].TokenUrl = result.vod_streams[0].token_url;
             raw_obj[0].encryption = (result.vod_streams[0].encryption) ? "1" : "0";
@@ -1129,7 +1201,8 @@ exports.get_vod_item_details = function(req, res) {
             response.send_res_get(req, res, raw_obj, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
 
         }
-    }).catch(function(err) {
+    }).catch(function(error) {
+        winston.error("Getting all information for specific movie failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
@@ -1157,19 +1230,18 @@ exports.get_tvshow_item_details = function(req, res) {
     else
         where_seasonNumber.season_number = 1;
 
-    models.vod.find({
-        attributes: ['id', 'vod_type', 'title', 'year', 'icon_url', 'image_url', 'rate', 'trailer_url', 'pin_protected',
+    models.tv_series.find({
+        attributes: ['id', [ sequelize.literal('"film"'), 'tv_series'], 'title', 'icon_url', 'image_url', 'rate', 'trailer_url', 'pin_protected',
+            [db.sequelize.fn('YEAR', db.sequelize.col('vod.release_date')), "year"],
             [db.sequelize.fn('concat', db.sequelize.col('vod.description'), '<p><strong>Director:</strong> ', db.sequelize.col('vod.director'),
                 '</p><p><strong>Starring:</strong> ', db.sequelize.col('vod.starring'), '</p>'), 'description'],
             [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('vod.icon_url')), 'icon'],
             [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('vod.image_url')), 'largeimage']
         ],
-        where: {
-            id: vodID, expiration_time: {$gte: Date.now()}, vod_type: 'tv_series'
-        },
+        where: {id: vodID, expiration_time: {$gte: Date.now()}},
         include: [
-            {model: models.vod, as: 'seasons', attributes: ['id', 'season_number', 'title'], where: {vod_parent_id: req.params.tvshowID, expiration_time: {$gte: Date.now()}, vod_type: 'tv_season'} },
-            {model: models.vod_vod_categories, where: {is_available: true}, attributes: ['id'],
+            {model: models.tv_season, attributes: ['id', 'season_number', 'title'], where: {expiration_time: {$gte: Date.now()}} },
+            {model: models.tv_series_categories, where: {is_available: true}, attributes: ['id'],
                 include: [{model: models.vod_category, where: {isavailable: true},  attributes: ['name' ]}]
             }
         ]
@@ -1187,18 +1259,18 @@ exports.get_tvshow_item_details = function(req, res) {
 
             var season_id = result.seasons.filter(function(obj) {return obj.season_number === Number(where_seasonNumber.season_number)})[0].id;
 
-            models.vod.findAll({
-                attributes: ["id", "vod_type", "title",  "year",  "rate", "trailer_url",
+            models.tv_episode.findAll({
+                attributes: ["id", [ sequelize.literal('"film"'), 'vod_episode'], "title", "rate", "trailer_url", [db.sequelize.fn('YEAR', db.sequelize.col('vod.release_date')), "year"],
                     [db.sequelize.fn('concat', db.sequelize.col('vod.description'), '<p><strong>Director:</strong> ', db.sequelize.col('vod.director'),
                         '</p><p><strong>Starring:</strong> ', db.sequelize.col('vod.starring'), '</p>'), 'description'],
                     [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('vod.icon_url')), 'icon']
                 ],
-                where: {vod_type: 'tv_episode', vod_parent_id: season_id, expiration_time: {$gte: Date.now()}},
+                where: {tv_season_id: season_id, expiration_time: {$gte: Date.now()}},
                 include: [
                     {model: models.vod_vod_categories, where: {is_available: true}, attributes: ['id'],
                         include: [{model: models.vod_category, where: {isavailable: true},  attributes: ['name' ]}]
                     },
-                    {model: models.vod_stream, where: {stream_source_id: req.thisuser.vod_stream_source}, attributes: []}
+                    {model: models.vod_stream, where: {stream_source_id: req.thisuser.vod_stream_source, stream_resolution: {$like: "%"+req.auth_obj.appid+"%"}}, attributes: []}
                 ]
             }).then(function(episodes) {
                 result.season_count = result.seasons.length; //add number of seasons for the tv show
@@ -1221,32 +1293,17 @@ exports.get_tvshow_item_details = function(req, res) {
                 });
 
             }).catch(function(error) {
+                winston.error("Quering for episodes failed with error: ", error);
                 response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
             return null;
         }
     }).catch(function(error) {
+        winston.error("Getting data for a tv show failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 /**
@@ -1255,6 +1312,7 @@ exports.get_tvshow_item_details = function(req, res) {
  * @apiGroup VOD
  *
  * @apiUse header_auth
+ * @apiParam {String} [show_adult]  If set to true, include items with adult content. Value set ['true']
  *
  * @apiDescription Returns a list of related items of the same type for the specified vod item
  *
@@ -1265,11 +1323,11 @@ exports.get_tvshow_item_details = function(req, res) {
 exports.get_vod_item_related = function(req, res) {
 
     models.vod.findAll({
-        attributes: ['director', 'starring', 'vod_type'], where: {id: req.params.vodID},
+        attributes: ['director', 'starring', 'vod_type'], where: {id: req.params.vodID}, //todo: zevendeso type me vlere statike. liste e perzier?
         limit: 1
     }).then(function (result) {
         if(result && result.length > 0){
-            var vod_item_type = result[0].vod_type;
+            var vod_item_type = result[0].vod_type; //todo: zv rezultatin dinmik me vlere statike. liste e perzier?
             var director_list = result[0].director.split(',');
             var director_matching_score = "";
             for(var i=0; i<director_list.length; i++){
@@ -1285,24 +1343,25 @@ exports.get_vod_item_related = function(req, res) {
             }
             var vod_stream = {
                 join_query: (vod_item_type !== "tv_series") ? " INNER JOIN vod_stream ON vod.id = vod_stream.vod_id " : "",
-                where_condition: (vod_item_type !== "tv_series") ? " AND vod_stream.stream_source_id = "+req.thisuser.vod_stream_source : ""
+                where_condition: (vod_item_type !== "tv_series") ? " AND vod_stream.stream_source_id = "+req.thisuser.vod_stream_source + " AND vod_stream.stream_resolution LIKE '%"+req.auth_obj.appid+"%' " : ""
             };
 
             var where_condition =  " vod.id <> "+req.params.vodID+
-                " AND vod.isavailable = true AND vod_type = '"+vod_item_type+"' AND expiration_time > NOW() "+vod_stream.where_condition;
+                " AND vod.isavailable = true AND vod_type = '"+vod_item_type+"' AND expiration_time > NOW() "+vod_stream.where_condition; //todo: zevendeso type me vlere statike. liste e perzier?
 
             if(req.thisuser.show_adult === true) where_condition = where_condition + " AND pin_protected = false ";
+            if(!req.query.show_adult || req.query.show_adult !== 'true') where_condition = where_condition + " AND adult_content = false ";
             where_condition += " AND subscription.login_id = "+req.thisuser.id+" and subscription.end_date > NOW() AND package.package_type_id = "+ Number(req.auth_obj.screensize + 2) +" ";
 
             var offset = isNaN(parseInt(req.query._start)) ? 0 : parseInt(req.query._start);
             var limit =  isNaN(parseInt(req.query._end)) ?  req.app.locals.settings.vod_subset_nr: parseInt(req.query._end) - offset;
             var order_by = (req.query._orderBy) ? req.query._orderBy + ' ' + req.query._orderDir : "matching_score DESC";
-            var related_query = "SELECT DISTINCT CAST(vod.id AS CHAR) AS id, vod.title, vod_type, "+
+            var related_query = "SELECT DISTINCT CAST(vod.id AS CHAR) AS id, vod.title, vod_type, "+ //todo: zevendeso type me vlere statike . liste e perzier?
                 "CONCAT(vod.description, '<p><strong>Director:</strong> ', vod.director, ' </p><p><strong>Starring:</strong> ', vod.starring, '</p>') AS description, vod.rate, vod.duration, " +
-                "vod.pin_protected, vod.vod_type, vod.year, UNIX_TIMESTAMP(vod.createdAt) as dataadded, CONCAT('"+req.app.locals.settings.assets_url+"', vod.icon_url) AS icon, "+
+                "vod.pin_protected, vod.vod_type, YEAR(vod.release_date) as year, UNIX_TIMESTAMP(vod.createdAt) as dataadded, CONCAT('" + req.app.locals.settings.assets_url + "', vod.icon_url) AS icon, " + //todo: zevendeso type me vlere statike. liste e perzier?
                 " concat('"+req.app.locals.settings.assets_url + "', vod.image_url) as largeimage,"+
                 " ( "+
-                    //" IF( (category_id = "+result[0].category_id+"), 1, 0) + "+ //category matching score
+                //" IF( (category_id = "+result[0].category_id+"), 1, 0) + "+ //category matching score
                 " ( "+director_matching_score+" ) + "+ //director matching score
                 " ( "+actor_matching_score+" ) "+ //actor matching score
                 " ) AS matching_score "+
@@ -1327,15 +1386,18 @@ exports.get_vod_item_related = function(req, res) {
                     response.send_res_get(req, res, related_result[0], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
                 }
             }).catch(function(error){
+                winston.error("Searching for related items failed with error: ", error);
                 response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
         }
         else response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'NO DATA FOUND', 'no-store');
         return null;
     }).catch(function(error) {
+        winston.error("Searching th attributes of a vod item failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
+
 
 /**
  * @api {get} /apiv2/vod/recommended GetRecommendedItems
@@ -1345,6 +1407,7 @@ exports.get_vod_item_related = function(req, res) {
  * @apiUse header_auth
  * @apiParam {Number} [_start]  Optional, record pointer start
  * @apiParam {Number} [_end]  Optional, limit number of records
+ * @apiParam {String} [show_adult]  If set to true, include items with adult content. Value set ['true']
  *
  *@apiDescription GET recommended films and tv shows
  *
@@ -1373,21 +1436,23 @@ exports.get_vod_items_recommended = function(req, res) {
             var qwhere  = {};
             qwhere.where = {};
 
-            qwhere.attributes = ['id', 'title', 'description', 'vod_type','starring', 'director', 'rate', 'duration', 'year', 'pin_protected', 'clicks',
+            qwhere.attributes = ['id', 'title', 'description', 'vod_type', 'starring', 'director', 'rate', 'duration', 'pin_protected', 'clicks', //todo: zevendeso type me vlere statike, sipas entitetit, tv_series ose film
+                [db.sequelize.fn('YEAR', db.sequelize.col('release_date')), "year"],
                 [db.sequelize.fn("concat", req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'icon_url'],
                 [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('image_url')), 'image_url'],
                 [db.sequelize.fn('UNIX_TIMESTAMP', db.sequelize.col('createdAt')), 'createdAt']
             ];
             qwhere.where.pin_protected = 0;
+            if(!req.query.show_adult || req.query.show_adult !== 'true') qwhere.where.adult_content = false;  //adult content returned only if request explicitly asks for it
             qwhere.where.isavailable = 1;
             qwhere.offset = isNaN(parseInt(query._start)) ? 0:parseInt(query._start);
             qwhere.limit =  isNaN(parseInt(query._end)) ?  req.app.locals.settings.vod_subset_nr: parseInt(query._end) - qwhere.offset;
             qwhere.where.expiration_time = {$gte: Date.now()};
-            qwhere.where.vod_type = {$in: ['film', 'tv_series']}; //todo: which types to include?
+            qwhere.where.vod_type = {$in: ['film', 'tv_series']}; //todo: bej dy queries me rezultate te perziera, per film dhe tv shows
 
             if(query._orderBy) qwhere.order = query._orderBy + ' ' + query._orderDir;
             qwhere.include = [
-                {model: models.vod_stream, required: true, attributes: [], where: {stream_source_id: req.thisuser.vod_stream_source}},
+                {model: models.vod_stream, required: true, attributes: [], where: {stream_source_id: req.thisuser.vod_stream_source, stream_resolution: {$like: "%"+req.auth_obj.appid+"%"}}},
                 {model: models.vod_vod_categories, required: true, attributes: ['id', 'category_id'], where: {is_available: true}, include: [{model: models.vod_category, attributes: ['name']}]},
                 {model: models.package_vod, required: true, attributes: [], where: {package_id: {in: package_list}}}
             ]; //exclude films without streams or from other stream sources
@@ -1405,7 +1470,7 @@ exports.get_vod_items_recommended = function(req, res) {
                     var vod_item = {
                         "id": vod_film.id,
                         "title": vod_film.title,
-                        "vod_type": vod_film.vod_type,
+                        "vod_type": vod_film.vod_type, //todo: type eshte statik tani
                         "pin_protected": vod_film.pin_protected,
                         "rate": vod_film.rate,
                         "duration": vod_film.duration,
@@ -1423,7 +1488,8 @@ exports.get_vod_items_recommended = function(req, res) {
                     res.setHeader("X-Total-Count", vod_list.length);
                     response.send_res_get(req, res, vod_list, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
                 });
-            }).catch(function(err) {
+            }).catch(function(error) {
+                winston.error("Getting vod list failed with error: ", error);
                 response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
         }
@@ -1432,14 +1498,13 @@ exports.get_vod_items_recommended = function(req, res) {
         }
         return null;
     }).catch(function(error){
+        winston.error("Getting the vod subsciption list failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 
+
 //vod list api for live data
-
-
-
 /**
  * @api {get} /apiv2/vod/vodlist GET VOD Items
  * @apiName GetVodList
@@ -1448,8 +1513,9 @@ exports.get_vod_items_recommended = function(req, res) {
  * @apiUse header_auth
  *
  * @apiParam {String} [q]  Query string
- * @apiParam {String} [vod_type]  Query string, comma delimited, optional. If missing, return all vod types. Value set [film, tv_series]
+ * @apiParam {String} [vod_type]  Query string, comma delimited, optional. If missing, return all vod types. Value set [film, tv_series] //todo: bej dy outer join queries per film dhe serial. filtri mbetet
  * @apiParam {Number} [pin_protected]  If 1, query will include pin protected items
+ * @apiParam {String} [show_adult]  If set to true, include items with adult content. Value set ['true']
  * @apiParam {Number} [category] Filter records to this category id
  * @apiParam {Number} [_start] Record pointer start
  * @apiParam {Number} [_end] Limit number of records
@@ -1460,9 +1526,7 @@ exports.get_vod_items_recommended = function(req, res) {
  *auth=%7Bapi_version%3D22%2C+appversion%3D1.1.4.2%2C+screensize%3D480x800%2C+appid%3D2%2C+devicebrand%3D+SM-G361F+Build%2FLMY48B%2C+language%3Deng%2C+ntype%3D1%2C+app_name%3DMAGOWARE%2C+device_timezone%3D2%2C+os%3DLinux%3B+U%3B+Android+5.1.1%2C+auth%3D8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A%2C+hdmi%3Dfalse%2C+firmwareversion%3DLMY48B.G361FXXU1APB1%7D
  *
  */
-
 exports.get_vod_list = function(req, res) {
-
     //find the user's active vod packages
     models.subscription.findAll({
         attributes: ['package_id'], where: {login_id: req.thisuser.id, end_date: {$gte: Date.now()}}, group: ['package_id'],
@@ -1473,126 +1537,186 @@ exports.get_vod_list = function(req, res) {
         }],
         raw: true
     }).then(function(result){
-        if(result && result.length > 0){
+        if(result && result.length > 0) {
             var package_list = [];
-            for(var i=0; i<result.length; i++){
-                package_list.push(result[i].package_id); //list of packages into array
-            }
-            //preparing the query params for the vod item list
-            var allowed_content = ((req.thisuser.show_adult === true ) && (req.query.pin_protected === '1')) ? [0, 1] : [0];
-            //var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
-            //var allowed_content = [0,1];
+            for (var i = 0; i < result.length; i++) package_list.push(result[i].package_id); //list of packages into array
 
-            var qwhere = {},
-                final_where = {},
-                query = req.query;
-            final_where.include = [];
+            //start querying for films and/or tv_series
+            if(!req.query.vod_type) req.query.vod_type = "film,tv_series"; //if vod type is not specified, both these types should be included
 
-            if(query.q) {
-                qwhere.$or = {};
-                qwhere.$or.title = {};
-                qwhere.$or.title.$like = '%'+query.q+'%';
-                qwhere.$or.description = {};
-                qwhere.$or.description.$like = '%'+query.q+'%';
-                qwhere.$or.director = {};
-                qwhere.$or.director.$like = '%'+query.q+'%';
-            }
+            async.parallel({
+                films: function(callback) {
+                    if(req.query.vod_type.indexOf('film') !== -1){
+                        var vod_final_where = {include:[], where: {}}, query = req.query;
+                        if(query.q) {
+                            vod_final_where.where.$or = {};
+                            vod_final_where.where.$or.title.$like = '%'+query.q+'%';
+                            vod_final_where.where.$or.description.$like = '%'+query.q+'%';
+                            vod_final_where.where.$or.director.$like = '%'+query.q+'%';
+                        };
+                        vod_final_where.where.expiration_time = {$gte: Date.now()};
+                        if( !req.query.show_adult || req.query.show_adult !== 'true' ) vod_final_where.where.adult_content = false;
+                        var allowed_content = ((req.thisuser.show_adult === true ) && (req.query.pin_protected === '1')) ? [0, 1] : [0];
+                        var category_where = (req.query.category) ? {is_available: true, category_id: req.query.category} : {is_available: true};
 
-            qwhere.vod_type = (query.vod_type) ? {$in: query.vod_type.split(',')} : {$in: ['film', 'tv_series']}; //if specified, return only required vod type
-            qwhere.isavailable = true;
-            qwhere.pin_protected = {in: allowed_content};
+                        //filter films added in the following time interval
+                        if(query.added_before && query.added_after) vod_final_where.where.createdAt = {lt: query.added_before, gt: query.added_after};
+                        else if(query.added_before) vod_final_where.where.createdAt = {lt: query.added_before};
+                        else if(query.added_after) vod_final_where.where.createdAt = {gt: query.added_after};
 
-            var category_where = (req.query.category) ? {is_available: true, category_id: req.query.category} : {is_available: true};
+                        //filter films updated in the following time interval
+                        if(query.updated_before && query.updated_after) vod_final_where.where.createdAt = {lt: query.updated_before, gt: query.updated_after};
+                        else if(query.updated_before) vod_final_where.where.updatedAt = {lt: query.updated_before};
+                        else if(query.updated_after) vod_final_where.where.updatedAt = {gt: query.updated_after};
 
-            //filter films added in the following time interval
-            if(query.added_before && query.added_after) qwhere.createdAt = {lt: query.added_before, gt: query.added_after};
-            else if(query.added_before) qwhere.createdAt = {lt: query.added_before};
-            else if(query.added_after) qwhere.createdAt = {gt: query.added_after};
+                        vod_final_where.offset = isNaN(parseInt(query._start)) ? 0:parseInt(query._start);
+                        vod_final_where.limit =  isNaN(parseInt(query._end)) ?  req.app.locals.settings.vod_subset_nr: parseInt(query._end) - vod_final_where.offset;
 
-            //filter films updated in the following time interval
-            if(query.updated_before && query.updated_after) qwhere.createdAt = {lt: query.updated_before, gt: query.updated_after};
-            else if(query.updated_before) qwhere.updatedAt = {lt: query.updated_before};
-            else if(query.updated_after) qwhere.updatedAt = {gt: query.updated_after};
+                        if(query._orderBy) vod_final_where.order = query._orderBy + ' ' + query._orderDir;
 
-            //start building where
+                        vod_final_where.where.isavailable = true;
+                        vod_final_where.attributes = ['id', 'title', 'pin_protected', 'rate', 'duration', 'clicks', [db.sequelize.fn('YEAR', db.sequelize.col('release_date')), "year"],
+                            [db.sequelize.fn('concat', db.sequelize.col('vod.description'), '<p><strong>Director:</strong> ', db.sequelize.col('director'),
+                                '</p><p><strong>Starring:</strong> ', db.sequelize.col('starring'), '</p>'), 'description'],
+                            [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('vod.icon_url')), 'icon'],
+                            [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('image_url')), 'largeimage'],
+                            [db.sequelize.fn('UNIX_TIMESTAMP', db.sequelize.col('vod.createdAt')), 'dataadded']
+                        ];
+                        vod_final_where.include = [
+                            {model: models.vod_stream, required: false, attributes: ['id'], where: {stream_source_id: req.thisuser.vod_stream_source, stream_resolution: {$like: "%"+req.auth_obj.appid+"%"}}},
+                            {model: models.vod_vod_categories, as: 'vod_vod_category', required: true, attributes: [], where: category_where}, //join only vod items that belong to specific category
+                            {model: models.vod_vod_categories, required: false, attributes: ['category_id'], where: {is_available: true}, include: [{model: models.vod_category, attributes: ['name']}]},
+                            {model: models.package_vod, required: true, attributes: [], where: {package_id: {$in: package_list}}}
+                        ];
+                        models.vod.findAndCountAll(
+                            vod_final_where
+                        ).then(function(film_list) {
+                            var films = [];
+                            async.forEach(film_list.rows, function(vod_film, callback){
+                                vod_film = vod_film.toJSON(); //convert object to json, to be able to modify it
 
-            final_where.attributes = ['id', 'vod_type', 'title', 'pin_protected',  'rate', 'duration', 'year', 'clicks',
-                [
-                    db.sequelize.fn('concat', db.sequelize.col('vod.description'), '<p><strong>Director:</strong> ', db.sequelize.col('director'),
-                        '</p><p><strong>Starring:</strong> ', db.sequelize.col('starring'), '</p>'), 'description'
-                ],
-                [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('vod.icon_url')), 'icon_url'],
-                [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('image_url')), 'image_url'],
-                [db.sequelize.fn('UNIX_TIMESTAMP', db.sequelize.col('vod.createdAt')), 'createdAt']
-            ];
+                                //prepare category list
+                                vod_film.categories = "";
+                                for(var i=0; i< vod_film.vod_vod_categories.length; i++){
+                                    if(i!==0) vod_film.categories += ", ";
+                                    vod_film.categories += vod_film.vod_vod_categories[i].vod_category.name;
+                                }
 
-	qwhere.expiration_time = {$gte: Date.now()};
+                                vod_film.vod_type = "film"; //add static string "film" vod item type
+                                vod_film.categoryid = vod_film.vod_vod_categories[0].category_id; //get id of first category as categoryid
 
-    final_where.where = qwhere;
-
-            //if(parseInt(query._end) !== -1){
-            final_where.offset = isNaN(parseInt(query._start)) ? 0:parseInt(query._start);
-            final_where.limit =  isNaN(parseInt(query._end)) ?  req.app.locals.settings.vod_subset_nr: parseInt(query._end) - final_where.offset;
-            //}
-
-            final_where.include = [
-                {model: models.vod_stream, required: false, attributes: ['id'], where: {stream_source_id: req.thisuser.vod_stream_source}}, //u be non required, per tv series
-                {model: models.vod_vod_categories, as: 'vod_vod_category', required: true, attributes: [], where: category_where}, //join only vod items that belong to specific category
-                {model: models.vod_vod_categories, required: false, attributes: ['category_id'], where: {is_available: true}, include: [{model: models.vod_category, attributes: ['name']}]},
-                {model: models.package_vod, required: true, attributes: [], where: {package_id: {in: package_list}}}
-            ];
-
-            if(query._orderBy) final_where.order = query._orderBy + ' ' + query._orderDir;
-            //end build final where
-
-            models.vod.findAndCountAll(
-                final_where
-            ).then(function(results) {
-                var vod_list = [];
-                async.forEach(results.rows, function(vod_film, callback){
-                    if(vod_film.vod_streams.length > 0 || vod_film.vod_type === "tv_series"){ //todo: ndoshta kerko per stream id?
-                        var filter_out_by_category = true;
-                        var category_name_list = "";
-                        async.forEach(vod_film.vod_vod_categories, function(vod_category_obj, callback){
-                            category_name_list = (category_name_list.length === 0) ? (category_name_list + vod_category_obj.vod_category.name) : (category_name_list + ", " + vod_category_obj.vod_category.name);
-                            callback(null);
-                        },function(error, result){
-                            var vod_item = {
-                                "id": vod_film.id,
-                                "title": vod_film.title,
-                                "pin_protected": vod_film.pin_protected,
-                                "rate": vod_film.rate,
-                                "duration": vod_film.duration,
-                                "year": vod_film.year,
-                                "categoryid": vod_film.vod_vod_categories[0].category_id,
-                                "categories": category_name_list,
-                                "description": vod_film.description,
-                                "icon": vod_film.icon_url,
-                                "vod_type": vod_film.vod_type,
-                                "largeimage": vod_film.image_url,
-                                "dataadded": vod_film.createdAt
-                            };
-                            vod_list.push(vod_item);
+                                delete vod_film.vod_vod_categories; //vod_vod_categories was transformed as a string, object no longer needed
+                                delete vod_film.vod_streams; //vod_streams is not needed for the response, only as a validator
+                                delete vod_film.clicks; //clicks is not needed for the response, only as a filter and sorter
+                                delete vod_film.year; //year is not needed for the response, only as a filter and sorter
+                                films.push(vod_film);
+                                callback(null);
+                            },function(error, result){
+                                callback(null, {data: films, count: film_list.count});
+                            });
+                        }).catch(function(error) {
+                            winston.error("Getting list of vod items failed with error: ", error);
+                            callback(null, {data: [], count: 0});
                         });
                     }
-                    callback(null);
-                },function(error, result){
-                    res.setHeader("X-Total-Count", results.count);
-                    response.send_res_get(req, res, vod_list, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
-                });
-            }).catch(function(err) {
-                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
-            });
+                    else {
+                        callback(null, {data: [], count: 0}); //no films required in this request. don't query vod table
+                    }
+                },
+                tv_shows: function(callback) {
+                    if(req.query.vod_type.indexOf('tv_series') !== -1){
+                        var tv_shows_final_where = {include:[], where: {}}, query = req.query;
+                        if(query.q) {
+                            tv_shows_final_where.where.$or = {};
+                            tv_shows_final_where.where.$or.title.$like = '%'+query.q+'%';
+                            tv_shows_final_where.where.$or.description.$like = '%'+query.q+'%';
+                            tv_shows_final_where.where.$or.director.$like = '%'+query.q+'%';
+                        };
+                        tv_shows_final_where.where.expiration_time = {$gte: Date.now()};
+                        if( !req.query.show_adult || req.query.show_adult !== 'true' ) tv_shows_final_where.where.adult_content = false;
+                        var allowed_content = ((req.thisuser.show_adult === true ) && (req.query.pin_protected === '1')) ? [0, 1] : [0];
+                        var category_where = (req.query.category) ? {is_available: true, category_id: req.query.category} : {is_available: true};
 
+                        //filter films added in the following time interval
+                        if(query.added_before && query.added_after) tv_shows_final_where.where.createdAt = {lt: query.added_before, gt: query.added_after};
+                        else if(query.added_before) tv_shows_final_where.where.createdAt = {lt: query.added_before};
+                        else if(query.added_after) tv_shows_final_where.where.createdAt = {gt: query.added_after};
+
+                        //filter films updated in the following time interval
+                        if(query.updated_before && query.updated_after) tv_shows_final_where.where.createdAt = {lt: query.updated_before, gt: query.updated_after};
+                        else if(query.updated_before) tv_shows_final_where.where.updatedAt = {lt: query.updated_before};
+                        else if(query.updated_after) tv_shows_final_where.where.updatedAt = {gt: query.updated_after};
+
+                        tv_shows_final_where.offset = isNaN(parseInt(query._start)) ? 0:parseInt(query._start);
+                        tv_shows_final_where.limit =  isNaN(parseInt(query._end)) ?  req.app.locals.settings.vod_subset_nr: parseInt(query._end) - tv_shows_final_where.offset;
+
+                        if(query._orderBy) tv_shows_final_where.order = query._orderBy + ' ' + query._orderDir;
+
+
+                        tv_shows_final_where.where.is_available = true;
+                        tv_shows_final_where.attributes = ['id', 'title', 'pin_protected', 'rate', 'clicks', [db.sequelize.fn('YEAR', db.sequelize.col('release_date')), "year"],
+                            [db.sequelize.fn('concat', db.sequelize.col('tv_series.description'), '<p><strong>Director:</strong> ', db.sequelize.col('director'),
+                                '</p><p><strong>Starring:</strong> ', db.sequelize.col('cast'), '</p>'), 'description'],
+                            [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('tv_series.icon_url')), 'icon'],
+                            [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('image_url')), 'largeimage'],
+                            [db.sequelize.fn('UNIX_TIMESTAMP', db.sequelize.col('tv_series.createdAt')), 'dataadded']
+                        ];
+                        tv_shows_final_where.include = [
+                            //  {model: models.tv_series_categories, as: 'tv_series_category', required: true, attributes: [], where: category_where}, //join only tv series items that belong to specific category
+                            {model: models.tv_series_categories, required: false, attributes: ['category_id'], where: {is_available: true}, include: [{model: models.vod_category, attributes: ['name']}]},
+                            {model: models.tv_series_packages, required: true, attributes: [], where: {package_id: {$in: package_list}}}
+                        ];
+                        models.tv_series.findAndCountAll(
+                            tv_shows_final_where
+                        ).then(function(tv_series_list) {
+                            var tv_series = [];
+                            async.forEach(tv_series_list.rows, function(tv_show, callback){
+                                tv_show = tv_show.toJSON(); //convert object to json, to be able to modify it
+
+                                //prepare category list
+                                tv_show.categories = "";
+                                for(var i=0; i< tv_show.tv_series_categories.length; i++){
+                                    if(i!==0) tv_show.categories += ", ";
+                                    tv_show.categories += tv_show.tv_series_categories[i].vod_category.name;
+                                }
+
+                                tv_show.vod_type = "tv_series"; //add static string "tv_series" as item type
+                                tv_show.duration = 0;
+                                tv_show.categoryid = tv_show.tv_series_categories[0].category_id; //get id of first category as categoryid
+
+                                delete tv_show.tv_series_categories; //tv_series_categories was transformed as a string, object no longer needed
+                                delete tv_show.clicks; //clicks is not needed for the response, only as a filter and sorter
+                                delete tv_show.year; //year is not needed for the response, only as a filter and sorter
+                                tv_series.push(tv_show);
+                                callback(null);
+                            },function(error, result){
+                                callback(null, {data: tv_series, count: tv_series_list.count});
+                            });
+                        }).catch(function(error) {
+                            winston.error("Getting list of tv series items failed with error: ", error);
+                            callback(null, {data: [], count: 0});
+                        });
+                    }
+                    else {
+                        callback(null, {data: [], count: 0}); //no tv_series required in this request. don't query tv_series table
+                    }
+                }
+            }, function(err, results) {
+                var vod_item_list = results.tv_shows.data;
+                vod_item_list = vod_item_list.concat(results.films.data);
+                res.setHeader("X-Total-Count", results.tv_shows.count + results.films.count);
+                response.send_res_get(req, res, vod_item_list, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
+            });
         }
-        else{
-            response.send_res_get(req, res, [], 200, 1, 'NO_DATA_FOUND', 'OK_DATA', 'private,max-age=86400');
-        }
+        else response.send_res_get(req, res, [], 200, 1, 'NO_DATA_FOUND', 'OK_DATA', 'private,max-age=86400');
         return null;
     }).catch(function(error){
+        winston.error("Getting vod subscription failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
+
 };
+
 
 /**
  * @api {post} /apiv2/vod/searchvod?pin_protected=0 VodSearch
@@ -1601,16 +1725,17 @@ exports.get_vod_list = function(req, res) {
  *
  * @apiUse body_auth
  * @apiParam {Number} search_string  Search keyword
+ * @apiParam {String} [show_adult]  If set to true, include items with adult content. Value set ['true']
  *
  * @apiDescription Returns vod matches for a specified keyword. pin_protected query string parameter is optional, value set is [0, 1], default value is 0
  *
  * Copy paste this auth for testing purposes
- *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ * auth=8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A
  *
  */
 exports.searchvod = function(req, res) {
-    //var allowed_content = (req.thisuser.show_adult === true) ? [0, 1] : [0];
     var allowed_content = ((req.thisuser.show_adult === true) && (req.query.pin_protected === "1")) ? [0, 1] : [0];
+    var show_adult = (req.body.show_adult === 'true') ? {$in: [true, false]} : false; //adult content returned only if request explicitly asks for it
 
     models.vod.findAll({
         attributes: ['id', 'title'],
@@ -1630,7 +1755,7 @@ exports.searchvod = function(req, res) {
                 }]
             }
         ],
-        where: {pin_protected:{in: allowed_content}, isavailable: true, title: {like: '%'+req.body.search_string+'%'}, expiration_time: {$gte: Date.now()}}
+        where: {pin_protected:{in: allowed_content}, adult_content: show_adult, isavailable: true, title: {like: '%'+req.body.search_string+'%'}, expiration_time: {$gte: Date.now()}}
     }).then(function (result) {
         var raw_result = [];
         //flatten nested json array
@@ -1648,10 +1773,12 @@ exports.searchvod = function(req, res) {
         });
         response.send_res(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
     }).catch(function(error) {
+        winston.error("Searching for a vod item failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
+
 
 /**
  * @api {post} /apiv2/vod/resume_movie VodResumeItem
@@ -1665,7 +1792,7 @@ exports.searchvod = function(req, res) {
  * @apiDescription Saves the id and position of a video that the user would like to resume watching
  *
  * Copy paste this auth for testing purposes
- *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ * auth=8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A
  *
  */
 exports.resume_movie = function(req, res) {
@@ -1681,6 +1808,7 @@ exports.resume_movie = function(req, res) {
     ).then(function (result) {
         response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
     }).catch(function(error) {
+        winston.error("Saving a movie to watch later failed with error: ", error);
         if (error.message.split(': ')[0] === 'ER_NO_REFERENCED_ROW_2'){
             response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'INVALID_INPUT', 'no-store');
         }
@@ -1688,6 +1816,7 @@ exports.resume_movie = function(req, res) {
     });
 
 };
+
 
 /**
  * @api {get} /apiv2/vod/vod_details/:vod_id GetVodItemData
@@ -1704,21 +1833,24 @@ exports.resume_movie = function(req, res) {
  */
 exports.get_movie_details = function(req, res) {
     var attributes = [
-        'id', ['adult_content', 'adult'], 'budget', 'imdb_id', 'original_language', 'original_title', ['description', 'overview'], 'popularity', 'release_date', 'revenue', ['duration', 'runtime'],
-        [sequelize.fn('DATE_FORMAT', sequelize.col('release_date'), '%Y-%m-%d'), 'release_date'], 'revenue', ['duration', 'runtime'], 'spoken_languages', 'status', 'tagline', 'title', 'vote_average',
+        'id', ['adult_content', 'adult'], 'budget', 'imdb_id', 'original_language', 'original_title', ['description', 'overview'], 'popularity', 'release_date', 'revenue',['duration', 'runtime'],
+        [sequelize.fn('DATE_FORMAT', sequelize.col('release_date'), '%Y-%m-%d'), 'release_date'], 'revenue',['duration', 'runtime'], 'spoken_languages', 'status', 'tagline', 'title', 'vote_average',
         'vote_count', 'trailer_url', 'vod_preview_url', 'default_subtitle_id'];
 
     models.vod.findOne({
         attributes: attributes,
         include: [
-            {model: models.vod_stream, attributes: ['stream_format', 'url', 'token', 'token_url', 'encryption', 'encryption_url'], where: {stream_source_id: req.thisuser.vod_stream_source}},
+            {
+                model: models.vod_stream, attributes: ['stream_format', 'url', 'token', 'token_url', 'encryption', 'encryption_url'],
+                where: {stream_source_id: req.thisuser.vod_stream_source, stream_resolution: {$like: "%"+req.auth_obj.appid+"%"}}
+            },
             {
                 model: models.vod_subtitles,
                 attributes: ['id', 'title', [db.sequelize.fn("concat", req.app.locals.settings.assets_url, db.sequelize.col('subtitle_url')), 'url'], ['vod_id', 'vodid']]
             },
             {model: models.vod_vod_categories, attributes: ['id'], required: true, include: [{model: models.vod_category, attributes: ['id', 'name'], required: true}]}
         ],
-        where: {id: req.params.vod_id, vod_type: {$in: ['film', 'tv_episode']}}
+        where: {id: Number(req.params.vod_id)} //todo: ne varesi te vod_type, kerko tek filmi ose episodi
     }).then(function (result) {
         var vod_data = {};
         if(result){
@@ -1757,11 +1889,12 @@ exports.get_movie_details = function(req, res) {
             vod_data.encryption = (result.vod_streams[0] && result.vod_streams[0].encryption) ? "1" : "0";
             vod_data.encryption_url = (result.vod_streams[0] && result.vod_streams[0].encryption_url) ? result.vod_streams[0].encryption_url : "";
 
-	        vod_data.subtitles = vod_data.vod_subtitles;
+            vod_data.subtitles = vod_data.vod_subtitles;
             delete vod_data.vod_subtitles;
         }
         response.send_res_get(req, res, [vod_data], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Getting a movie's data failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
@@ -1775,7 +1908,7 @@ exports.get_movie_details = function(req, res) {
  *
  * @apiUse header_auth
  *
- *@apiDescription GET list of seasons and episodes of a tv show
+ *@apiDescription GET list of seasons and episodes of a tv show. By default, pin protected or adult items are not returned, unless specified otherwise.
  *
  * Copy paste this auth for testing purposes
  *auth=%7Bapi_version%3D22%2C+appversion%3D1.1.4.2%2C+screensize%3D480x800%2C+appid%3D2%2C+devicebrand%3D+SM-G361F+Build%2FLMY48B%2C+language%3Deng%2C+ntype%3D1%2C+app_name%3DMAGOWARE%2C+device_timezone%3D2%2C+os%3DLinux%3B+U%3B+Android+5.1.1%2C+auth%3D8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A%2C+hdmi%3Dfalse%2C+firmwareversion%3DLMY48B.G361FXXU1APB1%7D
@@ -1791,14 +1924,18 @@ exports.get_tv_series_data = function(req, res){
     else
         where_seasonNumber.season_number = 1;
 
-    models.vod.find({
+    var show_adult = (req.query.show_adult === 'true') ? {$in: [true, false]} : false;
+    var pin_protected = (req.query.pin_protected === 'true') ? {$in: [true, false]} : false;
+
+    models.tv_series.find({
         attributes: ['id'],
         where: {
-            id: vodID, expiration_time: {$gte: Date.now()}, vod_type: 'tv_series'
+            id: vodID, expiration_time: {$gte: Date.now()}
         },
         include: [
-            {model: models.vod, as: 'seasons', attributes: ['id', 'season_number', 'title', 'vod_type'], where: {vod_parent_id: req.params.tvshowID, expiration_time: {$gte: Date.now()}, vod_type: 'tv_season'} },
-            {model: models.vod_vod_categories, where: {is_available: true}, attributes: ['id'],
+            {model: models.tv_season, attributes: ['id', 'season_number', 'title', [ sequelize.literal('"tv_season"'), 'vod_type']],
+                where: {expiration_time: {$gte: Date.now()}, is_available: true, adult_content: show_adult, pin_protected: show_adult}},
+            {model: models.tv_series_categories, where: {is_available: true}, attributes: ['id'],
                 include: [{model: models.vod_category, where: {isavailable: true},  attributes: ['name' ]}]
             }
         ]
@@ -1808,60 +1945,91 @@ exports.get_tv_series_data = function(req, res){
         } else {
             result = result.toJSON();
             result.category_names = "";
-            for(var i=0; i<result.vod_vod_categories.length; i++){
-                if(result.category_names.length > 0) result.category_names += ", " + result.vod_vod_categories[i].vod_category.name;
-                else result.category_names += result.vod_vod_categories[i].vod_category.name;
+            for(var i=0; i<result.tv_series_categories.length; i++){
+                if(result.category_names.length > 0) result.category_names += ", " + result.tv_series_categories[i].vod_category.name;
+                else result.category_names += result.tv_series_categories[i].vod_category.name;
             }
-            delete result.vod_vod_categories;
+            delete result.tv_series_categories;
 
-            var season_id = result.seasons.filter(function(obj) {return obj.season_number === Number(where_seasonNumber.season_number)})[0].id;
+            var season_id = result.tv_seasons.filter(function(obj) {return obj.season_number === Number(where_seasonNumber.season_number)})[0].id;
 
-            models.vod.findAll({
-                attributes: ["id", "vod_type", "title",  "year",  "rate", "trailer_url", "vod_preview_url", "isavailable",
-                    [db.sequelize.fn('concat', db.sequelize.col('vod.description'), '<p><strong>Director:</strong> ', db.sequelize.col('vod.director'),
-                        '</p><p><strong>Starring:</strong> ', db.sequelize.col('vod.starring'), '</p>'), 'description'],
-                    [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('vod.icon_url')), 'icon'],
-                    [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('vod.image_url')), 'largeimage']
+            models.tv_episode.findAll({
+                attributes: ["id", [sequelize.literal('"tv_episode"'), 'vod_type'], "title", "rate", "trailer_url", "vod_preview_url", "is_available",
+                    [db.sequelize.fn('YEAR', db.sequelize.col('release_date')), "year"],
+                    [db.sequelize.fn('concat', db.sequelize.col('description'), '<p><strong>Director:</strong> ', db.sequelize.col('director'),
+                        '</p><p><strong>Starring:</strong> ', db.sequelize.col('cast'), '</p>'), 'description'],
+                    [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('icon_url')), 'icon'],
+                    [db.sequelize.fn('concat', req.app.locals.settings.assets_url, db.sequelize.col('image_url')), 'largeimage'],
+                    [sequelize.literal('"'+result.category_names+'"'), 'category_names']
                 ],
-                where: {vod_type: 'tv_episode', vod_parent_id: season_id, expiration_time: {$gte: Date.now()}},
+                where: {tv_season_id: season_id, expiration_time: {$gte: Date.now()}, is_available: true, adult_content: show_adult, pin_protected: show_adult},
                 include: [
-                    {model: models.vod_vod_categories, where: {is_available: true}, attributes: ['id'],
-                        include: [{model: models.vod_category, where: {isavailable: true},  attributes: ['name' ]}]
-                    },
-                    {model: models.vod_stream, where: {stream_source_id: req.thisuser.vod_stream_source}, attributes: []}
+                    {model: models.tv_episode_stream, where: {stream_source_id: req.thisuser.vod_stream_source, stream_resolution: {$like: "%"+req.auth_obj.appid+"%"}}, attributes: []}
                 ]
             }).then(function(episodes) {
-                result.season_count = result.seasons.length; //add number of seasons for the tv show
-                result.episodes = [];
+                result.season_count = result.tv_seasons.length; //add number of seasons for the tv show
+
+                //rename seasons object
+                result.seasons = result.tv_seasons;
+                delete result.tv_seasons;
+
+                result.episodes = []; //prepare empty array for episodes
 
                 async.forEach(episodes, function(episode, callback){
-                    episode = episode.toJSON(); //convert episode item to editable json object
-                    // create list of categories for episode
-                    episode.category_names = "";
-                    for(var i=0; i<episode.vod_vod_categories.length; i++){
-                        if(episode.category_names.length > 0) episode.category_names += ", " + episode.vod_vod_categories[i].vod_category.name;
-                        else episode.category_names += episode.vod_vod_categories[i].vod_category.name;
-                    }
-                    delete episode.vod_vod_categories; //delete nested category object
-                    result.episodes.push(episode);
+                    var episode_obj = episode.toJSON();
+                    episode_obj.isavailable = (episode.is_available === true) ? true : false;
+                    delete episode_obj.is_available;
+                    result.episodes.push(episode_obj);
                     callback(null);
                 },function(error, success){
-                    var response_array = [];
-                    response_array[0] = result;
-                    response.send_res_get(req, res, response_array, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
-                    //response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
+                    response.send_res_get(req, res, [result], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
                 });
-
             }).catch(function(error) {
+                winston.error("Getting the episodes of a specific season failed with error: ", error);
                 response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
             return null;
         }
     }).catch(function(error) {
+        winston.error("Getting the data for a tv show failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
 };
+
+
+/**
+ * @api {get} /apiv2/vod/vod_menu  GetVodMenu
+ * @apiName GetVodMenu
+ * @apiGroup VOD
+ *
+ * @apiUse header_auth
+ *
+ *@apiDescription GET list of vod menu
+ *
+ * Copy paste this auth for testing purposes
+ *auth=%7Bapi_version%3D22%2C+appversion%3D1.1.4.2%2C+screensize%3D480x800%2C+appid%3D2%2C+devicebrand%3D+SM-G361F+Build%2FLMY48B%2C+language%3Deng%2C+ntype%3D1%2C+app_name%3DMAGOWARE%2C+device_timezone%3D2%2C+os%3DLinux%3B+U%3B+Android+5.1.1%2C+auth%3D8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A%2C+hdmi%3Dfalse%2C+firmwareversion%3DLMY48B.G361FXXU1APB1%7D
+ *
+ */
+exports.vod_menu_list = function(req, res) {
+
+    models.vod_menu.findAll({
+        attributes: ['id', 'name', 'description','order','pin_protected','isavailable'],
+        include: [{
+            model: models.vod_menu_carousel, attributes: ['id','name','description','order','url','isavailable'], required: false
+        }]
+    }).then(function (result) {
+
+        response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
+
+    }).catch(function(error) {
+        winston.error("Getting list of vod menus failed with error: ", error);
+        response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+    });
+};
+
+
+
 
 function delete_resume_movie(user_id, vod_id){
 
@@ -1875,6 +2043,7 @@ function delete_resume_movie(user_id, vod_id){
     ).then(function (result) {
         return null;
     }).catch(function(error) {
+        winston.error("Removing a vod item form the watch later list failed with error: ", error);
         return null;
     });
 
@@ -1891,47 +2060,16 @@ function add_click(movie_title){
         ).then(function (result) {
             return null;
         }).catch(function(error) {
+            winston.error("Incrementing number of clicks failed with error: ", error);
             return null;
         });
         return null;
     }).catch(function(error) {
+        winston.error("Getting number of clicks for a movie failed with error: ", error);
         return null;
     });
 };
 
 exports.delete_resume_movie = delete_resume_movie;
 exports.add_click = add_click;
-
-/**
- * @api {get} /apiv2/vod/vod_menu  GetVodMenu
- * @apiName GetVodMenu
- * @apiGroup VOD
- *
- * @apiUse header_auth
- *
- *@apiDescription GET list of vod menu
- *
- * Copy paste this auth for testing purposes
- *auth=%7Bapi_version%3D22%2C+appversion%3D1.1.4.2%2C+screensize%3D480x800%2C+appid%3D2%2C+devicebrand%3D+SM-G361F+Build%2FLMY48B%2C+language%3Deng%2C+ntype%3D1%2C+app_name%3DMAGOWARE%2C+device_timezone%3D2%2C+os%3DLinux%3B+U%3B+Android+5.1.1%2C+auth%3D8yDhVenHT3Mp0O2QCLJFhCUfT73WR1mE2QRc1ZE7J22cRfmskdTmhCk9ssGWhoIBpIzoTEOLIqwl%0A47NaUwLoLZjH1i2WRYaiioIRMqhRvH2FsSuf1YG%2FFoT9fEw4CrxF%0A%2C+hdmi%3Dfalse%2C+firmwareversion%3DLMY48B.G361FXXU1APB1%7D
- *
- */
-
-exports.vod_menu_list = function(req, res) {
-
-    models.vod_menu.findAll({
-        attributes: ['id', 'name', 'description','order','pin_protected','isavailable'],
-        include: [{
-            model: models.vod_menu_carousel, attributes: ['id','name','description','order','url','isavailable'], required: false
-        }]
-    }).then(function (result) {
-
-        response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
-
-    }).catch(function(error) {
-        winston.error('error getting two level menu: ',error);
-        response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
-    });
-};
-
-
 

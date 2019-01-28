@@ -6,6 +6,7 @@
 var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     logHandler = require(path.resolve('./modules/mago/server/controllers/logs.server.controller')),
+    winston = require('winston'),
     subscription_functions = require(path.resolve('./custom_functions/sales.js')),
     customerFunctions = require(path.resolve('./custom_functions/customer_functions.js')),
     responses = require(path.resolve("./config/responses.js")),
@@ -76,6 +77,7 @@ exports.list_logins_with_customer = function(req,res) {
             res.json(results);
         }
     }).catch(function(err) {
+        winston.error("Getting list of accounts failed with error: ", err);
         res.jsonp(err);
     });
 };
@@ -187,6 +189,7 @@ exports.products_list = function(req, res) {
             res.send(results);
         }
     }).catch(function(err) {
+        winston.error("Getting the list of products failed with error: ", err);
         res.jsonp(err);
     });
 };

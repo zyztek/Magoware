@@ -7,6 +7,7 @@ var path = require('path'),
     dateFormat = require('dateformat'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     logHandler = require(path.resolve('./modules/mago/server/controllers/logs.server.controller')),
+    winston = require('winston'),
     db = require(path.resolve('./config/lib/sequelize')).models,
     merge = require('merge'),
     DBModel = db.settings,
@@ -74,6 +75,7 @@ exports.update = function(req, res) {
 
         return res.json(result);
     }).catch(function(err) {
+        winston.error("Updating setting failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -91,6 +93,7 @@ exports.delete = function(req, res) {
             result.destroy().then(function() {
                 return res.json(result);
             }).catch(function(err) {
+                winston.error("Deleting this setting failed with error: ", err);
                 return res.status(400).send({
                     message: errorHandler.getErrorMessage(err)
                 });
@@ -101,6 +104,7 @@ exports.delete = function(req, res) {
             });
         }
     }).catch(function(err) {
+        winston.error("Getting setting object failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -124,6 +128,7 @@ exports.list = function(req, res) {
             res.json(results);
         }
     }).catch(function(err) {
+        winston.error("Getting setting list failed with error: ", err);
         res.jsonp(err);
     });
 };
@@ -157,6 +162,7 @@ exports.dataByID = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
+        winston.error("Getting setting data failed with error: ", err);
         return next(err);
     });
 

@@ -18,6 +18,10 @@ module.exports = function(sequelize, DataTypes) {
             unique: true,
             validate: {isLowercase: true}
         },
+        mac_address: {
+            type: DataTypes.STRING(12),
+            defaultValue: ''
+        },
         password: {
             type: DataTypes.STRING(255),
             allowNull: false
@@ -95,6 +99,10 @@ module.exports = function(sequelize, DataTypes) {
         livetvlastchange: {
             type: DataTypes.BIGINT(13),
             defaultValue: Date.now(),
+            allowNull: true
+        },
+        comment: {
+            type: DataTypes.STRING(255),
             allowNull: true
         },
         account_lock: {

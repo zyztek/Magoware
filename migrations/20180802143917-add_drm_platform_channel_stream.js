@@ -3,7 +3,10 @@ var winston = require('winston');
 
 module.exports = {
     up: function (queryInterface, Sequelize) {
-        return queryInterface.addColumn('channel_stream', 'drm_platform',{type: Sequelize.STRING(20), allowNull: false})
+        return queryInterface.addColumn('channel_stream', 'drm_platform', {
+                type: Sequelize.STRING(20),
+                allowNull: false
+            })
             .catch(function(err) {winston.error('Adding column channel_stream.drm_platform failed with error message: ',err.message);});
     },
 

@@ -19,7 +19,16 @@ export default function (nga, admin) {
 				nga.field('login_data_id', 'reference')
 						.targetEntity(admin.getEntity('LoginData'))
 						.targetField(nga.field('username'))
-						.label('Account Username'),
+						.label('Username'),
+
+                nga.field('login_data_id', 'reference')
+                    .targetEntity(admin.getEntity('LoginData'))
+                    .targetField(
+                        nga.field('customer_datum.firstname').map(function (value, entry) {
+                            return entry['customer_datum.firstname'] + ' ' + entry['customer_datum.lastname'];
+                        })
+                    )
+                    .label('Full Name'),
 
                 nga.field('transaction_id', 'string')
                     .label('Transaction ID')
@@ -31,6 +40,11 @@ export default function (nga, admin) {
 						.label('Sale Date'),
 				nga.field('combo.name', 'string')
 						.label('Products'),
+                nga.field('combo_id','reference')
+                    .targetEntity(admin.getEntity('Combos'))
+                    .targetField(nga.field('value'))
+                    .isDetailLink(false)
+                    .label('Value'),
 				nga.field('active', 'boolean')
 						.label('Active sale'),
 				nga.field('cancelation_date', 'date')

@@ -44,6 +44,10 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: true,
             defaultValue: 'country'
         },
+        zip_code: {
+            type: DataTypes.STRING(10),
+            defaultValue: ''
+        },
         telephone: {
             type: DataTypes.STRING(64),
             allowNull: true,

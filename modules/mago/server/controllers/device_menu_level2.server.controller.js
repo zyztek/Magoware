@@ -6,6 +6,7 @@
 var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     fileHandler = require(path.resolve('./modules/mago/server/controllers/common.controller')),
+    winston = require('winston'),
     db = require(path.resolve('./config/lib/sequelize')).models,
     DBModel = db.device_menu_level2,
     refresh = require(path.resolve('./modules/mago/server/controllers/common.controller.js')),
@@ -30,6 +31,7 @@ exports.create = function(req, res) {
             else return res.status(400).send({message: err.errors[0].message}); //other duplicate fields. return sequelize error message
         }
         else {
+            winston.error("Creating menu2 failed with error: ", err);
             return res.status(400).send({message: 'An error occurred while creating menu item. '+err.errors[0].message}); //another error occurred. return sequelize error message
         }
     });
@@ -70,6 +72,7 @@ exports.update = function(req, res) {
             else return res.status(400).send({message: err.errors[0].message}); //other duplicate fields. return sequelize error message
         }
         else {
+            winston.error("Updating menu2 failed with error: ", err);
             return res.status(400).send({message: 'An error occurred while editing menu item. '+err.errors[0].message}); //another error occurred. return sequelize error message
         }
     });
@@ -87,6 +90,7 @@ exports.delete = function(req, res) {
             result.destroy().then(function() {
                 return res.json(result);
             }).catch(function(err) {
+                winston.error("Deleting menu2 failed with error: ", err);
                 return res.status(400).send({
                     message: errorHandler.getErrorMessage(err)
                 });
@@ -98,6 +102,7 @@ exports.delete = function(req, res) {
             });
         }
     }).catch(function(err) {
+        winston.error("Finding menu2 data failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -144,6 +149,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
+        winston.error("Getting menu2 list failed with error: ", err);
         res.jsonp(err);
     });
 };
@@ -176,6 +182,7 @@ exports.dataByID = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
+        winston.error("Getting menu2 data failed with error: ", err);
         return next(err);
     });
 

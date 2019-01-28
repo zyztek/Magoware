@@ -1,6 +1,7 @@
 "use strict";
 
 var crypto = require('crypto');
+var winston = require('winston');
 
 module.exports = function(sequelize, DataTypes) {
     var Users = sequelize.define('users', {
@@ -31,6 +32,7 @@ module.exports = function(sequelize, DataTypes) {
                             return next();
                         })
                         .catch(function(err) {
+                            winston.error(err);
                             return next(err);
                         });
                 }
@@ -64,6 +66,7 @@ module.exports = function(sequelize, DataTypes) {
                             return next();
                         })
                         .catch(function(err) {
+                            winston.error(err);
                             return next(err);
                         });
                 }
@@ -75,12 +78,27 @@ module.exports = function(sequelize, DataTypes) {
         },
         address: {
             type: DataTypes.STRING(45),
-            allowNull: true
+            allowNull: true,
+            defaultValue: ''
+        },
+            country: {
+                type: DataTypes.STRING(100), //longest country name has 74 characters
+                allowNull: true,
+                defaultValue: 'other'
+            },
+            city: {
+                type: DataTypes.STRING(100), //longest city name has 85 characters
+                allowNull: true,
+                defaultValue: 'city'
         },
         jwtoken: {
             type: DataTypes.STRING(255),
             defaultValue: '',
             allowNull: false
+        },
+        last_login_ip: {
+            type: DataTypes.STRING(45),
+            allowNull: true
         },
         third_party_api_token: {
             type: DataTypes.STRING(255),

@@ -6,6 +6,7 @@
 var path = require('path'),
   errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
   db = require(path.resolve('./config/lib/sequelize')).models,
+    winston = require('winston'),
   DBModel = db.app_management,
     fs = require('fs');
 
@@ -21,6 +22,7 @@ exports.create = function(req, res) {
       return res.jsonp(result);
     }
   }).catch(function(err) {
+    winston.error("Saving the application data failed with error: ", err);
     return res.status(400).send({
       message: errorHandler.getErrorMessage(err)
     });
@@ -53,6 +55,7 @@ exports.update = function(req, res) {
       }
     res.json(result);
   }).catch(function(err) {
+    winston.error("Updating the application data failed with error: ", err);
     req.body.url=url_fields[0];
     return res.status(400).send({
       message: errorHandler.getErrorMessage(err)
@@ -73,6 +76,7 @@ exports.delete = function(req, res) {
       result.destroy().then(function() {
         return res.json(result);
       }).catch(function(err) {
+        winston.error("Deletingt teh application data failed with error: ", err);
         return res.status(400).send({
           message: errorHandler.getErrorMessage(err)
         });
@@ -83,6 +87,7 @@ exports.delete = function(req, res) {
       });
     }
   }).catch(function(err) {
+    winston.error("Finding the application data failed with error: ", err);
     return res.status(400).send({
       message: errorHandler.getErrorMessage(err)
     });
@@ -129,6 +134,7 @@ exports.list = function(req, res) {
       res.json(results.rows);
     }
   }).catch(function(err) {
+    winston.error("Getting the application list failed with error: ", err);
     res.jsonp(err);
   });
 };
@@ -160,6 +166,7 @@ exports.dataByID = function(req, res, next, id) {
       return null;
     }
   }).catch(function(err) {
+    winston.error("Getting the application's data failed with error: ", err);
     return next(err);
   });
 

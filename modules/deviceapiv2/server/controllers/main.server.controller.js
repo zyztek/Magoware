@@ -33,6 +33,7 @@ exports.device_menu = function(req, res) {
         }
         response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Getting a list of menus failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
@@ -62,6 +63,7 @@ exports.device_menu_get = function(req, res) {
         response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
 
     }).catch(function(error) {
+        winston.error("Getting a list of menus failed with error: ", error);
         response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
@@ -94,6 +96,7 @@ exports.get_devicemenu_levelone = function(req, res) {
         }
         response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Getting a list of level one menus failed with error: ", error);
         response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
@@ -122,18 +125,23 @@ exports.get_devicemenu_leveltwo = function(req, res) {
         response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
 
     }).catch(function(error) {
+        winston.error("Getting a list of second level menus failed with error: ", error);
         response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 
 exports.get_weather_widget = function(req, res) {
 
-    models.html_content.findOne({
-        attributes:['content'],
-        where: {name: 'Weather Widget'}
-    }).then(function(weather_template){
-        res.send(weather_template.content);
-    }).catch(function(error){
-        res.send("error occured");
-    });
+    if (fs.existsSync('public/weather_widget/index.html')) {
+        var url= req.app.locals.settings.assets_url;
+        var file = '/weather_widget/index.html';
+        var response_Array = {
+            "widget_url": url+file
+        };
+        return res.send(response_Array);
+    }else {
+        return res.status(404).send({
+            message: 'Image Not Found'
+        });
+    }
 };

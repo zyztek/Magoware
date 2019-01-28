@@ -4,27 +4,6 @@
  * Module dependencies.
  */
 var config = require('../config'),
-  express = require('express'),
-  bodyParser = require('body-parser'),
-  session = require('express-session'),
-  RedisStore = require('connect-redis')(session),
-  favicon = require('serve-favicon'),
-  cookieParser = require('cookie-parser'),
-  helmet = require('helmet'),
-  consolidate = require('consolidate'),
-  path = require('path'),
-  http = require('http'),
-  https = require('https'),
-  fs = require('fs'),
-  winston = require('./winston'),
-  cors = require('cors'),
-  rateLimit = require('express-rate-limit'),
-  securityConfig = require('../security/exprees.security.config'),
-
-  //documentation
-  docs = require("express-mongoose-docs");
-
- //language configuration parameters
     express = require('express'),
     bodyParser = require('body-parser'),
     session = require('express-session'),
@@ -38,7 +17,13 @@ var config = require('../config'),
     https = require('https'),
     fs = require('fs'),
     winston = require('./winston'),
-    docs = require("express-mongoose-docs");//documentation
+    cors = require('cors'),
+    rateLimit = require('express-rate-limit'),
+    securityConfig = require('../security/exprees.security.config'),
+    policy = require(path.resolve('./modules/mago/server/policies/mago.server.policy')),
+
+    //documentation
+    docs = require("express-mongoose-docs");
 
     //language configuration parameters
     global.languages = {};
@@ -69,6 +54,13 @@ module.exports.initLocalVariables = function(app) {
     app.locals.usersProfileDir = config.app.usersProfileDir;
     app.locals.reCaptchaSecret = config.app.reCaptchaSecret;
     app.locals.livereload = config.livereload;
+};
+
+/**
+ * Initialize application middleware
+ */
+module.exports.initMiddleware = function(app) {
+    winston.info('Initializing Middleware...');
 
     // Passing the request url to environment locals
     app.use(function(req, res, next) {
@@ -77,13 +69,6 @@ module.exports.initLocalVariables = function(app) {
         app.locals.originUrl = req.protocol + '://' + req.headers.host;
         next();
     });
-};
-
-/**
- * Initialize application middleware
- */
-module.exports.initMiddleware = function(app) {
-    winston.info('Initializing Middleware...');
 
     // Showing stack errors
     app.set('showStackError', true);
@@ -106,41 +91,47 @@ module.exports.initMiddleware = function(app) {
     //Add rate req limit
     const limiter = rateLimit({
       windowMs: 60 * 1000, // 15 minutes
-      max: securityConfig.max_request_min // limit each IP to 100 requests per windowMs
+      max: securityConfig.max_request_min, // limit each IP to 100 requests per windowMs
     });
     
-    app.use(limiter);
+    let protectedRoutes = securityConfig.rate_protected_routes;
+    protectedRoutes.forEach(function(path){
+        winston.info(path);
+        app.use(path, limiter);
+    });
   
-  //Add cors support
-  const corsDisabled = securityConfig.cors.length === 0 ? true : false;
-  app.use(cors({
-    credentials: true,
-    origin: function(origin, callback){
-      // allow requests with no origin 
-      // (like mobile apps or curl requests)
-      if(!origin || corsDisabled) return callback(null, true);
+    //Add cors support
+    const corsDisabled = securityConfig.cors.length === 0 ? true : false;
+    app.use(cors({
+        credentials: true,
+        origin: function(origin, callback){
+        // allow requests with no origin 
+        // (like mobile apps or curl requests)
+        if(!origin || corsDisabled) return callback(null, true);
 
-      for (var i = 0; i < securityConfig.cors.length; i++)
-      {
-        if (origin.startsWith(securityConfig.cors[i]))
+        for (var i = 0; i < securityConfig.cors.length; i++)
         {
-          return callback(null, true);
+            if (origin.startsWith(securityConfig.cors[i]))
+            {
+            return callback(null, true);
+            }
         }
-      }
 
-      var msg = 'The CORS policy for this site does not ' +
-      'allow access from the specified Origin.';
-      return callback(new Error(msg), false);
-    }
-  }));
-  // Request body parsing middleware should be above methodOverride
-  app.use(bodyParser.urlencoded({
-    extended: true,
-    limit: securityConfig.max_body_size
-  }));
-  app.use(bodyParser.json({
-    limit: securityConfig.max_body_size
-  }));
+        var msg = 'The CORS policy for this site does not ' +
+        'allow access from the specified Origin.';
+        return callback(new Error(msg), false);
+        }
+    }));
+    // Request body parsing middleware should be above methodOverride
+    app.use('/file-upload', bodyParser.raw({
+        limit: '25mb'
+    }));
+    app.use('/', bodyParser.urlencoded({
+        extended: true
+    }))
+    app.use('/', bodyParser.json({
+        limit: securityConfig.max_body_size
+    }));
 
     // Add the cookie parser and flash middleware
     app.use(cookieParser());
@@ -282,6 +273,45 @@ module.exports.configureSocketIO = function(app, db) {
     return server;
 };
 
+module.exports.initExpressStatusMonitor = function(app) {
+    const io = require('socket.io');
+    io.listen(3000);
+      
+    let config = {
+        title: 'Express Status',  // Default title
+        theme: 'default.css',     // Default styles
+        path: '',
+        websocket: io,
+        spans: [
+            {
+                interval: 1,            // Every second
+                retention: 60           // Keep 60 datapoints in memory
+            }, 
+            {
+                interval: 5,            // Every 5 seconds
+                retention: 60
+            }, 
+            {
+                interval: 15,           // Every 15 seconds
+                retention: 60
+            }
+        ],
+        chartVisibility: {
+            cpu: true,
+            mem: true,
+            load: true,
+            responseTime: true,
+            rps: true,
+            statusCodes: true
+        },
+        healthChecks: [],
+        ignoreStartsWith: '/admin'
+    }
+    const monitor = require('express-status-monitor')(config);
+    
+    app.use(monitor.middleware);
+    app.get('/status', monitor.pageRoute);
+} 
 /**
  * Configure server response languages
  */
@@ -324,6 +354,9 @@ module.exports.init = function(db) {
 
     // Initialize local variables
     this.initLocalVariables(app);
+    
+    //Init Express Monitor Status
+    this.initExpressStatusMonitor(app);
 
     // Initialize Express middleware
     this.initMiddleware(app);
@@ -359,7 +392,7 @@ module.exports.init = function(db) {
     this.initErrorRoutes(app);
 
     // Configure Socket.io
-    app = this.configureSocketIO(app, db);
-
-    return app;
+    var serverApp = this.configureSocketIO(app, db);
+    
+    return serverApp;
 };

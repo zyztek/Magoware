@@ -7,6 +7,7 @@ var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     logHandler = require(path.resolve('./modules/mago/server/controllers/logs.server.controller')),
     db = require(path.resolve('./config/lib/sequelize')).models,
+    winston = require('winston'),
     refresh = require(path.resolve('./modules/mago/server/controllers/common.controller.js')),
     DBModel = db.channels,
     ChannelPackages = db.packages_channels,
@@ -40,9 +41,11 @@ function link_channel_with_packages(channel_id,array_package_ids) {
                         }).then(function (result) {
                             return {status: true, message:'transaction executed correctly'};
                         }).catch(function (err) {
+                            winston.error("Adding channels to packages failed with error: ", err);
                             return {status: false, message:'error executing transaction'};
                         })
             }).catch(function (err) {
+                winston.error("Removing channels form packages failed with error: ", err);
                 return {status: false, message:'error deleteting existing packages'};
             })
 }
@@ -71,6 +74,7 @@ exports.create = function(req, res) {
                 })
         }
     }).catch(function(err) {
+        winston.error("Creating channel failed with error: ", err);
        if(err.name === "SequelizeUniqueConstraintError"){
             if(err.errors[0].path === "channel_number") return res.status(400).send({message: 'Check if this channel number is available'}); //channel number exists
             else return res.status(400).send({message: err.errors[0].message}); //other duplicate fields. return sequelize error message
@@ -134,6 +138,7 @@ exports.update = function(req, res) {
                 })
 
     }).catch(function(err) {
+        winston.error("Update channel data failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -151,6 +156,7 @@ exports.delete = function(req, res) {
             result.destroy().then(function() {
                 return res.json(result);
             }).catch(function(err) {
+                winston.error("Deleting channel failed with error: ", err);
                 return res.status(400).send({
                     message: errorHandler.getErrorMessage(err)
                 });
@@ -162,6 +168,7 @@ exports.delete = function(req, res) {
         }
         return null;
     }).catch(function(err) {
+        winston.error("Finding channel failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -254,6 +261,7 @@ exports.list = function(req, res) {
                 res.json(results);
             }
         }).catch(function(err) {
+            winston.error("Getting channel list failed with error: ", err);
             res.jsonp(err);
         });
     });
@@ -288,6 +296,7 @@ exports.dataByID = function(req, res, next, id) {
       return null;
     }
   }).catch(function(err) {
+      winston.error("Finding channel data failed with error: ", err);
     return next(err);
   });
 

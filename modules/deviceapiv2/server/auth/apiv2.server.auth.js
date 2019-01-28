@@ -1,5 +1,4 @@
 'use strict';
-var winston = require('winston');
 
 var CryptoJS = require("crypto-js"),
     crypto = require("crypto"),
@@ -9,6 +8,7 @@ var CryptoJS = require("crypto-js"),
     models = db.models,
     authenticationHandler = require(path.resolve('./modules/deviceapiv2/server/controllers/authentication.server.controller.js')),
     response = require(path.resolve("./config/responses.js"));
+var winston = require("winston");
 
 function auth_encrytp(plainText, key) {
     var C = CryptoJS;
@@ -210,6 +210,7 @@ exports.isAllowed = function(req, res, next) {
                     }
                     else response.send_res(req, res, [], 702, -1, 'USER_NOT_FOUND_DESCRIPTION', 'USER_NOT_FOUND_DATA', 'no-store');
                 }).catch(function(error) {
+                    winston.error("Searching for the user account failed with error: ", error);
                     response.send_res(req, res, [], 888, -1, 'BAD_TOKEN_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
                 });
             }

@@ -1,286 +1,93 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <meta charset="UTF-8">
-    <title>Payment Form</title>
+
 </head>
-<style>
-    @font-face {
-        font-family: 'Open Sans';
-        font-weight: 400;
-        src: local("Open Sans"), local("OpenSans"), url(https://fonts.gstatic.com/s/opensans/v13/cJZKeOuBrn4kERxqtaUH3ZBw1xU1rKptJj_0jans920.woff2) format("woff2");
-        unicodeRange: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215;
-    }
 
-    * {
-        font-family: "Open Sans", "Helvetica Neue", Helvetica, sans-serif;
-        font-size: 15px;
-        font-variant: normal;
-        padding: 0;
-        margin: 0;
-    }
-
-    html {
-        height: 100%;
-    }
-
-    body {
-        background: #F6F9FC;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 100%;
-    }
-
-    form {
-        width: 480px;
-        margin: 20px 0;
-    }
-
-    label {
-        position: relative;
-        color: #6A7C94;
-        font-weight: 400;
-        height: 48px;
-        line-height: 48px;
-        margin-bottom: 10px;
-        display: flex;
-        flex-direction: row;
-    }
-
-    label > span {
-        width: 115px;
-    }
-
-    .field {
-        background: white;
-        box-sizing: border-box;
-        font-weight: 400;
-        border: 1px solid #CFD7DF;
-        border-radius: 24px;
-        color: #32315E;
-        outline: none;
-        flex: 1;
-        height: 48px;
-        line-height: 48px;
-        padding: 0 20px;
-        cursor: text;
-    }
-
-    .field::-webkit-input-placeholder { color: #CFD7DF; }
-    .field::-moz-placeholder { color: #CFD7DF; }
-
-    .field:focus,
-    .field.StripeElement--focus {
-        border-color: #F99A52;
-    }
-
-    button {
-        float: left;
-        display: block;
-        background-image: linear-gradient(-180deg, #F8B563 0%, #F99A52 100%);
-        box-shadow: 0 1px 2px 0 rgba(0,0,0,0.10), inset 0 -1px 0 0 #E57C45;
-        color: white;
-        border-radius: 24px;
-        border: 0;
-        margin-top: 20px;
-        font-size: 17px;
-        font-weight: 500;
-        width: 100%;
-        height: 48px;
-        line-height: 48px;
-        outline: none;
-    }
-
-    button:focus {
-        background: #EF8C41;
-    }
-
-    button:active {
-        background: #E17422;
-    }
-
-    .outcome {
-        float: left;
-        width: 100%;
-        padding-top: 8px;
-        min-height: 20px;
-        text-align: center;
-    }
-
-    .success, .error {
-        display: none;
-        font-size: 13px;
-    }
-
-    .success.visible, .error.visible {
-        display: inline;
-    }
-
-    .error {
-        color: #E4584C;
-    }
-
-    .success {
-        color: #F8B563;
-    }
-
-    .success .token {
-        font-weight: 500;
-        font-size: 13px;
-    }
-
-</style>
-<script src="https://js.stripe.com/v3/"></script>
 <body>
+    <script src="https://js.stripe.com/v3/"></script>
 
-<div id="wait" style="  z-index:1234;
-                        display:none;
-                        width:69px;
-                        height:89px;
-                        border:1px solid black;
-                        position:absolute;
-                        top:50%;left:50%;
-                        padding:2px;">
-                        <img src='https://www.w3schools.com/jquery/demo_wait.gif' width="64" height="64" />
-                        <br>Proccessing payment ...
-</div>
+    <form action="/apiv2/payments/stripe/charge" method="post" id="payment-form">
+        <div class="form-row">
+            <label for="card-element">
+                Credit or debit card
+            </label>
+            <div id="card-element">
+                <!-- A Stripe Element will be inserted here. -->
+            </div>
 
-
-<form action="/apiv2/payments/stripe/charge" method="post" id="payment-form">
-    <label>
-        <span>Name</span>
-        <input name="cardholder-name" class="field" placeholder="Jane Doe" />
-    </label>
-
-    <label>
-        <span>Username</span>
-        <input name="username" class="field" placeholder="username" />
-    </label>
-
-    <label>
-        <span>Product id</span>
-        <select name="product_id">
-            <option value="plan1">Product 1 - 10$</option>
-            <option value="plan2">Product 2 - 20$</option>
-            <option value="plan3">Product 3 - 30$</option>
-        </select>
-    </label>
-
-
-
-    <label>
-        <span>ZIP code</span>
-        <input name="address-zip" class="field" placeholder="94110" />
-    </label>
-
-    <label>
-        <span>Card</span>
-        <div id="card-element" class="field"></div>
-    </label>
-    <button type="submit">Pay</button>
-    <div class="outcome">
-        <div class="error"></div>
-        <div class="success">
-            Success! Your Stripe token is <span class="token"></span>
+            <!-- Used to display form errors. -->
+            <div id="card-errors" role="alert"></div>
         </div>
-    </div>
-    <div id="server-results"><!-- For server results --></div>
+        <!-- hidden fields that hold metadata-->
+        <input type="hidden" name="username" value="{{username}}">
+        <input type="hidden" name="product_id" value="{{product_id}}">
+        <input type="hidden" name="type" value="{{type}}">
 
-</form>
+        <button>Submit Payment</button>
+
+        <script>
+            var stripe = Stripe('pk_test_C166XC3UAKdPHsquh9jChi1U');
+            var elements = stripe.elements();
+
+            // Custom styling can be passed to options when creating an Element.
+            var style = {
+                base: {
+                    // Add your base input styles here. For example:
+                    fontSize: '16px',
+                    color: "#32325d",
+                }
+            };
+
+            // Create an instance of the card Element.
+            var card = elements.create('card', { style: style });
+
+            // Add an instance of the card Element into the `card-element` <div>.
+            card.mount('#card-element');
+
+            card.addEventListener('change', function (event) {
+                var displayError = document.getElementById('card-errors');
+                if (event.error) {
+                    displayError.textContent = event.error.message;
+                } else {
+                    displayError.textContent = '';
+                }
+            });
+
+            // Create a token or display an error when the form is submitted.
+            var form = document.getElementById('payment-form');
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                stripe.createToken(card).then(function (result) {
+                    if (result.error) {
+                        // Inform the customer that there was an error.
+                        var errorElement = document.getElementById('card-errors');
+                        errorElement.textContent = result.error.message;
+                    } else {
+                        // Send the token to your server.
+                        stripeTokenHandler(result.token);
+                    }
+                });
+            });
+
+            function stripeTokenHandler(token) {
+                // Insert the token ID into the form so it gets submitted to the server
+                var form = document.getElementById('payment-form');
+                var hiddenInput = document.createElement('input');
+                hiddenInput.setAttribute('type', 'hidden');
+                hiddenInput.setAttribute('name', 'stripetoken');
+                hiddenInput.setAttribute('value', token.id);
+                form.appendChild(hiddenInput);
+
+                // Submit the form
+                form.submit();
+            }
+
+        </script>
+    </form>
+
 </body>
 
-<script type="application/javascript">
-
-    $(document).ajaxStart(function(){
-        $("#wait").css("display", "block");
-    });
-    $(document).ajaxComplete(function(){
-        $("#wait").css("display", "none");
-    });
-
-    var stripe = Stripe('pk_test_C166XC3UAKdPHsquh9jChi1U');
-    var elements = stripe.elements({
-        fonts: [
-            {
-                family: 'Open Sans',
-                weight: 400,
-                src: 'local("Open Sans"), local("OpenSans"), url(https://fonts.gstatic.com/s/opensans/v13/cJZKeOuBrn4kERxqtaUH3ZBw1xU1rKptJj_0jans920.woff2) format("woff2")',
-                unicodeRange: 'U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215',
-            },
-        ]
-    });
-
-    var card = elements.create('card', {
-        hidePostalCode: true,
-        style: {
-            base: {
-                iconColor: '#F99A52',
-                color: '#32315E',
-                lineHeight: '48px',
-                fontWeight: 400,
-                fontFamily: '"Open Sans", "Helvetica Neue", "Helvetica", sans-serif',
-                fontSize: '15px',
-                '::placeholder': {
-                    color: '#CFD7DF',
-                }
-            },
-        }
-    });
-
-    card.mount('#card-element');
-
-    function setOutcome(result) {
-        var successElement = document.querySelector('.success');
-        var errorElement = document.querySelector('.error');
-        successElement.classList.remove('visible');
-        errorElement.classList.remove('visible');
-
-        if (result.token) {
-            stripeTokenHandler(result.token);
-        } else if (result.error) {
-            errorElement.textContent = result.error.message;
-            errorElement.classList.add('visible');
-        }
-    }
-
-    card.on('change', function(event) {
-        setOutcome(event);
-    });
-
-    document.querySelector('form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        var form = document.querySelector('form');
-        var extraDetails = {
-            name: form.querySelector('input[name=cardholder-name]').value,
-            address_zip: form.querySelector('input[name=address-zip]').value
-        };
-        stripe.createToken(card, extraDetails).then(setOutcome);
-    });
-
-    function stripeTokenHandler(token) {
-        // Insert the token ID into the form so it gets submitted to the server
-        var form = document.getElementById('payment-form');
-        var hiddenInput = document.createElement('input');
-
-        if(form.elements['stripetoken']) {
-            form.elements['stripetoken'].value = token.id;
-        }
-        else {
-            hiddenInput.setAttribute('type', 'hidden');
-            hiddenInput.setAttribute('name', 'stripetoken');
-            hiddenInput.setAttribute('value', token.id);
-            form.appendChild(hiddenInput);
-        }
-
-        var post_url = $(form).attr("action"); //get form action url
-        var form_data = $(form).serialize(); //Encode form elements for submission
-
-        $.post( post_url, form_data, function( response ) {
-            $("#server-results").html(response.extra_data);
-        });
-    }
-
-</script>
 </html>

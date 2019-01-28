@@ -5,6 +5,7 @@
  */
 var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
+    winston = require('winston'),
     db = require(path.resolve('./config/lib/sequelize')).models,
     DBModel = db.groups;
 
@@ -20,6 +21,7 @@ exports.create = function(req, res) {
             return res.jsonp(result);
         }
     }).catch(function(err) {
+        winston.error("Creating group failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -42,6 +44,7 @@ exports.update = function(req, res) {
     updateData.updateAttributes(req.body).then(function(result) {
         res.json(result);
     }).catch(function(err) {
+        winston.error("Updating group failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -59,6 +62,7 @@ exports.delete = function(req, res) {
             result.destroy().then(function() {
                 return res.json(result);
             }).catch(function(err) {
+                winston.error("Deleting group failed with error: ", err);
                 return res.status(400).send({
                     message: errorHandler.getErrorMessage(err)
                 });
@@ -69,6 +73,7 @@ exports.delete = function(req, res) {
             });
         }
     }).catch(function(err) {
+        winston.error("Finding group failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -98,6 +103,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
+        winston.error("Getting group list failed with error: ", err);
         res.jsonp(err);
     });
 };
@@ -129,6 +135,7 @@ exports.dataByID = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
+        winston.error("Getting group data failed with error: ", err);
         return next(err);
     });
 

@@ -18,8 +18,22 @@ export default function (nga, admin) {
 			nga.field('telephone', 'string')
 				.cssClasses('hidden-xs')
 				.label('Telephone'),
+            nga.field('last_login_ip', 'string')
+                .map(function truncate(value) {
+                    if (!value) {
+                        return '';
+                    }
+                    return value.length > 14 ? value.substr(0, 14) + '...' : value;
+                })
+                .label('Last Login IP'),
 			nga.field('isavailable','boolean')
 				.label('Is Available'),
+		])
+        .filters([
+            nga.field('q')
+                .label('')
+                .template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>')
+                .pinned(true),
 		])
 		.listActions(['edit'])
         .exportFields([

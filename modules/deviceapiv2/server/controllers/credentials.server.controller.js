@@ -46,30 +46,23 @@ exports.login = function(req, res) {
             var response_data = [{"encryption_key": req.app.locals.settings.new_encryption_key}];
             response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
         }).catch(function (error) {
-            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+            winston.error("Creating / updating the device record for guest account failed with error: ", error);
+            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION_1', 'DATABASE_ERROR_DATA', 'no-store');
         });
     }
     else {
         //login start
         models.login_data.findOne({
             where: {username: req.auth_obj.username},
-            attributes: [ 'id','username', 'password', 'account_lock', 'salt']
-        }).then(function(users) {
-            if (!users) {
-                //todo: this should be handled @token validation. for now it generates an empty response
-                response.send_res(req, res, [], 702, -1, 'USER_NOT_FOUND_DESCRIPTION', 'USER_NOT_FOUND_DATA', 'no-store');
-            }
-            else if (users.account_lock) {
-                //todo: this should be handled @token validation, though it does return a response
-                response.send_res(req, res, [], 703, -1, 'ACCOUNT_LOCK_DESCRIPTION', 'ACCOUNT_LOCK_DATA', 'no-store');
-            }
-            else if(password_encryption.authenticate(req.auth_obj.password, req.thisuser.salt, req.thisuser.password) === false) {
+            attributes: ['id', 'username', 'password', 'account_lock', 'salt']
+        }).then(function (users) {
+            if (password_encryption.authenticate(req.auth_obj.password, req.thisuser.salt, req.thisuser.password) === false) {
                 response.send_res(req, res, [], 704, -1, 'WRONG_PASSWORD_DESCRIPTION', 'WRONG_PASSWORD_DATA', 'no-store');
             }
-            else  {
-                models.devices.findAll({
-                    where: {username: req.auth_obj.username, device_active:true, device_id: {not: req.auth_obj.boxid}} //todo: ne vend te findOne, bej findAll. ku device!== boxid
-                }).then(function(device){
+            else {
+                models.devices.findOne({
+                    where: {username: req.auth_obj.username, device_active: true, appid: {in: appids}}
+                }).then(function (device) {
                     //if record is found then device is found
 
                     var max_multilogin_nr = req.app.locals.advancedsettings.filter(function(obj) {
@@ -95,25 +88,28 @@ exports.login = function(req, res) {
                             device_ip:          req.ip.replace('::ffff:', ''),
                             os:                 decodeURIComponent(req.body.os),
                             googleappid:        req.body.googleappid
-                        }).then(function(result){
-                            var response_data = [{ "encryption_key": req.app.locals.settings.new_encryption_key}];
+                        }).then(function (result) {
+                            var response_data = [{"encryption_key": req.app.locals.settings.new_encryption_key}];
                             response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
                             return null;
-                        }).catch(function(error) {
-                            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+                        }).catch(function (error) {
+                            winston.error("Updating a device's record failed with error: ", error);
+                            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION_2', 'DATABASE_ERROR_DATA', 'no-store');
                         });
                     }
                     else {
                         response.send_res(req, res, [], 705, -1, 'DUAL_LOGIN_ATTEMPT_DESCRIPTION', 'DUAL_LOGIN_ATTEMPT_DATA', 'no-store'); //same user try to login on another device
                     }
                     return null;
-                }).catch(function(error) {
-                    response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+                }).catch(function (error) {
+                    winston.error("Searching for the logged device failed with error: ", error);
+                    response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION_4', 'DATABASE_ERROR_DATA', 'no-store');
                 });
             }
             return null;
-        }).catch(function(error) {
-            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+        }).catch(function (error) {
+            winston.error("Searching for the credentials of the client's account failed with error: ", error);
+            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION_5', 'DATABASE_ERROR_DATA', 'no-store');
         });
     }
 
@@ -139,6 +135,7 @@ exports.logout = function(req, res) {
         }).then(function (result) {
         response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
     }).catch(function(error) {
+        winston.error("Setting device inactive failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
@@ -203,11 +200,11 @@ exports.logout_user = function(req, res) {
             ).then(function (result) {
                 //send push message to log devices out
                 var message = new push_msg.ACTION_PUSH('Action', "You have been logged in another device", '5', "logout_user");
-                push_msg.send_notification(device.googleappid, req.app.locals.settings.firebase_key, '', message, 5, false, true, function(result){});
+                push_msg.send_notification(device.googleappid, req.app.locals.backendsettings.firebase_key, '', message, 5, false, true, function(result){});
                 callback(null);
                 return null;
             }).catch(function(error) {
-                //error is ignored, to be tested
+                winston.error("Setting device as inactive failed with error: ", error);
             });
         }, function(error){
             if(!error) response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'LOGOUT_OTHER_DEVICES', 'no-store');
@@ -215,7 +212,7 @@ exports.logout_user = function(req, res) {
         });
         return null;
     }).catch(function(error){
-        if (error) console.log(error)
+        winston.error("Getting a list of googleappids failed with error: ", error);
         response.send_res(req, res, [], 704, -1, 'REQUEST_FAILED', 'DEVICE_NOT_FOUND', 'no-store');
     });
 
@@ -223,32 +220,29 @@ exports.logout_user = function(req, res) {
 
 //Sends an action push message to all active devices where this user is loged in
 exports.lock_account = function lock_account(login_id, username) {
-    models.settings.findOne({
-        attributes: ['firebase_key']
-    }).then(function (setting) {
-        models.devices.findAll({
-            attributes: ['googleappid', 'app_version', 'appid'], where: {login_data_id: login_id, device_active: true}
-        }).then(function (result) {
-            if(result && result.length>0){
-                var min_ios_version = (company_configurations.ios_min_version) ? parseInt(company_configurations.ios_min_version) : parseInt('1.3957040');
-                var min_stb_version = (company_configurations.stb_min_version) ? parseInt(company_configurations.stb_min_version) : parseInt('2.2.2');
-                for(var i=0; i<result.length; i++){
-                    if(result[i].appid === 1 && result[i].app_version >= '2.2.2') var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
-                    else if(result[i].appid === 2 && result[i].app_version >= min_stb_version) var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
-                    else if(parseInt(result[i].appid) === parseInt('3') && parseInt(result[i].app_version) >= min_ios_version)
-                        var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
-                    else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0') var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
-                    else if(['5', '6'].indexOf(result[i].appid))
-                        var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
-                    else var message = {"action": "lock_account", "parameter1": "", "parameter2": "", "parameter3": ""};
-                    push_msg.send_notification(result[i].googleappid, setting.firebase_key, username, message, 5, false, true, function(result){});
-                }
+
+    models.devices.findAll({
+        attributes: ['googleappid', 'app_version', 'appid'], where: {login_data_id: login_id, device_active: true}
+    }).then(function (result) {
+        if(result && result.length>0){
+            var min_ios_version = (company_configurations.ios_min_version) ? parseInt(company_configurations.ios_min_version) : parseInt('1.3957040');
+            var android_phone_min_version = (company_configurations.android_phone_min_version) ? parseInt(company_configurations.android_phone_min_version) : '1.1.2.2';
+            var min_stb_version = (company_configurations.stb_min_version) ? parseInt(company_configurations.stb_min_version) : '2.2.2';
+            var android_tv_min_version = (company_configurations.android_tv_min_version) ? parseInt(company_configurations.android_tv_min_version) : '6.1.3.0';
+            for(var i=0; i<result.length; i++){
+                if(result[i].appid === 1 && result[i].app_version >= min_stb_version) var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
+                else if(result[i].appid === 2 && result[i].app_version >= android_phone_min_version) var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
+                else if(parseInt(result[i].appid) === parseInt('3') && parseInt(result[i].app_version) >= min_ios_version)
+                    var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
+                else if(result[i].appid === 4 && result[i].app_version >= android_tv_min_version) var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
+                else if(['5', '6'].indexOf(result[i].appid))
+                    var message = new push_msg.ACTION_PUSH('Action', "Your account was locked", '5', "lock_account");
+                else var message = {"action": "lock_account", "parameter1": "", "parameter2": "", "parameter3": ""};
+                push_msg.send_notification(result[i].googleappid, req.app.locals.backendsettings.firebase_key, username, message, 5, false, true, function(result){});
             }
-        }).catch(function(error) {
-            //unable to retrieve firebase tokens for this user, push notification not sent
-        });
-        return null;
+        }
     }).catch(function(error) {
-        //could not read firebase server key, push notification not sent
+        winston.error("Getting a list of device data failed with error: ", error);
     });
+
 };

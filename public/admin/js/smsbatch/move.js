@@ -52,16 +52,16 @@ function move(Restangular, $uibModal, $q, notification, $state,$http) {
             }
 
         },
-        template: `<div class="btn-group" uib-dropdown is-open="status.isopen"> 
-                        <button id="single-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled">
-                           <span class="glyphicon {{icon}}"></span> {{button}} <span class="caret"></span>
-                        </button>
-                          <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
-                            <li role="menuitem" ng-click="change(choice.name,choice.id)"  ng-repeat="choice in list_of_vods">
-                                <p id="paragraph_vod" ng-click="moveto()">{{choice.name}}</p>
-                            </li>
-                          </ul>
-                    </div>`
+        template: '<div class="btn-group" uib-dropdown is-open="status.isopen"> ' +
+        '<button id="single-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled">' +
+        '<span class="glyphicon {{icon}}"></span> {{button}} <span class="caret"></span>' +
+        '</button>' +
+        '<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">' +
+        '<li role="menuitem" ng-click="change(choice.name,choice.id)"  ng-repeat="choice in list_of_vods">' +
+        '<p id="paragraph_vod" ng-click="moveto()">{{choice.name}}</p>' +
+        '</li>' +
+        '</ul>' +
+        '</div>'
     };
 }
 

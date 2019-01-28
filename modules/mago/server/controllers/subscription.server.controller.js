@@ -6,6 +6,7 @@
 var path = require('path'),
   errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
   logHandler = require(path.resolve('./modules/mago/server/controllers/logs.server.controller')),
+    winston = require('winston'),
   subscriptionFunctions = require(path.resolve('./custom_functions/sales.js')),
     crypto = require("crypto"),
   moment = require('moment'),
@@ -81,6 +82,7 @@ exports.update = function(req, res) {
     logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'update sub', JSON.stringify(req.body));
     return res.json(result);
   }).catch(function(err) {
+    winston.error("Updating subscription failed with error: ", err);
     return res.status(400).send({
       message: errorHandler.getErrorMessage(err)
     });
@@ -99,6 +101,7 @@ exports.delete = function(req, res) {
       result.destroy().then(function() {
         return res.json(result);
       }).catch(function(err) {
+        winston.error("Deleting subscription failed with error: ", err);
         return res.status(400).send({
           message: errorHandler.getErrorMessage(err)
         });
@@ -109,6 +112,7 @@ exports.delete = function(req, res) {
       });
     }
   }).catch(function(err) {
+    winston.error("Finding subscription object failed with error: ", err);
     return res.status(400).send({
       message: errorHandler.getErrorMessage(err)
     });
@@ -152,6 +156,7 @@ exports.list = function(req, res) {
       res.json(results.rows);
     }
   }).catch(function(err) {
+    winston.error("Getting subscription list failed with error: ", err);
     res.jsonp(err);
   });
 };
@@ -183,6 +188,7 @@ exports.dataByID = function(req, res, next, id) {
       return null;
     }
   }).catch(function(err) {
+    winston.error("Finding subscription data failed with error: ", err);
     return next(err);
   });
 

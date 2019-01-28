@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+  </head>
+  <body>
+    <form action="https://www.sandbox.paypal.com/cgi-bin/webscr" method="post" target="_top">
+      <input type="hidden" name="custom" value="{{username}}">
+      <input type="hidden" name="cmd" value="_s-xclick">
+      <input type="hidden" name="hosted_button_id" value="9ED8YV2ZHUT7S">
+      <input type="image" src="https://www.sandbox.paypal.com/en_US/i/btn/btn_subscribeCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+      <img alt="" border="0" src="https://www.sandbox.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1">
+  </form>  
+  <form action="https://www.sandbox.paypal.com/cgi-bin/webscr" method="post" target="_top">
+      <input type="hidden" name="custom" value="{{username}}">
+      <input type="hidden" name="cmd" value="_s-xclick">
+      <input type="hidden" name="hosted_button_id" value="G7R4RYSFZT44Q">
+      <input type="image" src="https://www.sandbox.paypal.com/en_US/i/btn/btn_buynowCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+      <img alt="" border="0" src="https://www.sandbox.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1">
+  </form>
+      
+  <div id="paypal-button-container"></div>
+  <script src="https://www.paypalobjects.com/api/checkout.js"></script>
+  <script>
+  // Render the PayPal button
+  paypal.Button.render({
+  // Set your environment
+  env: 'sandbox', // sandbox | production
+  
+  // Specify the style of the button
+  style: {
+    layout: 'vertical',  // horizontal | vertical
+    size:   'medium',    // medium | large | responsive
+    shape:  'rect',      // pill | rect
+    color:  'gold'       // gold | blue | silver | white | black
+  },
+  
+  // Specify allowed and disallowed funding sources
+  //
+  // Options:
+  // - paypal.FUNDING.CARD
+  // - paypal.FUNDING.CREDIT
+  // - paypal.FUNDING.ELV
+  funding: {
+    allowed: [
+      paypal.FUNDING.CARD,
+      paypal.FUNDING.CREDIT
+    ],
+    disallowed: []
+  },
+  
+  // Enable Pay Now checkout flow (optional)
+  commit: true,
+  
+  // PayPal Client IDs - replace with your own
+  // Create a PayPal app: https://developer.paypal.com/developer/applications/create
+  client: {
+    sandbox: 'AZrheoaabG3z2hf3c8nisxzUO66yWw6z6P1Ugcj_VyaglNUYRNwv3-fLN2HpbR7ExzKK5fE7MwWG0jwM',
+    production: '<insert production client id>'
+  },
+  
+  payment: function (data, actions) {
+    let price = '{{price}}'
+    return actions.payment.create({
+      payment: {
+        transactions: [
+          {
+            amount: {
+              total: price,
+              currency: 'USD'
+            },
+            custom: '{{username}},{{type}}',
+            item_list: {
+              items: [
+                  {
+                      name: '{{name}}',
+                      sku: '{{product_id}}',
+                      price: price,
+                      quantity: 1,
+                      currency: 'USD'
+                  }
+              ]
+            }
+          }
+        ]
+      }
+    });
+  },
+  
+  onAuthorize: function (data, actions) {
+    return actions.payment.execute()
+      .then(function () {
+        window.alert('Payment Complete!');
+      });
+  }
+  }, '#paypal-button-container');
+  </script>
+  
+  </body>
+</html>

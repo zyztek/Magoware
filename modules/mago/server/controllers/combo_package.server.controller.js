@@ -6,6 +6,7 @@
 var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     db = require(path.resolve('./config/lib/sequelize')).models,
+    winston = require('winston'),
     DBModel = db.combo_packages;
 
 /**
@@ -19,6 +20,7 @@ exports.create = function(req, res) {
             return res.jsonp(result);
         }
     }).catch(function(err) {
+        winston.error("Adding package to combo failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -41,6 +43,7 @@ exports.update = function(req, res) {
     updateData.updateAttributes(req.body).then(function(result) {
         res.json(result);
     }).catch(function(err) {
+        winston.error(err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -68,6 +71,7 @@ exports.delete = function(req, res) {
             });
         }
     }).catch(function(err) {
+        winston.error("Removing package from combo failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -100,6 +104,7 @@ exports.list = function(req, res) {
       res.json(results.rows);
     }
   }).catch(function(err) {
+      winston.error("Getting list of combos and their packages failed with error: ", err);
     res.jsonp(err);
   });
 };
@@ -130,6 +135,7 @@ exports.dataByID = function(req, res, next, id) {
       next();
     }
   }).catch(function(err) {
+      winston.error(err);
     return next(err);
   });
 

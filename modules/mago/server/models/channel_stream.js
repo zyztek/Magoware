@@ -35,7 +35,7 @@ module.exports = function(sequelize, DataTypes) {
         stream_resolution: {
             type: DataTypes.STRING(30),
             allowNull: false,
-            defaultValue: "small,large"
+            defaultValue: "1,2,3,4,5,6"
         },
         stream_format: {
             type: DataTypes.STRING(2),

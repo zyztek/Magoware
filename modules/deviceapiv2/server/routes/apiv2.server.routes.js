@@ -19,6 +19,7 @@ var path = require('path'),
 	sitesController = require(path.resolve('./modules/deviceapiv2/server/controllers/sites.server.controller')),
 	headerController = require(path.resolve('./modules/deviceapiv2/server/controllers/header.server.controller')),
     deviceepgController = require(path.resolve('./modules/deviceapiv2/server/controllers/deviceepg.server.controller')),
+    cache = require('apicache'),
     winston = require(path.resolve('./config/lib/winston'));
 
 module.exports = function(app) {
@@ -252,11 +253,12 @@ module.exports = function(app) {
 
     app.route('/apiv2/channels/epgdata')
         .all(authpolicy.isAllowed)
+        .all(cache.middleware('3 minutes'))
         .get(deviceepgController.get_epg_data)
 
     /* ===== weather widget ===== */
 
-    app.route('/api/htmlContentApp')
+    app.route('/apiv2/weather_widget')
         // .all(authpolicy.isAllowed)
         .get(mainController.get_weather_widget);
 

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script type="text/javascript" src="{{script_src}}"></script>
+    <style>
+        body {
+            font-family: Arial;
+            color: white;
+        }
+
+        .split {
+            height: 100%;
+            width: 100%;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            overflow-x: hidden;
+            padding-top: 20px;
+        }
+
+        .left {
+            left: 0;
+            background-color: #262262;
+        }
+        .centered {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        div#qrcode {
+            border: 10px solid black;
+            border-radius: 25px;
+            padding: 12px;
+            background-color: white;
+        }
+        div#scan_me {
+            color: white;
+            background-color: black;
+            margin-top: 21px;
+            border: 1px solid black;
+            border-radius: 21px;
+            display: inline-block;
+        }
+        a#buy_movie {
+            font-size: 27px;
+            text-decoration: none;
+            color: white;
+            border: 2px solid white;
+            padding: 6px;
+            border-radius: 16px;
+        }
+        a#buy_movie:hover{
+            background-color: black;
+            transition: .4s;
+        }
+        .qr {
+            width: 275px;
+            margin-left: 15%;
+        }
+        .qr p:nth-child(3){
+            padding: 5px 0px 11px 0px;
+        }
+
+    </style>
+</head>
+<body>
+
+
+<div class="split left">
+    <div class="centered">
+        <div class="info">
+            <p>Dear {{name}},</p>
+            <p>Welcome to {{company}}</p>
+            <p>Confirm your purchase of the film {{vod_name}}:</p>
+        </div>
+        <div class="qr">
+            <div id="qrcode"></div>
+            <div id="scan_me"><i class="fa fa-mobile fa-4x" aria-hidden="true"></i><p>Scan me</p></div>
+            <p>or Click</p>
+            <a href="{{payment_confirmation_url}}" id="buy_movie">Buy</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    var qrcode = new QRCode(document.getElementById("qrcode"), {
+        text: "{{payment_confirmation_url}}",
+        width: 230,
+        height: 230,
+        colorDark : "#000000",
+        colorLight : "#ffffff",
+        correctLevel : QRCode.CorrectLevel.H
+    });
+</script>
+
+</body>
+</html>

@@ -22,9 +22,6 @@ module.exports = function(app) {
     app.route('/apiv3/vod_payment/vod_purchase/:vod_id/:client_username')
         .all(vodController.buy_vod_item);
 
-    app.route('/apiv3/vod/confirm_vod_purchase/:vod_id/:client_username')
-        .all(vodController.confirm_vod_purchase);
-
     app.route('/apiv3/vod/reaction/:vod_id/:reaction')
         .all(authpolicy.isAllowed)
         .put(vodController.reaction)
@@ -59,5 +56,12 @@ module.exports = function(app) {
         .all(authpolicy.isAllowed)
         .get(vodController.get_vod_list);
 
+    app.route('/apiv3/vod/purchase_list')
+        .all(authpolicy.isAllowed)
+        .get(vodController.get_purchased_movies);
+
+    app.route('/apiv3/vod/tvod_movies')
+        .all(authpolicy.isAllowed)
+        .get(vodController.get_tvod_movies);
 
 };

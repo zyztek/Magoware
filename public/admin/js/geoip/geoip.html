@@ -1,0 +1,81 @@
+<head>
+    <style type="text/css">
+        @media screen and ( max-width: 1600px ) {
+            .frm {
+                margin-left: 150px;
+                margin-right: 150px;
+            }
+        }
+
+        @media screen and ( max-width: 989px ) {
+            .frm {
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        @media screen and ( max-width: 767px ) {
+            .frm {
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        @media screen and ( max-width: 600px ) {
+            .frm {
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        @media screen and ( max-width: 540px ) {
+            .frm {
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        @media screen and ( max-width: 480px ) {
+            .frm {
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        @media screen and ( max-width: 380px ) {
+            .frm {
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+    </style>
+</head>
+
+<div class="row list-header">
+    <div class="col-lg-12">
+
+        <div class="page-header">
+            <h4>GeoIP</h4>
+        </div>
+
+    </div>
+</div>
+
+<div class="row frm">
+
+    <form ng-submit="updateurl()">
+
+        <div class="alert alert-danger" id="status_false" style="display:none;"></div>
+        <div class="alert alert-success" id="status_true" style="display: none;"></div>
+
+        <div class="form-group">
+            <label for="send_url">URL</label>
+            <input class="form-control" id="send_url"  aria-describedby="emailHelp" placeholder="URL">
+        </div>
+
+        <hr>
+        <button type="submit" class="btn btn-default pull-right">Submit</button>
+    </form>
+
+
+</div>

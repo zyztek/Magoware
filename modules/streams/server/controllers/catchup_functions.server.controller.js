@@ -41,6 +41,7 @@ exports.flussonic_catchup_stream = function(req,res) {
         res.send(clear_response);
 
     }).catch(function(error) {
+        winston.error(error);
         var database_error = new response.APPLICATION_RESPONSE(req.body.language, 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA');
         res.send(database_error);
     });

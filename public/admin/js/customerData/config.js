@@ -286,6 +286,9 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'Part of customer address. Please select from dropdown list.'})
                 .validation({ required: true })
                 .label('Country'),
+                nga.field('zip_code', 'string')
+                    .attributes({placeholder: 'Customer zip code', maxlength: 10})
+                    .label('Zip code'),
             nga.field('telephone')
                 .attributes({ placeholder: 'Customer phone number'})
                 .validation({ required: true })

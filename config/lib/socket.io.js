@@ -35,8 +35,9 @@ module.exports = function(app, db) {
     console.log('Running HTTP server');
     server = http.createServer(app);
   }
+
   // Create a new Socket.io server
-  var io = socketio.listen(server);
+  var io = socketio(server);
 
   var redisStore = new RedisStore({
     host: config.redis.host || 'localhost',

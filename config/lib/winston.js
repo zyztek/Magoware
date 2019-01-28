@@ -4,7 +4,7 @@ var winston = require('winston');
 var logger = new(winston.Logger)();
 
 logger.add(winston.transports.Console, {
-  level: 'error',
+  level: (process.env.NODE_ENV === 'development')?'verbose':'error',
   prettyPrint: true,
   colorize: true,
   silent: false,

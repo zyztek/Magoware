@@ -48,7 +48,7 @@ exports.settings = function(req, res) {
                 callback(null, login_data);
                 return null;
             }).catch(function(error) {
-                //TODO: return some response?
+                winston.error("Quering the data of this user failed with error: ", error);
             });
         },
         //CHECKING IF THE USER NEEDS TO REFRESH SERVER SIDE DATA
@@ -144,11 +144,13 @@ exports.settings = function(req, res) {
                     callback(null, login_data, daysleft, seconds_left, refresh);
                     return null;
                 }).catch(function(error) {
+                    winston.error("Quering for this user's active subscription failed with error: ", error);
                     callback(null, login_data, 0, 0, refresh);
                     return null;
                 });
                 return null;
             }).catch(function(error) {
+                winston.error("Quering for this app group's data failed with error: ", error);
                 callback(null, login_data, 0, 0, refresh);
                 return null;
             });
@@ -183,6 +185,7 @@ exports.settings = function(req, res) {
                 }
                 return null;
             }).catch(function(error) {
+                winston.error("Searching for the latest available update for the user failed with error: ", error);
                 callback(null, login_data, daysleft, seconds_left, refresh, false);
                 return null;
             });
@@ -219,12 +222,16 @@ exports.settings = function(req, res) {
                 attributes: ['id'],
                 include: [
                     {model: models.vod_stream, required: true, attributes: ['url', 'encryption', 'token', 'stream_format', 'token_url']},
-                    {model: models.vod_category, required: true, attributes: [], where:{password:{in: allowed_content}, isavailable: true}}
+                    {model: models.vod_vod_categories, required: true, attributes: [], include: [{
+							model: models.vod_category, required: true, attributes: [], where:{password:{in: allowed_content}, isavailable: true}
+						}]
+					}
                 ], where: {pin_protected:{in: allowed_content}, isavailable: true}
             }).then(function (record_count) {
                 callback(null, login_data, daysleft, seconds_left, refresh, available_upgrade, offset, record_count.length); //return nr of vod records
                 return null;
             }).catch(function(error) {
+                winston.error("Quering for number of vod items failed with error: ", error);
                 callback(null, login_data, daysleft, seconds_left, refresh, available_upgrade, offset, 1000); //return nr of vod records
                 return null;
             });
@@ -245,6 +252,7 @@ exports.settings = function(req, res) {
                             callback(null, login_data, daysleft, seconds_left, refresh, available_upgrade, offset, record_count, true, movie_url.url, resume_movie.resume_position); //send resume = true, movie stream and position
                             return null;
                         }).catch(function(error) {
+                            winston.error("Quering for the stream of the movie to resume failed with error: ", error);
                             callback(null, login_data, daysleft, seconds_left, refresh, available_upgrade, offset, record_count, false, 0, 0); //error occurred, send resume = false
                         });
                         return null;
@@ -254,6 +262,7 @@ exports.settings = function(req, res) {
                     }
                     return null;
                 }).catch(function(error) {
+                    winston.error("Searching for the data of the movie that will be resumed failed with error: ", error);
                     callback(null, login_data, daysleft, seconds_left, refresh, available_upgrade, offset, record_count, false, 0, 0); //error occurred, send resume = false
                 });
             }
@@ -447,6 +456,7 @@ exports.get_settings = function(req, res) {
         var daysleft = Math.ceil(Number(Math.ceil(seconds_left / 86400).toFixed(0)));
 
     }).catch(function(error) {
+        winston.error("Searching for the user's subscription failed with error: ", error);
         res.send(error);
     });
 

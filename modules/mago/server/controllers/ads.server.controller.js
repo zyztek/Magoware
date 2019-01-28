@@ -1,5 +1,6 @@
 var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
+    winston = require('winston'),
     push_msg = require(path.resolve('./custom_functions/push_messages')),
     db = require(path.resolve('./config/lib/sequelize')).models,
     DBModel = db.commands,
@@ -125,6 +126,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
+        winston.error("Getting the list of ads sent failed with error: ", err);
         res.jsonp(err);
     });
 };

@@ -29,10 +29,20 @@ export default function (nga, admin) {
 						.attributes({ placeholder: 'Group name' })
 						.validation({ required: true })
 						.label('Group name'),
-				nga.field('code')
-						.attributes({ placeholder: 'Group code' })
-						.validation({ required: true })
-						.label('Group code'),
+                nga.field('code','choice')
+                    .choices([
+                        { value: 'admin', label: 'admin' },
+                        { value: 'finance', label: 'finance' },
+                        { value: 'guest', label: 'guest' },
+                        { value: 'distributor', label: 'distributor' },
+                        { value: 'resellers', label: 'resellers' },
+                        { value: 'management', label: 'management' },
+                        { value: 'customercare', label: 'customercare' },
+                        { value: 'vod', label: 'vod' }
+                    ])
+                    .attributes({ placeholder: 'Group code' })
+                    .validation({ required: true })
+                    .label('Group code'),
 				nga.field('isavailable', 'boolean')
 						.attributes({ placeholder: 'Is Available' })
 						.validation({ required: true })

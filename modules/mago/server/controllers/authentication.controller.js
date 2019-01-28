@@ -10,6 +10,7 @@ var jwt = require('jsonwebtoken'),
 var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     db = require(path.resolve('./config/lib/sequelize')).models,
+    winston = require('winston'),
     async = require('async'),
     crypto = require('crypto'),
     nodemailer = require('nodemailer'),
@@ -74,6 +75,7 @@ exports.authenticate = function(req, res) {
             res.json({token:token});
         }
     }).catch(function(err) {
+        winston.error("Finding the user failed with error: ", err);
         res.jsonp(err);
     });
 };
@@ -88,6 +90,7 @@ exports.get_personal_details = function(req, res) {
     ).then(function(result){
         res.send(result);
     }).catch(function(err) {
+        winston.error("Finding user via token failed with error: ", err);
         return res.status(404).send({
             message: 'User not found'
         });
@@ -109,6 +112,7 @@ exports.update_personal_details = function(req, res) {
                     res.json(result);
                 })
                 .catch(function(err) {
+                    winston.error("Updating the user's data failed with error: ", err);
                     return res.status(500).send({
                         message: errorHandler.getErrorMessage(err)
                     });
@@ -144,6 +148,7 @@ exports.changepassword1 = function(req, res, next) {
                                     });
                                 })
                                 .catch(function(error) {
+                                    winston.error("Updating the suer's password failed with error: ", error);
                                     return res.status(400).send({
                                         message: errorHandler.getErrorMessage(error)
                                     });
@@ -226,6 +231,7 @@ exports.forgot = function(req, res, next) {
                         return null;
                     }
                 }).catch(function(err) {
+                    winston.error("Finding the user failed with error: ", err);
                     return res.status(400).send({
                         message: 'Username field must not be blank'
                     });

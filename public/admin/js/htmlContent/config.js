@@ -49,10 +49,10 @@ export default function (nga, admin) {
                 })
                 .label('Content *'),
             nga.field('url')
-                .transform(function (value,entry) {
-                    var url = window.location.origin + '/api/htmlContentApp/' + entry.id;
-                    return url;
-                })
+            .transform(function (value,entry) {
+                var url = window.location.origin + '/api/htmlContentApp/' + entry.id;
+                return url;
+            })
                 .cssClasses('hidden')
                 .label(''),
             nga.field('template')

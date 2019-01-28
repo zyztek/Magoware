@@ -4,6 +4,7 @@ var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     push_msg = require(path.resolve('./custom_functions/push_messages')),
     db = require(path.resolve('./config/lib/sequelize')).models,
+    winston = require('winston'),
     DBModel = db.commands,
     DBDevices = db.devices;
 
@@ -108,15 +109,17 @@ exports.create = function(req, res) {
                     var fcm_tokens = [];
                     var users = [];
                     var min_ios_version = (company_configurations.ios_min_version) ? parseInt(company_configurations.ios_min_version) : parseInt('1.3957040');
-                    var min_stb_version = (company_configurations.stb_min_version) ? parseInt(company_configurations.stb_min_version) : parseInt('2.2.2');
+                    var android_phone_min_version = (company_configurations.android_phone_min_version) ? parseInt(company_configurations.android_phone_min_version) : '1.1.2.2';
+                    var min_stb_version = (company_configurations.stb_min_version) ? parseInt(company_configurations.stb_min_version) : '2.2.2';
+                    var android_tv_min_version = (company_configurations.android_tv_min_version) ? parseInt(company_configurations.android_tv_min_version) : '6.1.3.0';
                     for(var i=0; i<result.length; i++){
-                        if(result[i].appid === 1 && result[i].app_version >= '2.2.2')
+                        if(result[i].appid === 1 && result[i].app_version >= min_stb_version)
                             var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
-                        else if(result[i].appid === 2 && result[i].app_version >= min_stb_version)
+                        else if(result[i].appid === 2 && result[i].app_version >= android_phone_min_version)
                             var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
                         else if(parseInt(result[i].appid) === parseInt('3') && parseInt(result[i].app_version) >= min_ios_version)
                             var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
-                        else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0')
+                        else if(result[i].appid === 4 && result[i].app_version >= android_tv_min_version)
                             var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
                         else if(['5', '6'].indexOf(result[i].appid))
                             var message = new push_msg.COMMAND_PUSH("Command", "Running command", '4', req.body.command, req.body.parameter1, req.body.parameter2, req.body.parameter3);
@@ -162,6 +165,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
+        winston.error("Finding list of sent commands failed with error: ", err);
         res.jsonp(err);
     });
 };

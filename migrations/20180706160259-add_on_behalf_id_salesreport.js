@@ -3,7 +3,7 @@ var winston = require('winston');
 
 module.exports = {
     up: function (queryInterface, Sequelize) {
-        return queryInterface.addColumn('salesreport', 'on_behalf_id',{type: Sequelize.INTEGER(11), allowNull: true})
+        return queryInterface.addColumn('salesreport', 'on_behalf_id', {type: Sequelize.INTEGER(11), allowNull: true})
             .catch(function(err) {winston.error('Adding column salesreport.on_behalf_id failed with error message: ',err.message);});
     },
 

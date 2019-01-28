@@ -15,6 +15,8 @@ var db = require(path.resolve('./config/lib/sequelize')).models,
 var systemroutes = require(path.resolve('./modules/mago/server/policies/systemroutes.json'));
 var grouprights = require(path.resolve('./modules/mago/server/controllers/grouprights.server.controller.js'));
 
+var winston = require('winston');
+
 /**
  * Module dependencies.
  */
@@ -105,6 +107,7 @@ exports.isAllowed = function(req, res, next) {
                     return null;
                 }
             }).catch(function(err) {
+                winston.error(err);
                 return res.status(404).json({
                     message: 'User is not authorized'
                 });
@@ -137,6 +140,7 @@ exports.isApiKeyAllowed = function(req, res, next) {
         }
         return null;
     }).catch(function(err) {
+        winston.error(err);
         return res.status(404).json({
             message: 'API key not authorized'
         });

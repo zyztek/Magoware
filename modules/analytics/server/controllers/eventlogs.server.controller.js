@@ -1,6 +1,7 @@
 'use strict';
 var path = require('path'),
     vod = require(path.resolve("./modules/deviceapiv2/server/controllers/vod.server.controller.js"));
+var winston = require("winston");
 
 var thistracker = require(path.resolve('./modules/analytics/server/controllers/helpers/matomoanalyticshelper'));
 var googletracker = require(path.resolve('./modules/analytics/server/controllers/helpers/googleanalyticshelper'));
@@ -25,7 +26,7 @@ exports.screen = function(req, res) {
 
     //var lang = (languages[req.body.language]) ? req.body.language : 'eng'; //handle missing language variables, serving english as default
     //res.send(languages[lang].language_variables['OK']);
-    thistracker.trackscreen(req,res);
+    //thistracker.trackscreen(req,res);
     googletracker.trackscreen(req,res);
     res.send('ok');
 };

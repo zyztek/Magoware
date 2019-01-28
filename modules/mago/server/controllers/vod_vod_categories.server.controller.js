@@ -6,6 +6,7 @@
 var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     logHandler = require(path.resolve('./modules/mago/server/controllers/logs.server.controller')),
+    winston = require('winston'),
     db = require(path.resolve('./config/lib/sequelize')).models,
     DBModel = db.vod,
     refresh = require(path.resolve('./modules/mago/server/controllers/common.controller.js')),
@@ -24,6 +25,7 @@ exports.create = function(req, res) {
             return res.jsonp(result);
         }
     }).catch(function(err) {
+        winston.error("Creating vod item failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -64,6 +66,7 @@ exports.update = function(req, res) {
         logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
         return res.json(result);
     }).catch(function(err) {
+        winston.error("Updating vod item failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -80,6 +83,7 @@ exports.delete = function(req, res) {
             result.destroy().then(function() {
                 return res.json(result);
             }).catch(function(err) {
+                winston.error("Deleting vod failed with error: ", err);
                 return res.status(400).send({
                     message: errorHandler.getErrorMessage(err)
                 });
@@ -91,6 +95,7 @@ exports.delete = function(req, res) {
             });
         }
     }).catch(function(err) {
+        winston.error("Finding vod failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -147,6 +152,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
+        winston.error("Getting vod list failed with error: ", err);
         res.jsonp(err);
     });
 };
@@ -178,6 +184,7 @@ exports.dataByID = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
+        winston.error("Getting vod item failed with error: ", err);
         return next(err);
     });
 
@@ -243,6 +250,7 @@ exports.update_film = function(req, res) {
                     ).then(function(result){
                         res.send(response);
                     }).catch(function(error){
+                        winston.error("Updating vod item failed with error: ", err);
                         return res.status(404).send({
                             message: "An error occurred while updating this movie"
                         });
@@ -255,6 +263,7 @@ exports.update_film = function(req, res) {
             message: "Could not find this movie"
         });
     }).catch(function(error){
+        winston.error("Finding vod item failed with error: ", err);
         return res.status(404).send({
             message: "An error occurred while searching for this movie"
         });

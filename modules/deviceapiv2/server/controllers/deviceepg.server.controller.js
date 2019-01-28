@@ -130,7 +130,7 @@ exports.event =  function(req, res) {
                         temp_obj.number = req.body.channelNumber;
                         temp_obj.title = "Program of "+channel_title;
                         temp_obj.scheduled = false;
-                        temp_obj.description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit";
+                        temp_obj.description = "Program of "+channel_title;
                         temp_obj.shortname = "Program of "+channel_title;
                         temp_obj.programstart = '01/01/1970 00:00:00';
                         temp_obj.programend = '01/01/1970 00:00:00';
@@ -141,14 +141,17 @@ exports.event =  function(req, res) {
                 }
                 response.send_res(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=43200');
             }).catch(function(error) {
+                winston.error("Getting the next 6 events failed with error: ", error);
                 response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
             return null;
         }).catch(function(error) {
+            winston.error("Getting the list of the client's personal channels failed with error: ", error);
             response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
         return null;
     }).catch(function(error) {
+        winston.error("Getting the list of channels failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
@@ -274,7 +277,7 @@ exports.get_event =  function(req, res) {
                         temp_obj.number = req.query.channelNumber;
                         temp_obj.title = "Program of "+channel_title;
                         temp_obj.scheduled = false;
-                        temp_obj.description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit";
+                        temp_obj.description = "Program of "+channel_title;
                         temp_obj.shortname = "Program of "+channel_title;
                         temp_obj.programstart = '01/01/1970 00:00:00';
                         temp_obj.programend = '01/01/1970 00:00:00';
@@ -285,14 +288,17 @@ exports.get_event =  function(req, res) {
                 }
                 response.send_res_get(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=43200');
             }).catch(function(error) {
+                winston.error("Getting the next 6 events failed with error: ", error);
                 response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
             return null;
         }).catch(function(error) {
+            winston.error("Finding the title of the client's channel failed with error: ", error);
             response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
         return null;
     }).catch(function(error) {
+        winston.error("Finding the channel's title failed with error: ", error);
         response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
@@ -303,11 +309,12 @@ exports.get_event =  function(req, res) {
 
 //RETURNS EPG FOR PROGRAMS CURRENTLY BEING TRANSMITTED IN THE USER'S SUBSCRIBED CHANNELS FOR THIS DEVICE
 /**
- * @api {POST} /apiv2/channels/current_epgs Channels - current epg
+ * @api {post} /apiv2/channels/current_epgs Channels - current epg
  * @apiName livetv_current_epg
  * @apiGroup DeviceAPI
  *
- * @apiParam {String} auth Encrypted string composed of username, password, appid, boxid and timestamp.
+ * @apiUse body_auth
+ * @apiParam {String} auth Encrypted authentication token string.
  * @apiParam {Number} device_timezone Timezone offset of the device. Values in range of [-12:12]
  *
  * @apiSuccessExample Success-Response:
@@ -335,6 +342,12 @@ exports.get_event =  function(req, res) {
  *       }, ....
  *       ]
  *   }
+ *
+ * @apiDescription Returns catchup stream url for the requested channel.
+ *
+ * Copy paste this auth for testing purposes
+ *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ *
  */
 exports.current_epgs =  function(req, res) {
     var server_time = dateFormat(Date.now(), "yyyy-mm-dd HH:MM:ss"); //start of the day for the user, in server time
@@ -353,7 +366,7 @@ exports.current_epgs =  function(req, res) {
     if(req.auth_obj.appid === 3) stream_qwhere.stream_format = 2; // send only hls streams for ios application
     stream_qwhere.stream_source_id = req.thisuser.channel_stream_source_id; // streams come from the user's stream source
     stream_qwhere.stream_mode = 'live';
-    stream_qwhere.stream_resolution = (req.auth_obj.screensize === 1) ? {like: '%large%'} : {like: '%small%'};
+    stream_qwhere.stream_resolution = {$like: "%"+req.auth_obj.appid+"%"};
 
     models.my_channels.findAll({
         attributes: ['channel_number', 'title'], order: [[ 'channel_number', 'ASC' ]], where: userstream_qwhere,
@@ -399,7 +412,7 @@ exports.current_epgs =  function(req, res) {
                 raw_obj.id = (channels[i].epg_data[0]) ? channels[i].epg_data[0].id : -1;
                 raw_obj.scheduled = false;
                 raw_obj.shortname = (channels[i].epg_data[0]) ? channels[i].epg_data[0].short_description : "Program of "+ channels[i].title;
-                raw_obj.description = (channels[i].epg_data[0]) ?  channels[i].epg_data[0].long_description : 'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
+                raw_obj.description = (channels[i].epg_data[0]) ?  channels[i].epg_data[0].long_description : "Program of "+ channels[i].title;
                 raw_obj.programstart = (channels[i].epg_data[0]) ? channels[i].epg_data[0].program_start : "01/01/1970 00:00:00";
                 raw_obj.programend = (channels[i].epg_data[0]) ? channels[i].epg_data[0].program_end : "01/01/1970 00:00:00";
                 raw_obj.duration = (channels[i].epg_data[0]) ? channels[i].epg_data[0].duration_seconds : 0;
@@ -417,7 +430,7 @@ exports.current_epgs =  function(req, res) {
                     raw_obj.id = -1;
                     raw_obj.scheduled = false;
                     raw_obj.shortname = "Program of "+ user_channel[i].title;
-                    raw_obj.description = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
+                    raw_obj.description = "Program of "+ user_channel[i].title;
                     raw_obj.programstart = "01/01/1970 00:00:00";
                     raw_obj.programend = "01/01/1970 00:00:00";
                     raw_obj.duration = 0;
@@ -428,10 +441,12 @@ exports.current_epgs =  function(req, res) {
             }
             response.send_res(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=43200');
         }).catch(function(error) {
+            winston.error("Finding the channels available for this user failed with error: ", error);
             response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
         return null;
     }).catch(function(error) {
+        winston.error("Finding the client's personal channels failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
@@ -492,7 +507,7 @@ exports.get_current_epgs =  function(req, res) {
     if(req.auth_obj.appid === 3) stream_qwhere.stream_format = 2; // send only hls streams for ios application
     stream_qwhere.stream_source_id = req.thisuser.channel_stream_source_id; // streams come from the user's stream source
     stream_qwhere.stream_mode = 'live';
-    stream_qwhere.stream_resolution = (req.auth_obj.screensize === 1) ? {like: '%large%'} : {like: '%small%'};
+    stream_qwhere.stream_resolution = {$like: "%"+req.auth_obj.appid+"%"};
 
     models.my_channels.findAll({
         attributes: ['channel_number', 'title'], order: [[ 'channel_number', 'ASC' ]], where: userstream_qwhere,
@@ -538,7 +553,7 @@ exports.get_current_epgs =  function(req, res) {
                 raw_obj.id = (channels[i].epg_data[0]) ? channels[i].epg_data[0].id : -1;
                 raw_obj.scheduled = false;
                 raw_obj.shortname = (channels[i].epg_data[0]) ? channels[i].epg_data[0].short_description : "Program of "+ channels[i].title;
-                raw_obj.description = (channels[i].epg_data[0]) ?  channels[i].epg_data[0].long_description : 'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
+                raw_obj.description = (channels[i].epg_data[0]) ?  channels[i].epg_data[0].long_description : "Program of "+ channels[i].title;
                 raw_obj.programstart = (channels[i].epg_data[0]) ? channels[i].epg_data[0].program_start : "01/01/1970 00:00:00";
                 raw_obj.programend = (channels[i].epg_data[0]) ? channels[i].epg_data[0].program_end : "01/01/1970 00:00:00";
                 raw_obj.duration = (channels[i].epg_data[0]) ? channels[i].epg_data[0].duration_seconds : 0;
@@ -556,7 +571,7 @@ exports.get_current_epgs =  function(req, res) {
                     raw_obj.id = -1;
                     raw_obj.scheduled = false;
                     raw_obj.shortname = "Program of "+ user_channel[i].title;
-                    raw_obj.description = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit';
+                    raw_obj.description = "Program of "+ user_channel[i].title;
                     raw_obj.programstart = "01/01/1970 00:00:00";
                     raw_obj.programend = "01/01/1970 00:00:00";
                     raw_obj.duration = 0;
@@ -567,10 +582,12 @@ exports.get_current_epgs =  function(req, res) {
             }
             response.send_res_get(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=43200');
         }).catch(function(error) {
+            winston.error("Finding the channels available to the user failed with error: ", error);
             response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
         return null;
     }).catch(function(error) {
+        winston.error("Finding the user's personal channels failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
@@ -676,6 +693,7 @@ exports.epg = function(req, res) {
         });
         response.send_res(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=43200');
     }).catch(function(error) {
+        winston.error("Finding the events in the 4 hour timeframe failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
@@ -781,6 +799,7 @@ exports.get_epg = function(req, res) {
         });
         response.send_res_get(req, res, raw_result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=43200');
     }).catch(function(error) {
+        winston.error("Getting the events of the 4 hour timeframe failed with error: ", error);
         response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
@@ -846,12 +865,14 @@ exports.daily_epg =  function(req, res) {
                         }
                         else callback(null, user_channel);
                     }).catch(function(error) {
+                        winston.error("Finding the title of the client's personal channel failed with error: ", error);
                         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
                     });
                 }
                 else callback(null, channel.title);
                 return null;
             }).catch(function(error) {
+                winston.error("Finding the channel's title failed with error: ", error);
                 response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
         },
@@ -882,6 +903,7 @@ exports.daily_epg =  function(req, res) {
                 }
                 else callback(null, results.get_channel, result);
             }).catch(function(error) {
+                winston.error("Finding the events for the current day failed with error: ", error);
                 response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
         }],
@@ -895,7 +917,7 @@ exports.daily_epg =  function(req, res) {
                     temp_obj.number = req.body.channel_number;
                     temp_obj.title = "Program of "+epg_data.get_epg[0];
                     temp_obj.scheduled = false;
-                    temp_obj.description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit";
+                    temp_obj.description = "Program of "+epg_data.get_epg[0];
                     temp_obj.shortname = "Program of "+epg_data.get_epg[0];
                     temp_obj.programstart = '01/01/1970 00:00:00';
                     temp_obj.programend = '01/01/1970 00:00:00';
@@ -995,12 +1017,14 @@ exports.get_daily_epg =  function(req, res) {
                         }
                         else callback(null, user_channel);
                     }).catch(function(error) {
+                        winston.error("Getting the title of the client's personal channel failed with error: ", error);
                         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
                     });
                 }
                 else callback(null, channel.title);
                 return null;
             }).catch(function(error) {
+                winston.error("Getting the channel's title failed with error: ", error);
                 response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
         },
@@ -1031,6 +1055,7 @@ exports.get_daily_epg =  function(req, res) {
                 }
                 else callback(null, results.get_channel, result);
             }).catch(function(error) {
+                winston.error("Getting the events for a specific day failed with error: ", error);
                 response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
         }],
@@ -1044,7 +1069,7 @@ exports.get_daily_epg =  function(req, res) {
                     temp_obj.number = channel_number;
                     temp_obj.title = "Program of "+epg_data.get_epg[0];
                     temp_obj.scheduled = false;
-                    temp_obj.description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit";
+                    temp_obj.description = "Program of "+epg_data.get_epg[0];
                     temp_obj.shortname = "Program of "+epg_data.get_epg[0];
                     temp_obj.programstart = '01/01/1970 00:00:00';
                     temp_obj.programend = '01/01/1970 00:00:00';
@@ -1119,6 +1144,7 @@ exports.test_get_epg_data = function(req, res) {
     ).then(function (result) {
         res.send(result);
     }).catch(function(error) {
+        winston.error("Finding the events for a specific list of channels failed with error: ", error);
         res.send(error);
     });
 };
@@ -1179,6 +1205,7 @@ exports.get_epg_data = function(req, res) {
     ).then(function (result) {
         res.send(result);
     }).catch(function(error) {
+        winston.error("Getting the events for a specific list of channels failed with error: ", error);
         res.send(error);
     });
 };

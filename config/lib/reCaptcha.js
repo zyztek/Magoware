@@ -2,6 +2,7 @@
 
 var config = require('../config'),
   request = require('request');
+var winston = require("winston");
 
 // Verify the reCaptcha response
 exports.verify = function(response, cb) {

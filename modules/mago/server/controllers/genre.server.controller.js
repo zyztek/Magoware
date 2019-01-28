@@ -8,6 +8,7 @@ var path = require('path'),
     db = require(path.resolve('./config/lib/sequelize')),
     DBModel = db.models.genre,
     refresh = require(path.resolve('./modules/mago/server/controllers/common.controller.js')),
+    winston = require('winston'),
     fs = require('fs');
 
 /**
@@ -30,12 +31,14 @@ exports.create = function(req, res) {
                 return res.jsonp(result);
             }
         }).catch(function(err) {
+            winston.error("Creating genre failed with error: ", err);
             return res.status(400).send({
                 message: errorHandler.getErrorMessage(err)
             });
         });
         return null;
     }).catch(function(err) {
+        winston.error("Getting genre data failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -66,6 +69,7 @@ exports.update = function(req, res) {
         });
         return res.jsonp(result);
     }).catch(function(err) {
+        winston.error("Updating genre failed with error: ", err);
         res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -86,6 +90,7 @@ exports.delete = function(req, res) {
             }).catch(function(ER_ROW_IS_REFERENCED_2) {
                 return res.status(400).send({ message: "Cannot delete genre with channels" }) //this row is referenced by another record
             }).catch(function(error) {
+                winston.error("Deleting genre failed with error: ", error);
                 return res.status(400).send({ message: "Unable to delete genre" })
             });
         } else {
@@ -93,6 +98,7 @@ exports.delete = function(req, res) {
         }
         return null;
     }).catch(function(err) {
+        winston.error("Finding genre failed with error: ", err);
         return res.status(400).send({ message: "Unable to delete genre" });
     });
 
@@ -140,6 +146,7 @@ exports.list = function(req, res) {
           return res.json(results.rows);
       }
   }).catch(function(err) {
+      winston.error("Getting genre list failed with error: ", err);
       return res.jsonp(err);
   });
 };
@@ -171,6 +178,7 @@ exports.dataByID = function(req, res, next, id) {
       return null;
     }
   }).catch(function(err) {
+      winston.error("Finding genre failed with error: ", err);
       next(err);
       return null;
   });

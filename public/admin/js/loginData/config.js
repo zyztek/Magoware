@@ -50,6 +50,8 @@ export default function (nga, admin) {
                 .label('Auto Timezone'),
         ])
         .filters([
+            nga.field('username', 'string')
+                .label('Search for client account'),
             nga.field('q')
                 .label('')
                 .template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>')
@@ -87,11 +89,15 @@ export default function (nga, admin) {
             .attributes({ placeholder: 'Number,lowercase letter, and at least 2 or more characters'})
             .label('Username')
             .validation({ required: true, pattern: '^[a-z\\d]{2,}$' }),
+        nga.field('mac_address', 'string')
+            .attributes({maxlength: 12})
+            .label('Sale mac address'),
         nga.field('password', 'password')
             .attributes({ placeholder: '4 or more characters' , title: '4 or more characters' })
             .label('Password')
             .validation({ required: true, pattern: '.{4,}' }),
         nga.field('channel_stream_source_id', 'reference')
+            .defaultValue(1)
             .targetEntity(admin.getEntity('ChannelStreamSources'))
             .targetField(nga.field('stream_source'))
             .attributes({ placeholder: 'Choose from dropdown list channel stream source for this customer' })
@@ -104,6 +110,7 @@ export default function (nga, admin) {
                 }
             }),
         nga.field('vod_stream_source', 'reference')
+            .defaultValue(1)
             .targetEntity(admin.getEntity('VodStreamSources'))
             .targetField(nga.field('description'))
             .attributes({ placeholder: 'Choose from dropdown list VOD Stream Source for this customer' })
@@ -124,6 +131,10 @@ export default function (nga, admin) {
             .validation({ required: true })
             .defaultValue(10800)
             .label('Activity Time Out (sec)'),
+        nga.field('comment')
+            .attributes({ placeholder: 'Comments' })
+            .validation({ required: false })
+            .label('Comments'),
         nga.field('timezone', 'choice')
             .choices([
                 { value: -12, label: '(UTC-12:00) International Date Line West' },
@@ -160,7 +171,15 @@ export default function (nga, admin) {
                 }
             })
             .label('Timezone *'),
-
+        nga.field('player','choice')
+            .choices([
+                {value: 'default', label: 'Default Player'},
+                {value: 'exoplayer', label: 'Exoplayer'}
+            ])
+            .attributes({ placeholder: 'Player'})
+            .defaultValue('default')
+            .validation({required: true})
+            .label('Player'),
         nga.field('get_messages', 'choice')
             .defaultValue(false)
             .choices([
@@ -242,6 +261,9 @@ export default function (nga, admin) {
             .attributes({ placeholder: 'Username', readOnly: true })
             .label('Username')
             .validation({ required: true }),
+        nga.field('mac_address', 'string')
+            .attributes({maxlength: 12})
+            .label('Sale mac address'),
         nga.field('password', 'password')
             .attributes({ placeholder: 'Password' })
             .label('Password')
@@ -277,6 +299,10 @@ export default function (nga, admin) {
             .validation({ required: true })
             .defaultValue(10800)
             .label('Activity Time Out'),
+        nga.field('comment')
+            .attributes({ placeholder: 'Comments' })
+            .validation({ required: false })
+            .label('Comments'),
         nga.field('timezone', 'choice')
             .choices([
                 { value: -12, label: '(UTC-12:00) International Date Line West' },
@@ -313,7 +339,15 @@ export default function (nga, admin) {
                 }
             })
             .label('Timezone *'),
-
+        nga.field('player','choice')
+            .choices([
+                {value: 'default', label: 'Default Player'},
+                {value: 'exoplayer', label: 'Exoplayer'}
+            ])
+            .attributes({ placeholder: 'Player'})
+            .defaultValue('default')
+            .validation({required: true})
+            .label('Player'),
         nga.field('get_messages', 'choice')
             .choices([
                 { value: false, label: 'Disabled' },

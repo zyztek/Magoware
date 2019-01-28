@@ -1,5 +1,5 @@
 'use strict';
-var winston = require('winston');
+var winston = require("winston");
 
 /**
  * Module dependencies.
@@ -31,6 +31,7 @@ exports.create = function(req, res) {
             return res.jsonp(result);
         }
     }).catch(function(err) {
+        winston.error("Creating new sale failed with error: ", err);
         return res.status(400).send({ message: errorHandler.getErrorMessage(err) });
     });
 };
@@ -59,6 +60,7 @@ exports.update = function(req, res) {
                 //res.json(result);
                 res.status(200).send(result)
             }).catch(function(err) {
+                winston.error("Updating sale failed with error: ", err);
                 return res.status(400).send({ message: errorHandler.getErrorMessage(err) });
             });
         }
@@ -117,6 +119,7 @@ exports.annul = function(req, res) {
                 }
                 return null;
             }).catch(function(error){
+                winston.error("Finding specific sale failed with error: ", error);
                 response = {status: 400, message: 'Sale cannot be canceled'}
                 callback(true, response);
             });
@@ -142,6 +145,7 @@ exports.annul = function(req, res) {
                 }
                 return null;
             }).catch(function(error){
+                winston.error("Getting combo to annul failed with error: ", error);
                 response = {status: 400, message: 'Could not proceed with annulment'};
                 callback(true, response);
             });
@@ -167,6 +171,7 @@ exports.annul = function(req, res) {
                     }
                     return null;
                 }).catch(function(error){
+                    winston.error("Annuling subscription failed with error: ", error);
                     response = {status: 400, message: 'Some packages could not be canceled'};
                     callback(null, response);
                     return;
@@ -190,12 +195,14 @@ exports.annul = function(req, res) {
                 callback(null);
                 return null;
             }).catch(function(error){
+                winston.error("Setting sale as inactive failed with error: ", error);
                 response = {status: 400, message: 'Subscription canceled, could not annul sale record'}
                 callback(true, response);
             });
         }]
     }, function(err, results) {
         if(err) {
+            winston.error("Annuling sale failed with error: ", err);
             return res.status(400).send({
                 message: 'Unable to annul this sale'
             });
@@ -237,12 +244,14 @@ exports.delete = function(req, res) {
 
                 }
             }).catch(function(error) {
+                winston.error(error);
                 return res.status(400).send({
                     message: 'Unable to annul this sale'
                 });
             });
         }
     }).catch(function(error) {
+        winston.error("Deleting sale failed with error: ", error);
         return res.status(400).send({
             message: 'Unable to annul this sale'
         });
@@ -255,6 +264,7 @@ exports.delete = function(req, res) {
             result.destroy().then(function() {
                 return res.json(result);
             }).catch(function(err) {
+                winston.error(err);
                 return res.status(400).send({ message: errorHandler.getErrorMessage(err) });
             });
         } else {
@@ -263,6 +273,7 @@ exports.delete = function(req, res) {
             });
         }
     }).catch(function(err) {
+        winston.error(err);
         return res.status(400).send({ message: errorHandler.getErrorMessage(err) });
     });
 };
@@ -311,6 +322,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
+        winston.error("Getting sale list failed with error: ", err);
         res.jsonp(err);
     });
 
@@ -352,6 +364,7 @@ exports.sales_by_product = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
+        winston.error("Getting sales for each combo failed with error: ", err);
         res.jsonp(err);
     });
 
@@ -401,6 +414,7 @@ exports.sales_by_date = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
+        winston.error("Getting sales for each day failed with error: ", err);
         res.jsonp(err);
     });
 
@@ -453,6 +467,7 @@ exports.sales_by_month = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
+        winston.error("Getting sales for each month failed with error: ", err);
         res.jsonp(err);
     });
 
@@ -505,6 +520,7 @@ exports.sales_monthly_expiration = function(req, res) {
             res.json(results[0]);
         }
     }).catch(function(error){
+        winston.error("Getting subscription expiring each month failed with error: ", error);
         res.jsonp(error);
     });
 
@@ -558,6 +574,7 @@ exports.sales_by_expiration = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
+        winston.error("Getting subscriptions ordered by expiration failed with error: ", err);
         res.jsonp(err);
     });
 
@@ -581,6 +598,7 @@ exports.latest = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
+        winston.error("Getting most recent sales failed with error: ", err);
         res.jsonp(err);
     });
 };
@@ -609,6 +627,7 @@ exports.dataByID = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
+        winston.error("Getting data for specific sale failed with error: ", err);
         return next(err);
     });
 
@@ -661,6 +680,7 @@ exports.invoice = function(req, res) {
                     return res.send(invoice_data);
                 }
             }).catch(function(error) {
+                winston.error("Finding account to generate invoice failed with error: ", error);
                 res.send(error)
             });
         }
@@ -791,6 +811,7 @@ exports.download_invoice = function(req, res) {
             });
         }
     }).catch(function (err) {
+        winston.error("Finding sale to generate invoice failed with error: ", err);
         res.jsonp(err);
     });
 };

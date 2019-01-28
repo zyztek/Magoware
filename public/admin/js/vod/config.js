@@ -128,8 +128,13 @@ export default function (nga, admin) {
                 .validation({ required: true })
                 .label('Title'),
             nga.field('original_title', 'string')
+                .template(
+                    '<ma-input-field field="field" value="entry.values.original_title"></ma-input-field>' +
+                    '<small id="emailHelp" class="form-text text-muted">*Movie title as default value</small>'
+                )
                 .label('Original title'),
             nga.field('imdb_id', 'string')
+                .defaultValue(0)
                 .attributes({ placeholder: 'Movie Imdb Id' })
                 .template(
                     '<ma-input-field field="field" value="entry.values.imdb_id"></ma-input-field>'+
@@ -153,10 +158,6 @@ export default function (nga, admin) {
                 .singleApiCall(function (package_id) {
                     return { 'package_id[]': package_id };
                 }),
-            nga.field('year', 'string')
-                .attributes({ placeholder: 'Movie Year' })
-                .validation({ required: true })
-                .label('Year'),
             nga.field('director', 'string')
                 .attributes({ placeholder: 'Movie Director' })
                 .validation({ required: true })
@@ -169,13 +170,13 @@ export default function (nga, admin) {
                 }})
                 .label('Rate'),
             nga.field('vote_average', 'float')
-                .validation({required: true}).defaultValue(5.0)
+                .defaultValue(5.0)
                 .label('Vote Average'),
             nga.field('vote_count', 'number')
-                .validation({required: true}).defaultValue(0)
+                .defaultValue(0)
                 .label('Vote Count'),
             nga.field('popularity', 'float')
-                .validation({required: true}).defaultValue(0)
+                .defaultValue(0)
                 .label('Popularity'),
             nga.field('clicks', 'number')
                 .attributes({ placeholder: 'Movie clicks' })
@@ -293,8 +294,7 @@ export default function (nga, admin) {
                 .validation({ required: true })
                 .label('Is Available'),
 			nga.field('expiration_time','datetime')
-                .validation({ required: true })
-                .defaultValue(new Date())
+                .defaultValue('3018-01-01 00:00:00')
                 .label('Expiration date'),
             nga.field('price', 'float')
                 .template('<ma-input-field field="field" value="entry.values.price"></ma-input-field>'+
@@ -308,13 +308,13 @@ export default function (nga, admin) {
                 .validation({required: true})
                 .label('Mandatory ads'),
             nga.field('revenue', 'number')
-                .validation({required: true})
+                .defaultValue(0)
                 .label('Revenues'),
             nga.field('budget', 'number')
-                .validation({required: true})
+                .defaultValue(0)
                 .label('Budget'),
             nga.field('original_language', 'string')
-                .validation({required: true}).defaultValue('en')
+                .defaultValue('en')
                 .label('Original language'),
             nga.field('spoken_languages', 'choices')
                 .choices(language_list)
@@ -322,9 +322,6 @@ export default function (nga, admin) {
             nga.field('release_date', 'date')
                 .validation({required: true}).defaultValue('1896-12-28')
                 .label('Release date'),
-            nga.field('status', 'string')
-                .validation({required: true}).defaultValue('unknown')
-                .label('Status'),
             nga.field('status', 'choice')
                 .defaultValue('released')
                 .choices([
@@ -342,7 +339,7 @@ export default function (nga, admin) {
 
     vod.editionView()
         .title('<h4>Vods <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>')
-        .actions(['list', '<ma-delete-button label="Remove" entry="entry" entity="entity"></ma-delete-button>'])
+        .actions(['list', 'create', '<ma-delete-button label="Remove" entry="entry" entity="entity"></ma-delete-button>'])
         .fields([
             //creation view fields
             nga.field('title', 'string')
@@ -353,6 +350,7 @@ export default function (nga, admin) {
                 .label('Original title'),
             nga.field('imdb_id', 'string')
                 .attributes({ placeholder: 'Movie Imdb Id' })
+                .defaultValue(0)
                 .template(
                     '<ma-input-field field="field" value="entry.values.imdb_id"></ma-input-field>'+
                     '<small id="emailHelp" class="form-text text-muted">*This Id should either be left empty, or match exactly the Imdb Id</small>'
@@ -389,10 +387,6 @@ export default function (nga, admin) {
                 .singleApiCall(function (package_id) {
                     return { 'package_id[]': package_id };
                 }),
-            nga.field('year', 'string')
-                .attributes({ placeholder: 'Movie Year' })
-                .validation({ required: true })
-                .label('Year'),
             nga.field('director', 'string')
                 .attributes({ placeholder: 'Movie Director' })
                 .validation({ required: true })
@@ -405,13 +399,13 @@ export default function (nga, admin) {
                 }})
                 .label('Rate'),
             nga.field('vote_average', 'float')
-                .validation({required: true}).defaultValue(5.0)
+                .defaultValue(5.0)
                 .label('Vote Average'),
             nga.field('vote_count', 'number')
-                .validation({required: true}).defaultValue(0)
+                .defaultValue(0)
                 .label('Vote Count'),
             nga.field('popularity', 'float')
-                .validation({required: true}).defaultValue(0)
+                .defaultValue(0)
                 .label('Popularity'),
             nga.field('clicks', 'number')
                 .attributes({ placeholder: 'Movie clicks' })
@@ -528,9 +522,8 @@ export default function (nga, admin) {
                 .validation({ required: true })
                 .label('Is Available'),
 			nga.field('expiration_time','datetime')
-                .validation({ required: true })
-                .defaultValue(new Date())
-                .label('Expires in'),
+                .defaultValue('3018-01-01 00:00:00')
+                .label('Expiration date'),
             nga.field('price', 'float')
                 .template('<ma-input-field field="field" value="entry.values.price"></ma-input-field>'+
                     '<small id="emailHelp" class="form-text text-muted">*Set price to 0 for movies that are not for sale</small>')
@@ -543,13 +536,13 @@ export default function (nga, admin) {
                 .validation({required: true})
                 .label('Mandatory ads'),
             nga.field('revenue', 'number')
-                .validation({required: true})
+                .defaultValue(0)
                 .label('Revenues'),
             nga.field('budget', 'number')
-                .validation({required: true})
+                .defaultValue(0)
                 .label('Budget'),
             nga.field('original_language', 'string')
-                .validation({required: true}).defaultValue('en')
+                .defaultValue('en')
                 .label('Original language'),
             nga.field('spoken_languages', 'choices')
                 .choices(language_list)

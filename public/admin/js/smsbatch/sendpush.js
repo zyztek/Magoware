@@ -68,7 +68,7 @@ function sendpush(Restangular, $uibModal, $q, notification, $state) {
                     }
 
         },
-        template: `<span ng-click="modal()"><span class="glyphicon {{ icon }}" aria-hidden="true"></span>&nbsp;{{ label }}</span>`
+        template: '<span ng-click="modal()"><span class="glyphicon {{ icon }}" aria-hidden="true"></span>&nbsp;{{ label }}</span>'
     };
 }
 

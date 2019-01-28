@@ -1,5 +1,4 @@
 'use strict';
-var winston = require('winston');
 
 /**
  * Module dependencies.
@@ -17,7 +16,8 @@ var path = require('path'),
     dateFormat = require('dateformat'),
     DBChannels = db.channels,
     DBModel = db.epg_data,
-    xmltv = require('xmltv');
+    xmltv = require('xmltv'),
+    winston = require(path.resolve('./config/lib/winston'));
 
 var download = require('download-file')
 
@@ -37,12 +37,14 @@ exports.create = function(req, res) {
                 return res.jsonp(result);
             }
         }).catch(function(err) {
+            winston.error("Creating event failed with error: ", err);
             return res.status(400).send({
                 message: errorHandler.getErrorMessage(err)
             });
         });
         return null;
     }).catch(function(err) {
+        winston.error("Finding channel failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -94,6 +96,7 @@ exports.epg_import = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
+        winston.error("Getting event list failed with error: ", err);
         res.jsonp(err);
     });
 };
@@ -116,6 +119,7 @@ exports.update = function(req, res) {
     updateData.updateAttributes(req.body).then(function(result) {
         res.json(result);
     }).catch(function(err) {
+        winston.error("Updating event failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -133,6 +137,7 @@ exports.delete = function(req, res) {
             result.destroy().then(function() {
                 return res.json(result);
             }).catch(function(err) {
+                winston.error("Deleting event failed with error: ", err);
                 return res.status(400).send({
                     message: errorHandler.getErrorMessage(err)
                 });
@@ -144,6 +149,7 @@ exports.delete = function(req, res) {
         }
         return null;
     }).catch(function(err) {
+        winston.error("Finding event failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -195,6 +201,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
+        winston.error("Getting event list failed with error: ", err);
         res.jsonp(err);
     });
 };
@@ -226,6 +233,7 @@ exports.list_chart_epg = function(req, res) {
                 res.json({groups:channels, items:results});
             }
         }).catch(function(err) {
+            winston.error("Getting events for the chart failed with error: ", err);
             res.jsonp(err);
         });
     });
@@ -258,13 +266,13 @@ exports.dataByID = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
+        winston.error("Finding event failed with error: ", err);
         return next(err);
     });
 
 };
 
 exports.save_epg_records = function(req, res){
-
     var current_time = dateFormat(Date.now(), "yyyy-mm-dd HH:MM:ss");
     req.body.timezone = (req.body.timezone && (-12 < req.body.timezone < 12) ) ? req.body.timezone : 0; //valid timezone input or default timezone 0
     if(!req.body.encoding || ((['ascii', 'utf-8', 'ISO-8859-1'].indexOf(''+req.body.encoding+'') >= 0) === false) ) req.body.encoding = 'utf-8'; //valid encoding input or default encoding utf-8
@@ -273,8 +281,8 @@ exports.save_epg_records = function(req, res){
         //download epg to /public/files/epg
         var origin_url = req.body.epg_url;
         var destination_path = "./public/files/epg/";
-        var epg_filename = "aksi"+Date.now()+".csv"; //get name of new file
-
+        var epg_filename = "aksi"+Date.now() + origin_url.substring(origin_url.lastIndexOf("."), origin_url.length); //get name of new file
+        console.log(epg_filename);
         var options = {
             directory: destination_path,
             filename: epg_filename
@@ -285,9 +293,15 @@ exports.save_epg_records = function(req, res){
                 winston.error("error donwloading? "+err);
             }
             else{
-                req.body.epg_file = req.body.epg_file+',/files/epg/'+epg_filename; //append filename to req.body.epg_file
+                if (req.body.epg_file) {
+                    req.body.epg_file = req.body.epg_file+',/files/epg/'+epg_filename; //append filename to req.body.epg_file
+                }
+                else {
+                    req.body.epg_file = '/files/epg/'+epg_filename; //append filename to req.body.epg_file
+                }
+
+                start_epg_import();
             }
-            start_epg_import();
         });
     }
     else{
@@ -303,7 +317,10 @@ exports.save_epg_records = function(req, res){
                 return null;
             }).catch(function(error) {
                 if(error.message.split(': ')[0] === 'ER_ROW_IS_REFERENCED_2') return res.status(400).send({message: 'Delete failed: At least one of these programs is scheduled'}); //referenced record cannot be deleted
-                else return res.status(400).send({message: 'Unable to proceed with the action'}); //other error occurred
+                else{
+                    winston.error("Deleting existing events failed with error: ", error);
+                    return res.status(400).send({message: 'Unable to proceed with the action'}); //other error occurred
+                }
             });
         }
         else{
@@ -315,21 +332,28 @@ exports.save_epg_records = function(req, res){
 
         var import_log = []; // file_name saved_records non_saved_records error_log
 
-        var epg_files = req.body.epg_file.split(',');
+        if (!req.body.epg_file) {
+            //cannot import because no data avalable
+            res.status(200).send({message: "Cannot import anything because no file specified"})
+            return
+        }
 
+        var epg_files = req.body.epg_file.split(',');
+        console.log("Files " + epg_files.length)
+        console.log(req.body.epg_file);
         async.forEach(epg_files, function(epg_file, callback){
-            if(fileHandler.get_extension(epg_file)=== '.csv'){
-                import_csv(req, res, current_time, epg_file, import_log, callback);
-            }
-            else if(fileHandler.get_extension(epg_file)=== '.xml'){
-                //import_xml_standard(req, res, current_time, epg_file, import_log, callback);
-                //import_xmltv(res,res,123456);
-                import_xmltv(req, res, current_time, epg_file, import_log, callback);
-            }
-            else {
-                import_log.error_log.push('Incorrect file type for file '+epg_file)
-                callback(null);
-            }
+                if(fileHandler.get_extension(epg_file)=== '.csv'){
+                    import_csv(req, res, current_time, epg_file, import_log, callback);
+                }
+                else if(fileHandler.get_extension(epg_file)=== '.xml'){
+                    //import_xml_standard(req, res, current_time, epg_file, import_log, callback);
+                    //import_xmltv(res,res,123456);
+                    import_xmltv(req, res, current_time, epg_file, import_log, callback);
+                }
+                else {
+                    import_log.error_log.push('Incorrect file type for file ' + epg_file);
+                    callback(null);
+                }
         },function(error, result){
             return res.status(200).send({message: import_log});
         });
@@ -384,6 +408,7 @@ function import_csv(req, res, current_time, epg_file, import_log, callback){
                 }).then(function (result) {
                     callback(null); // future epg was deleted for channels on our list. pass control to next function
                 }).catch(function(error) {
+                    winston.error("Deleting previous events failed with error: ", error);
                     if(error.message.split(': ')[0] === 'ER_ROW_IS_REFERENCED_2') import_file_log.error_log.push('Error deleting future events. At least one of these events is scheduled');
                     else import_file_log.error_log.push('Error deleting future events.');
                     callback(null); // error occured while deleting future epg. pass control to the end
@@ -413,6 +438,7 @@ function import_csv(req, res, current_time, epg_file, import_log, callback){
                     }).then(function (result) {
                         import_file_log.saved_records++;
                     }).catch(function(error) {
+                        winston.error("Saving events failed with error: ", error);
                         import_file_log.non_saved_records++;
                         import_file_log.error_log.push("Failed to save record '"+data.short_name+"' with error: "+ error.name+": "+error.parent.sqlMessage);
                     });
@@ -451,7 +477,8 @@ function import_xml_dga(req, res, current_time, epg_file, import_log, callback){
                         callback(true); //file could not be read. add error into logs and stop import for this file
                     }
                     else {
-                        var epg_data = iconv.decode(data, req.body.encoding); //file was read successfully. Decode file to appropriate encoding
+                        var file_encoding = iconv.decode(data, req.body.encoding).split('encoding="')[1].split('"')[0]; //read encoding from epg file
+                        var epg_data = iconv.decode(data, file_encoding); //file was read successfully. Decode file to appropriate encoding
                         callback(null, epg_data); //pass execution flow and file content to next function
                     }
                 });
@@ -509,6 +536,7 @@ function import_xml_dga(req, res, current_time, epg_file, import_log, callback){
                                         import_file_log.saved_records++;
                                         callback(null);
                                     }).catch(function(error) {
+                                        winston.error("Saving events failed with error: ", error);
                                         import_file_log.non_saved_records++;
                                         import_file_log.error_log.push("Failed to save record '"+short_event_name+"' with error: "+ error.name+"- "+error.parent.sqlMessage);
                                         callback(null);
@@ -524,6 +552,7 @@ function import_xml_dga(req, res, current_time, epg_file, import_log, callback){
                             });
                             return null;
                         }).catch(function(error) {
+                            winston.error("Deleting previous events failed with error: ", error);
                             import_file_log.error_log.push("Failed to delete events for channel "+channel_name+": "+error.parent.sqlMessage);
                             callback(null); //event deletion failed. pass control to next epg record iteration
                         });
@@ -534,6 +563,7 @@ function import_xml_dga(req, res, current_time, epg_file, import_log, callback){
                     }
                     return null;
                 }).catch(function(error) {
+                    winston.error("Finding channel failed with error: ", error);
                     import_file_log.error_log.push("Error searching for channel "+error);
                     callback(null);
                 });
@@ -584,6 +614,7 @@ function import_xmltv(req, res, current_time, epg_file, import_log, callback){
         input.pipe(parser);
         return null;
     }).catch(function(err) {
+        winston.error("Finding available channels failed with error: ", err);
         winston.error(err);
     });
 
@@ -618,6 +649,7 @@ function import_xmltv(req, res, current_time, epg_file, import_log, callback){
                 callback(null);
             })
             .catch(function(err) {
+                winston.error("Importing events failed with error: ", err);
                 import_file_log.error_log = err;
                 import_log.push(import_file_log);
                 callback(null);
@@ -653,12 +685,14 @@ function import_xml_standard(req, res, current_time){
                                                 channel_list[''+channel.$.id+''] = ({title: channel_name});
                                                 callback(null, channel_list); //move control to next foreach iteration
                                             }).catch(function(error) {
+                                                winston.error("Deleting previous events for specific channels failed with error: ", error);
                                                 callback(true);//todo: provide some info to error
                                             });
                                         }
                                         else callback(null, channel_list); //move control to next foreach iteration
                                         return null;
                                     }).catch(function(error) {
+                                        winston.error("Finding channel failed with error: ", error);
                                         callback(true); //todo: provide some info to error
                                     });
                                 }, function (error) {
@@ -697,6 +731,7 @@ function import_xml_standard(req, res, current_time){
                                                         }).then(function (result) {
                                                             //on each write, do nothing. we wait for the saving process to finish
                                                         }).catch(function(error) {
+                                                            winston.error("Saving event failed with error: ", error);
                                                             //error while saving records
                                                         });
                                                     }
@@ -704,7 +739,7 @@ function import_xml_standard(req, res, current_time){
                                                 }
                                                 return null;
                                             }).catch(function(error) {
-                                                //error while saving records
+                                                winston.error("Finding channel failed with error: ", error); //error while saving records
                                             });
                                         }
                                         catch(error){

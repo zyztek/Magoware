@@ -8,10 +8,9 @@ module.exports = {
                 allowNull: false,
                 defaultValue: false,
                 after: 'locale'
-            })
-            .catch(function (err) {
-                winston.error('Adding column device_menu.is_guest_menu failed with error message: ', err.message);
-            });
+        }).catch(function (err) {
+            winston.error('Adding column device_menu.is_guest_menu failed with error message: ', err.message);
+        });
     },
 
     down: function (queryInterface, Sequelize) {

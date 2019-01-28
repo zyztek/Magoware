@@ -5,6 +5,7 @@
  */
 var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
+    winston = require('winston'),
     db = require(path.resolve('./config/lib/sequelize')).models,
     DBModel = db.payment_transactions;
 
@@ -51,6 +52,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
+        winston.error("Getting transaction list failed with error: ", err);
         res.jsonp(err);
     });
 };
@@ -83,6 +85,7 @@ exports.dataByID = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
+        winston.error("Getting transaction data failed with error: ", err);
         return next(err);
     });
 

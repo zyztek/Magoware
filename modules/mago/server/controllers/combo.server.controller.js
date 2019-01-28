@@ -6,6 +6,7 @@
 var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     logHandler = require(path.resolve('./modules/mago/server/controllers/logs.server.controller')),
+    winston = require('winston'),
     db = require(path.resolve('./config/lib/sequelize')).models,
     DBModel = db.combo;
 
@@ -19,9 +20,13 @@ exports.create = function(req, res) {
         if (!result) {
             return res.status(400).send({message: 'fail create data'});
         } else {
+            if(req.body.product_id === "transactional_vod" && req.body.isavailable === true){
+                req.app.locals.backendsettings.t_vod_duration = req.body.duration; //a combo was created to enable the feature of transactional vod. update value of
+            }
             return res.jsonp(result);
         }
     }).catch(function(err) {
+        winston.error("Creating combo failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -43,8 +48,14 @@ exports.update = function(req, res) {
 
     logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
     updateData.updateAttributes(req.body).then(function(result) {
+        //update local variable t_vod_duration if the status of the transactional vod combo has changed
+        if(req.body.product_id === "transactional_vod"){
+            if(req.body.isavailable === true) req.app.locals.backendsettings.t_vod_duration = req.body.duration; //update duration for transactional vod
+            else req.app.locals.backendsettings.t_vod_duration = null; //transactional vod combo is no longer active, set duration to null
+        }
         res.json(result);
     }).catch(function(err) {
+        winston.error("Updating combo failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -62,6 +73,7 @@ exports.delete = function(req, res) {
             result.destroy().then(function() {
                 return res.json(result);
             }).catch(function(err) {
+                winston.error("Deleting combo failed with error: ", err);
                 return res.status(400).send({
                     message: errorHandler.getErrorMessage(err)
                 });
@@ -72,6 +84,7 @@ exports.delete = function(req, res) {
             });
         }
     }).catch(function(err) {
+        winston.error("Finding combo failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -117,6 +130,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
+        winston.error("Finding combo list failed with error: ", err);
         res.jsonp(err);
     });
 };
@@ -148,6 +162,7 @@ exports.dataByID = function(req, res, next, id) {
       return null;
     }
   }).catch(function(err) {
+      winston.error("Finding combo failed with error: ", err);
     return next(err);
   });
 

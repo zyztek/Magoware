@@ -96,12 +96,12 @@ db.connect = function(database, username, password, options) {
                                     callback(null);
                                     return null;
                                 }).catch(function(err) {
-                                    winston.error('Error creating Admin user');
+                                    winston.error('Error creating Admin user - ', err);
                                     callback(null);
                                 });
                                 return null;
                             }).catch(function(err) {
-                                winston.error('Error creating Admin group');
+                                winston.error('Error creating Admin group - ', err);
                                 callback(null);
                             });
                         },
@@ -126,7 +126,7 @@ db.connect = function(database, username, password, options) {
                                 callback(null);
                                 return null;
                             }).catch(function(err) {
-                                winston.error('Error creating VOD stream source');
+                                winston.error('Error creating VOD stream source - ', err);
                                 callback(null);
                             });
                         },
@@ -138,7 +138,7 @@ db.connect = function(database, username, password, options) {
                                 winston.info('Live TV stream source created successfully.');
                                 callback(null);
                             }).catch(function(err) {
-                                winston.error('Error creating Live TV stream source');
+                                winston.error('Error creating Live TV stream source - ', err);
                                 callback(null);
                             });
                         },
@@ -225,9 +225,9 @@ db.connect = function(database, username, password, options) {
                     return null;
                 }).then(function() {
                     async.forEach(advanced_settings, function(advanced_settings_obj, callback){
-                        db.models['advanced_settings'].findOrCreate({
-                            where: {id: advanced_settings_obj.id}, defaults: advanced_settings_obj
-                        }).then(function(done) {
+                        db.models['advanced_settings'].upsert(
+                            advanced_settings_obj
+                        ).then(function(done) {
                             callback(null);
                             return null;
                         }).catch(function(err) {
@@ -320,7 +320,7 @@ db.connect = function(database, username, password, options) {
         }
         return null;
     }).catch(function(error) {
-        winston.error("Error connecting to database");
+        winston.error("Error connecting to database - ", error);
     });
 
     db.sequelize = sequelize;

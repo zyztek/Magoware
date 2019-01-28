@@ -1,12 +1,13 @@
 'use strict';
-var winston = require('winston');
 var path = require('path'),
     db = require(path.resolve('./config/lib/sequelize')),
     sequelize = require('sequelize'),
     response = require(path.resolve("./config/responses.js")),
     authentication = require(path.resolve("./modules/deviceapiv2/server/controllers/authentication.server.controller.js")),
+    winston = require('winston'),
     nodemailer = require('nodemailer'),
     models = db.models;
+var winston = require("winston");
 
 
 /** @module color/mixer
@@ -25,6 +26,7 @@ exports.user_settings = function(req, res) {
         var response_data = [result];
         response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Quering for the client's settings failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
@@ -39,6 +41,7 @@ exports.user_settings_get = function(req, res) {
         var response_data = [result];
         response.send_res_get(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Getting the client's settings failed with error: ", error);
         response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
@@ -56,10 +59,12 @@ exports.user_data = function(req, res) {
             var response_data = [result];
             response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
         }).catch(function(error) {
+            winston.error("Quering for the client's personal information failed with error: ", error);
             response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
         return null;
     }).catch(function(error) {
+        winston.error("Finding the customer's id failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
@@ -77,10 +82,12 @@ exports.user_data_get = function(req, res) {
             var response_data = [result];
             response.send_res_get(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
         }).catch(function(error) {
+            winston.error("Getting the customer's personal data failed with error: ", error);
             response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
         return null;
     }).catch(function(error) {
+        winston.error("Getting the customer's id failed with error: ", error);
         response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
@@ -143,9 +150,11 @@ exports.update_user_data = function(req, res) {
                 response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
 
                 }).catch(function(error){
+                winston.error("Finding the template for a new email failed with error: ", error);
                 response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
             }).catch(function(error) {
+            winston.error("Updating the customer's personal information failed with error: ", error);
             if(error.name === "SequelizeUniqueConstraintError" && error.errors[0].path === "email"){
                 response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'EMAIL_ALREADY_EXISTS', 'no-store');
             }
@@ -155,6 +164,7 @@ exports.update_user_data = function(req, res) {
         });
         return null;
     }).catch(function(error) {
+        winston.error("Finding the customer's personal information failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
@@ -181,6 +191,7 @@ exports.update_user_settings = function(req, res) {
     ).then(function (result) {
         response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
     }).catch(function(error) {
+        winston.error("Updating the client's account information failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
@@ -213,6 +224,7 @@ exports.change_password = function(req, res) {
     ).then(function (result) {
         response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
     }).catch(function(error) {
+        winston.error("Updating the account's password failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
@@ -258,10 +270,12 @@ exports.reset_pin = function(req, res) {
             });
             response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'RESET_PIN_DATA', 'no-store');
         }).catch(function(error){
+            winston.error("Finding the template for the pin change failed with error: ", error);
             response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
         return null;
     }).catch(function(error) {
+        winston.error("Quering for the client's personal info failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
@@ -320,6 +334,7 @@ exports.subscription = function(req, res) {
         }
 
     }).catch(function(error) {
+        winston.error("Getting the subscription list failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
@@ -379,6 +394,7 @@ exports.subscription_get = function(req, res) {
         }
 
     }).catch(function(error) {
+        winston.error("Getting the client's subscription failed with error: ", error);
         response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
@@ -437,6 +453,7 @@ exports.salereport = function(req, res) {
         }
         response.send_res(req, res, salereport, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Quering for the client's purchase list failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
@@ -495,6 +512,7 @@ exports.salereport_get = function(req, res) {
         }
         response.send_res_get(req, res, salereport, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Getting the client's purchase list failed with error: ", error);
         response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
@@ -509,6 +527,7 @@ exports.genre = function(req, res) {
     }).then(function (result) {
         response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Quering the list of channel genres failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
@@ -521,6 +540,7 @@ exports.genre_get = function(req, res) {
     }).then(function (result) {
         response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Getting the list of channel genres failed with error: ", error);
         response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
@@ -531,91 +551,73 @@ exports.genre_get = function(req, res) {
  Listing, adding, editing and deleting user channels
  *******************************************************************/
 exports.add_channel = function(req, res) {
-    models.login_data.findOne({
-        attributes:['id'],
-        where: {username: req.auth_obj.username}
+
+    models.my_channels.create({
+        channel_number: 66666,
+        login_id: req.thisuser.id,
+        title: req.body.title,
+        genre_id: (req.body.genre_id) ? req.body.genre_id : 1,
+        description: req.body.description,
+        icon_url: '/images/do_not_delete/mago_logo.png',  //TODO: delete
+        stream_url: req.body.stream ,
+        isavailable: 1
     }).then(function (result) {
-        models.my_channels.create({
-            channel_number: 66666,
-            login_id: result.id,
-            title: req.body.title,
-            genre_id: (req.body.genre_id) ? req.body.genre_id : 1,
-            description: req.body.description,
-            icon_url: '/images/do_not_delete/mago_logo.png',  //TODO: delete
-            stream_url: req.body.stream ,
-            isavailable: 1
-        }).then(function (result) {
-            var new_channel_number = result.id + 999; //smallest channel number will be 1000 (for id 0). This way conflicts are avoided with normal channel numbers, which are <= 999
-            models.my_channels.update(
-                {
-                    channel_number: new_channel_number //set channel number equal to the unique number we created
-                },
-                {
-                    where: {id: result.id} //for the recently added channel
-                }
-            ).then(function (result) {
-                response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
-            }).catch(function(error) {
-                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
-            });
-            return null;
+        var new_channel_number = result.id + 999; //smallest channel number will be 1000 (for id 0). This way conflicts are avoided with normal channel numbers, which are <= 999
+        models.my_channels.update(
+            {
+                channel_number: new_channel_number //set channel number equal to the unique number we created
+            },
+            {
+                where: {id: result.id} //for the recently added channel
+            }
+        ).then(function (result) {
+            response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
         }).catch(function(error) {
+            winston.error("Updating the number of the client's channel failed with error: ", error);
             response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
         return null;
     }).catch(function(error) {
+        winston.error("Saving the client's personal channel failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
+
 };
 
 //LIST QUERY. GET METHOD. No explicit parameter
 exports.channel_list = function(req, res) {
-    models.login_data.findOne({
-        attributes:['id'],
-        where: {username: req.auth_obj.username}
+    models.my_channels.findAll({
+        attributes: ['channel_number', 'title', 'genre_id', 'description', 'stream_url', 'isavailable'],
+        where: {login_id: req.thisuser.id},
+        include: [{ model: models.genre, required: true, attributes: ['icon_url'] }],
+        raw: true
     }).then(function (result) {
-        models.my_channels.findAll({
-            attributes: ['channel_number', 'title', 'genre_id', 'description', 'stream_url', 'isavailable'],
-            where: {login_id: result.id},
-            include: [{ model: models.genre, required: true, attributes: ['icon_url'] }],
-            raw: true
-        }).then(function (result) {
-            for (var i = 0; i < result.length; i++) {
-                result[i].icon_url = req.app.locals.settings.assets_url + result[i]["genre.icon_url"];
-                delete result[i]["genre.icon_url"];
-            }
-            response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
-        }).catch(function(error) {
-            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
-        });
-        return null;
+        for (var i = 0; i < result.length; i++) {
+            result[i].icon_url = req.app.locals.settings.assets_url + result[i]["genre.icon_url"];
+            delete result[i]["genre.icon_url"];
+        }
+        response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Finding the client's personal channels failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
 
 //LIST QUERY. GET METHOD. No explicit parameter - GET METHOD
 exports.channel_list_get = function(req, res) {
-    models.login_data.findOne({
-        attributes:['id'],
-        where: {username: req.auth_obj.username}
+    models.my_channels.findAll({
+        attributes: ['channel_number', 'title', 'genre_id', 'description', 'stream_url', 'isavailable'],
+        where: {login_id: req.thisuser.id},
+        include: [{ model: models.genre, required: true, attributes: ['icon_url'] }],
+        raw: true
     }).then(function (result) {
-        models.my_channels.findAll({
-            attributes: ['channel_number', 'title', 'genre_id', 'description', 'stream_url', 'isavailable'],
-            where: {login_id: result.id},
-            include: [{ model: models.genre, required: true, attributes: ['icon_url'] }],
-            raw: true
-        }).then(function (result) {
-            for (var i = 0; i < result.length; i++) {
-                result[i].icon_url = req.app.locals.settings.assets_url + result[i]["genre.icon_url"];
-                delete result[i]["genre.icon_url"];
-            }
-            response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
-        }).catch(function(error) {
-            response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
-        });
-        return null;
+        for (var i = 0; i < result.length; i++) {
+            result[i].icon_url = req.app.locals.settings.assets_url + result[i]["genre.icon_url"];
+            delete result[i]["genre.icon_url"];
+        }
+        response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Getting the client's personal channels failed with error: ", error);
         response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
@@ -628,6 +630,7 @@ exports.delete_channel = function(req, res) {
     }).then(function (result) {
         response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
     }).catch(function(error) {
+        winston.error("Deleting the channel of this client failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
@@ -644,6 +647,7 @@ exports.edit_channel = function(req, res) {
     ).then(function (result) {
         response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
     }).catch(function(error) {
+        winston.error("Updating the channel of this client failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };

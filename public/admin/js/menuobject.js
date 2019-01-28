@@ -165,13 +165,18 @@ export default [{
             "icon":'<span class="fa fa-key fa-fw"></span>',
             "link":'/ApiKeys/edit/1',
             "group_roles":["admin","administrator","customercare","management","guest"]
-        },
-            {
-                "entity":"Settings",
-                "title":"Other",
-                "icon":'<span class="fa fa-cog fa-fw"></span>',
-                "link":'/Settings/edit/1',
-                "group_roles":["admin","administrator","customercare","management","guest"]
+        },{
+            "entity":"",
+            "title":"GeoIP",
+            "icon":'<span class="fa fa-globe fa-fw"></span>',
+            "link":'/geoip',
+            "group_roles":["admin","administrator","customercare","management","guest"]
+        },{
+            "entity":"Settings",
+            "title":"Other",
+            "icon":'<span class="fa fa-cog fa-fw"></span>',
+            "link":'/Settings/edit/1',
+            "group_roles":["admin","administrator","customercare","management","guest"]
             }]
     },
     {
@@ -265,6 +270,14 @@ export default [{
             "link":'/Vods/list?search=%7B"pin_protected":"0"%7D',
             "group_roles":["admin","administrator","vod","management","guest"]
         },
+            {
+                "entity":"tmdbvods",
+                "title":"TMDB Vods",
+                "icon":'<span class="fa fa-film fa-fw"></span>',
+                "link":'/tmdbvods/list?search=%7B"q":"titanic"%7D',
+                "group_roles":["admin","administrator","vod","management","guest"]
+            },
+
             {
                 "entity":"vodMenu",
                 "title":"VOD Menu",

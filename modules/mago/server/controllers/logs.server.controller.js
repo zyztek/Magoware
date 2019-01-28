@@ -6,6 +6,7 @@
 var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     db = require(path.resolve('./config/lib/sequelize')),
+    winston = require('winston'),
     DBModel = db.models.logs,
     refresh = require(path.resolve('./modules/mago/server/controllers/common.controller.js'));
 
@@ -21,6 +22,7 @@ exports.create = function(req, res) {
             return res.jsonp(result);
         }
     }).catch(function(err) {
+        winston.error("Adding log failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -37,6 +39,7 @@ function addLog(user_id, user_ip, action, details){
     }).then(function(result) {
         return null;
     }).catch(function(err) {
+        winston.error("Saving log failed with error: ", err);
         return null;
     });
 }
@@ -59,6 +62,7 @@ exports.update = function(req, res) {
         return res.jsonp(result);
         res.json(result);
     }).catch(function(err) {
+        winston.error("Updating log failed with error: ", err);
         res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -77,6 +81,7 @@ exports.delete = function(req, res) {
             result.destroy().then(function() {
                 return res.json(result);
             }).catch(function(err) {
+                winston.error("Deleting log failed with error: ", err);
                 return res.status(400).send({
                     message: errorHandler.getErrorMessage(err)
                 });
@@ -88,6 +93,7 @@ exports.delete = function(req, res) {
         }
         return null;
     }).catch(function(err) {
+        winston.error("Finding log failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -126,6 +132,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
+        winston.error("Getting log list failed with error: ", err);
         res.jsonp(err);
     });
 };
@@ -157,6 +164,7 @@ exports.dataByID = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
+        winston.error("Getting log failed with error: ", err);
         next(err);
         return null;
     });

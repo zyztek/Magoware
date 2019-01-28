@@ -6,8 +6,10 @@ var path = require('path'),
     config = require(path.resolve('./config/config')),
     deviceauthpolicy = require(path.resolve('./modules/deviceapiv2/server/auth/apiv2.server.auth.js')),
     backendwuthpolicy = require(path.resolve('./modules/mago/server/policies/mago.server.policy.js')),
+    policy = require(path.resolve('./modules/mago/server/policies/mago.server.policy')),
     paymentGatewaysPolicy = require(path.resolve('./modules/paymentgateways/server/whitelist/paymentgateways.server.whitelist.js')),
-    stripeFunctions = require(path.resolve('./modules/paymentgateways/server/controllers/stripe_functions.server.controller.js'));
+    stripeFunctions = require(path.resolve('./modules/paymentgateways/server/controllers/stripe_functions.server.controller.js')),
+    paypalCheckout = require('../controllers/paypal_checkout.server.controller');
 
 
 module.exports = function(app) {
@@ -42,4 +44,11 @@ module.exports = function(app) {
     app.route('/apiv2/payments/stripe/form')
         //.all(authpolicy.isAllowed)
         .all(stripeFunctions.render_payment_form);
+
+    app.route('/apiv2/payments/paypal/')
+        .all(paypalCheckout.renderForm);
+    
+    app.route('/apiv2/payments/paypal/webhook')
+        .all(policy.isApiKeyAllowed)
+        .post(paypalCheckout.handleIPN);
 };

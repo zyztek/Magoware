@@ -6,6 +6,7 @@
 var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     db = require(path.resolve('./config/lib/sequelize')).models,
+    winston = require('winston'),
     sequelize_t = require(path.resolve('./config/lib/sequelize')),
     DBModel = db.packages_channels;
 
@@ -35,9 +36,11 @@ function link_channels_with_package(array_channel_ids, package_id) {
         }).then(function (result) {
             return {status: true, message:'transaction executed correctly'};
         }).catch(function (err) {
+            winston.error("Adding channels to packages failed with error: ", err);
             return {status: false, message:'error executing transaction'};
         })
     }).catch(function (err) {
+        winston.error("Removing channels from packages failed with error: ", err);
         return {status: false, message:'error deleteting existing packages'};
     })
 }
@@ -99,6 +102,7 @@ exports.update = function(req, res) {
     updateData.updateAttributes(req.body).then(function(result) {
         res.json(result);
     }).catch(function(err) {
+        winston.error(err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -117,6 +121,7 @@ exports.delete = function(req, res) {
             result.destroy().then(function() {
                 return res.json(result);
             }).catch(function(err) {
+                winston.error("Removing a channel from a package failed with error: ", err);
                 return res.status(400).send({
                     message: errorHandler.getErrorMessage(err)
                 });
@@ -127,6 +132,7 @@ exports.delete = function(req, res) {
             });
         }
     }).catch(function(err) {
+        winston.error(err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -160,6 +166,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
+        winston.error("Getting list of packages and their channels failed with error: ", err);
         res.jsonp(err);
     });
 };
@@ -187,6 +194,7 @@ exports.dataByID = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
+        winston.error(err);
         return next(err);
     });
 

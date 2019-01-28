@@ -1,5 +1,4 @@
 'use strict';
-var winston = require('winston');
 
 var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
@@ -7,6 +6,7 @@ var path = require('path'),
     db = require(path.resolve('./config/lib/sequelize')).models,
     DBModel = db.messages,
     DBDevices = db.devices;
+var winston = require("winston");
 
 
 function save_messages(obj, messagein, ttl, action, callback){
@@ -24,7 +24,7 @@ function save_messages(obj, messagein, ttl, action, callback){
             winston.info('Messages saved')
         }
     }).catch(function(err) {
-
+        winston.error("Saving message failed with error: ", err);
     });
 
 }
@@ -99,13 +99,15 @@ exports.create = function(req, res) {
                 });
             } else {
                 var min_ios_version = (company_configurations.ios_min_version) ? parseInt(company_configurations.ios_min_version) : parseInt('1.3957040');
-                var min_stb_version = (company_configurations.stb_min_version) ? parseInt(company_configurations.stb_min_version) : parseInt('2.2.2');
+                var android_phone_min_version = (company_configurations.android_phone_min_version) ? parseInt(company_configurations.android_phone_min_version) : '1.1.2.2';
+                var min_stb_version = (company_configurations.stb_min_version) ? parseInt(company_configurations.stb_min_version) : '2.2.2';
+                var android_tv_min_version = (company_configurations.android_tv_min_version) ? parseInt(company_configurations.android_tv_min_version) : '6.1.3.0';
                 for(var i=0; i<result.length; i++){
-                    if(result[i].appid === 1 && result[i].app_version >= '2.2.2') var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1', {});
-                    else if(result[i].appid === 2 && result[i].app_version >= min_stb_version) var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1',{});
+                    if(result[i].appid === 1 && result[i].app_version >= min_stb_version) var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1', {});
+                    else if(result[i].appid === 2 && result[i].app_version >= android_phone_min_version) var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1',{});
                     else if(parseInt(result[i].appid) === parseInt('3') && parseInt(result[i].app_version) >= min_ios_version)
                         var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1',{});
-                    else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0') var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1',{});
+                    else if(result[i].appid === 4 && result[i].app_version >= android_tv_min_version) var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1',{});
                     else if(['5', '6'].indexOf(result[i].appid))
                         var message = new push_msg.INFO_PUSH(req.body.title, req.body.message, '1',{});
                     else var message = {"action": "notification", "parameter1": req.body.message, "parameter2": req.body.message, "parameter3": ""};
@@ -173,6 +175,7 @@ exports.update = function(req, res) {
     updateData.updateAttributes(req.body).then(function(result) {
         res.json(result);
     }).catch(function(err) {
+        winston.error("Updating message failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -190,6 +193,7 @@ exports.delete = function(req, res) {
             result.destroy().then(function() {
                 return res.json(result);
             }).catch(function(err) {
+                winston.error("Deleting message failed with error: ", err);
                 return res.status(400).send({
                     message: errorHandler.getErrorMessage(err)
                 });
@@ -200,6 +204,7 @@ exports.delete = function(req, res) {
             });
         }
     }).catch(function(err) {
+        winston.error("Finding message failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -236,6 +241,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
+        winston.error("Getting message list failed with error: ", err);
         res.jsonp(err);
     });
 };
@@ -261,6 +267,7 @@ exports.dataByID = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
+        winston.error("Getting message failed with error: ", err);
         return next(err);
     });
 

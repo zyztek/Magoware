@@ -1,5 +1,5 @@
 'use strict';
-var winston = require('winston');
+var winston = require("winston");
 
 /**
  * Module dependencies.
@@ -43,9 +43,11 @@ function link_vod_with_genres(vod_id,array_category_ids, db_model) {
         }).then(function (result) {
             return {status: true, message:'transaction executed correctly'};
         }).catch(function (err) {
+            winston.error(err);
             return {status: false, message:'error executing transaction'};
         })
     }).catch(function (err) {
+        winston.error(err);
         return {status: false, message:'error deleting existing packages'};
     })
 }
@@ -73,9 +75,11 @@ function link_vod_with_packages(item_id, data_array, model_instance) {
         }).then(function (result) {
             return {status: true, message:'transaction executed correctly'};
         }).catch(function (err) {
+            winston.error(err);
             return {status: false, message:'error executing transaction'};
         })
     }).catch(function (err) {
+        winston.error(err);
         return {status: false, message:'error deleteting existing packages'};
     })
 }
@@ -86,6 +90,7 @@ function link_vod_with_packages(item_id, data_array, model_instance) {
 exports.create = function(req, res) {
     if(!req.body.clicks) req.body.clicks = 0;
     if(!req.body.duration) req.body.duration = 0;
+    if (!req.body.original_title) req.body.original_title = req.body.title;
 
     var array_vod_vod_categories = req.body.vod_vod_categories || [];
     delete req.body.vod_vod_categories;
@@ -115,6 +120,7 @@ exports.create = function(req, res) {
             })
         }
     }).catch(function(err) {
+        winston.error(err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -176,6 +182,7 @@ exports.update = function(req, res) {
             }
         })
     }).catch(function(err) {
+        winston.error(err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -206,10 +213,12 @@ exports.delete = function(req, res) {
             }).then(function (result) {
                 return res.json(result);
             }).catch(function (err) {
+                winston.error(err);
                 return res.status(400).send({message: 'Deleting this vod item failed : ' + error});
             });
         }
     }).catch(function (error) {
+        winston.error(error);
         return res.status(400).send({message: 'Searching for this vod item failed : ' + error});
     });
 
@@ -278,8 +287,6 @@ exports.list = function(req, res) {
         }
     ];
 
-    final_where.where.vod_type = 'film';
-
     final_where.distinct = true; //avoids wrong count number when using includes
     //end build final where
 
@@ -297,6 +304,7 @@ exports.list = function(req, res) {
                     res.json(results.rows);
                 }
             }).catch(function(err) {
+                winston.error(err);
                 res.jsonp(err);
             });
         });
@@ -314,6 +322,7 @@ exports.list = function(req, res) {
                 res.json(results.rows);
             }
         }).catch(function(err) {
+            winston.error(err);
             res.jsonp(err);
         });
     }
@@ -352,6 +361,7 @@ exports.dataByID = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
+        winston.error(err);
         return next(err);
     });
 
@@ -418,6 +428,7 @@ exports.update_film = function(req, res) {
                     ).then(function(result){
                         res.send(response);
                     }).catch(function(error){
+                        winston.error(error);
                         return res.status(404).send({
                             message: "An error occurred while updating this movie"
                         });
@@ -430,6 +441,7 @@ exports.update_film = function(req, res) {
             message: "Could not find this movie"
         });
     }).catch(function(error){
+        winston.error(error);
         return res.status(404).send({
             message: "An error occurred while searching for this movie"
         });
@@ -469,7 +481,6 @@ function omdbapi(vod_data, callback){
                     imdb_id: JSON.parse(response.body).imdbID,
                     //category: JSON.parse(response.body).Genre, //todo:get categories list, match them with our list
                     description: JSON.parse(response.body).Plot,
-                    year: JSON.parse(response.body).Year,
                     //icon_url: JSON.parse(response.body).Poster, //todo: check if url is valid. donwload + resize image. if successful, pass new filename as param
                     rate: parseInt(JSON.parse(response.body).imdbRating),
                     duration: JSON.parse(response.body).Runtime.replace(' min', ''),

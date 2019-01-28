@@ -1,6 +1,7 @@
 var path = require('path'),
     db = require(path.resolve('./config/lib/sequelize')).models,
     request = require("request");
+var winston = require("winston");
 
 function send_notification(fcm_token, firebase_key, user, message, ttl, push_message, save_message, callback) {
     //push payload is the same inside this function call

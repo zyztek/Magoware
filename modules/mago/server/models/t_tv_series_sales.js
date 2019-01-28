@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = function(sequelize, DataTypes) {
-    var t_vod_sales = sequelize.define('t_vod_sales', {
+    var t_tv_series_sales = sequelize.define('t_tv_series_sales', {
         id: {
             type: DataTypes.INTEGER(11),
             allowNull: false,
@@ -9,7 +9,7 @@ module.exports = function(sequelize, DataTypes) {
             autoIncrement: true,
             unique: true
         },
-        vod_id: {
+        tv_show_id: {
             type: DataTypes.INTEGER(11),
             allowNull: false
         },
@@ -24,13 +24,18 @@ module.exports = function(sequelize, DataTypes) {
         end_time: {
             type: DataTypes.DATE,
             allowNull: false
+        },
+        transaction_id: {
+            type: DataTypes.STRING(128),
+            allowNull: true,
+            defaultValue: ''
         }
     }, {
-        tableName: 't_vod_sales',
+        tableName: 't_tv_series_sales',
         associate: function(models) {
-            t_vod_sales.belongsTo(models.vod, {foreignKey: 'vod_id'});
-            t_vod_sales.belongsTo(models.login_data, {foreignKey: 'login_data_id'});
+            t_tv_series_sales.belongsTo(models.tv_series, {foreignKey: 'tv_show_id'});
+            t_tv_series_sales.belongsTo(models.login_data, {foreignKey: 'login_data_id'});
         }
     });
-    return t_vod_sales;
+    return t_tv_series_sales;
 };

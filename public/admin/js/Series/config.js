@@ -14,7 +14,7 @@ export default function (nga, admin) {
                 .label('Title'),
             nga.field('expiration_time', 'datetime')
                 .label('Expiration Time'),
-            nga.field('vod_vod_categories')
+            nga.field('tv_series_categories')
                 .cssClasses('hidden')
                 .map(function getpckgid(value, entry) {
                     var return_object = [];
@@ -23,14 +23,15 @@ export default function (nga, admin) {
                     }
                     return return_object;
                 })
-                .label('Vod in categories'),
-            nga.field('vod_vod_categories','reference_many')
+                .label('Tv shows in categories'),
+            nga.field('tv_series_categories','reference_many')
                 .targetEntity(admin.getEntity('VodCategories'))
                 .targetField(nga.field('name'))
                 .singleApiCall(function (category_id) {
                     return { 'category_id[]': category_id };
                 }).label('Genres'),
-            nga.field('package_vods')
+
+            nga.field('tv_series_packages')
                 .cssClasses('hidden')
                 .map(function getpckgid(value, entry) {
                     var return_object = [];
@@ -38,7 +39,7 @@ export default function (nga, admin) {
                     return return_object;
                 })
                 .label('Vod in packages'),
-            nga.field('package_vods','reference_many')
+            nga.field('tv_series_packages','reference_many')
                 .targetEntity(admin.getEntity('Packages'))
                 .perPage(-1)
                 .permanentFilters({ package_type_id: [3,4] })
@@ -46,14 +47,11 @@ export default function (nga, admin) {
                 .singleApiCall(function (package_id) {
                     return { 'package_id[]': package_id };
                 }).label('Packages'),
-            nga.field('duration', 'number')
-                .cssClasses('hidden-xs')
-                .label('Duration'),
             nga.field('icon_url', 'file')
                 .template('<img src="{{ entry.values.icon_url }}" height="35" width="35" />')
                 .cssClasses('hidden-xs')
                 .label('Icon'),
-            nga.field('isavailable', 'boolean')
+            nga.field('is_available', 'boolean')
                 .cssClasses('hidden-xs')
                 .label('Available'),
             nga.field('createdAt','date')
@@ -61,11 +59,8 @@ export default function (nga, admin) {
                 .label('Created at'),
             nga.field('pin_protected','boolean')
                 .cssClasses('hidden-xs')
-                .label('Pin Protected'),
+                .label('Pin Protected')
         ])
-        .permanentFilters({
-            vod_type: 'tv_series'
-        })
         .sortDir("DESC")
         .sortField("createdAt")
         .filters([
@@ -85,13 +80,6 @@ export default function (nga, admin) {
                 ])
                 .attributes({ placeholder: 'Pin Protected' })
                 .label('Pin Protected'),
-                /*
-            nga.field('category', 'reference')
-                .targetEntity(admin.getEntity('VodCategories'))
-                .perPage(-1)
-                .targetField(nga.field('name'))
-                .label('Category'),
-            */
             nga.field('added_before', 'datetime')
                 .label('Added before'),
             nga.field('added_after', 'datetime')
@@ -133,20 +121,21 @@ export default function (nga, admin) {
                 .label('Title'),
             nga.field('imdb_id', 'string')
                 .attributes({ placeholder: 'TV Shows Imdb Id' })
+                .defaultValue(0)
                 .template(
                     '<ma-input-field field="field" value="entry.values.imdb_id"></ma-input-field>'+
                     '<small id="emailHelp" class="form-text text-muted">*This Id should either be left empty, or match exactly the Imdb Id</small>'
                 )
                 .label('Movie Imdb Id'),
-            nga.field('vod_vod_categories','reference_many')
-                .targetEntity(admin.getEntity('VodCategories'))
-                .targetField(nga.field('name'))
-                .label('Genres')
-                .attributes({ placeholder: 'Select genre' })
-                .singleApiCall(function (category_id) {
-                    return { 'category_id[]': category_id };
-                }),
-            nga.field('package_vods','reference_many')
+             nga.field('tv_series_categories','reference_many')
+             .targetEntity(admin.getEntity('VodCategories'))
+             .targetField(nga.field('name'))
+             .label('Genres')
+             .attributes({ placeholder: 'Select genre' })
+             .singleApiCall(function (category_id) {
+             return { 'category_id[]': category_id };
+             }),
+            nga.field('tv_series_packages','reference_many')
                 .targetEntity(admin.getEntity('Packages'))
                 .permanentFilters({ package_type_id: [3,4] })
                 .targetField(nga.field('package_name'))
@@ -155,10 +144,6 @@ export default function (nga, admin) {
                 .singleApiCall(function (package_id) {
                     return { 'package_id[]': package_id };
                 }),
-            nga.field('year', 'string')
-                .attributes({ placeholder: 'TV Shows Year' })
-                .validation({ required: true })
-                .label('Year'),
             nga.field('director', 'string')
                 .attributes({ placeholder: 'TV Shows Director' })
                 .validation({ required: true })
@@ -170,6 +155,8 @@ export default function (nga, admin) {
                         if(value>10) throw  new Error ('Rate cannot be greater than 10');
                     }})
                 .label('Rate'),
+
+
             nga.field('clicks', 'number')
                 .attributes({ placeholder: 'TV Shows clicks' })
                 .validation({ required: true })
@@ -181,7 +168,7 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'TV Shows Subject' })
                 .validation({ required: true, maxlength: 1000})
                 .label('Description'),
-            nga.field('starring', 'text')
+            nga.field('cast', 'text')
                 .transform(function lineBreak(value, entry) {
                     return value.split("\n").join("<br/>");
                 })
@@ -240,7 +227,7 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'Pin Protected' })
                 .validation({ required: true })
                 .label('Pin Protected'),
-            nga.field('isavailable','boolean')
+            nga.field('is_available','boolean')
                 .attributes({ placeholder: 'Is Available' })
                 .validation({ required: true })
                 .label('Is Available'),
@@ -248,12 +235,6 @@ export default function (nga, admin) {
                 .validation({ required: true })
                 .defaultValue(new Date())
                 .label('Expiration date'),
-
-            nga.field('vod_type')
-                .cssClasses('hidden')
-                .validation({ required: false })
-                .defaultValue('tv_series')
-                .label(''),
             nga.field('template')
                 .label('')
                 .template(edit_button),
@@ -261,10 +242,10 @@ export default function (nga, admin) {
 
     Series.editionView()
         .title('<h4>TV Shows <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.title }}</h4>')
-        .actions(['list', '<ma-delete-button label="Remove" entry="entry" entity="entity"></ma-delete-button>'])
+        .actions(['list', 'create', '<ma-delete-button label="Remove" entry="entry" entity="entity"></ma-delete-button>'])
         .onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', function(progression, notification, $state, entry, entity) {
             progression.done();
-            notification.log(`Changes successfully saved`, { addnCls: 'humane-flatty-success' });
+            notification.log('Changes successfully saved', {addnCls: 'humane-flatty-success'});
             $state.go($state.get('list'), { entity: entity.name() });
             return false;
         }])
@@ -275,12 +256,13 @@ export default function (nga, admin) {
                 .label('Title'),
             nga.field('imdb_id', 'string')
                 .attributes({ placeholder: 'TV Shows Imdb Id' })
+                .defaultValue(0)
                 .template(
                     '<ma-input-field field="field" value="entry.values.imdb_id"></ma-input-field>'+
                     '<small id="emailHelp" class="form-text text-muted">*This Id should either be left empty, or match exactly the Imdb Id</small>'
                 )
                 .label('Movie Imdb Id'),
-            nga.field('vod_vod_categories','reference_many')
+            nga.field('tv_series_categories','reference_many')
                 .targetEntity(admin.getEntity('VodCategories'))
                 .targetField(nga.field('name'))
                 .label('Genres')
@@ -295,7 +277,7 @@ export default function (nga, admin) {
                 .singleApiCall(function (category_id) {
                     return { 'category_id[]': category_id };
                 }),
-            nga.field('package_vods','reference_many')
+            nga.field('tv_series_packages','reference_many')
                 .targetEntity(admin.getEntity('Packages'))
                 .permanentFilters({ package_type_id: [3,4] })
                 .targetField(nga.field('package_name'))
@@ -311,10 +293,6 @@ export default function (nga, admin) {
                 .singleApiCall(function (package_id) {
                     return { 'package_id[]': package_id };
                 }),
-            nga.field('year', 'string')
-                .attributes({ placeholder: 'TV Shows Year' })
-                .validation({ required: true })
-                .label('Year'),
             nga.field('director', 'string')
                 .attributes({ placeholder: 'TV Shows Director' })
                 .validation({ required: true })
@@ -337,7 +315,7 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'TV Shows Subject' })
                 .validation({ required: true, maxlength: 1000})
                 .label('Description'),
-            nga.field('starring', 'text')
+            nga.field('cast', 'text')
                 .transform(function lineBreak(value, entry) {
                     return value.split("\n").join("<br/>");
                 })
@@ -396,7 +374,7 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'Pin Protected' })
                 .validation({ required: true })
                 .label('Pin Protected'),
-            nga.field('isavailable','boolean')
+            nga.field('is_available','boolean')
                 .attributes({ placeholder: 'Is Available' })
                 .validation({ required: true })
                 .label('Is Available'),
@@ -404,11 +382,6 @@ export default function (nga, admin) {
                 .validation({ required: true })
                 .defaultValue(new Date())
                 .label('Expiration date'),
-            nga.field('vod_type')
-                .cssClasses('hidden')
-                .validation({ required: false })
-                .defaultValue('tv_series')
-                .label(''),
             nga.field('template')
                 .label('')
                 .template(edit_button),

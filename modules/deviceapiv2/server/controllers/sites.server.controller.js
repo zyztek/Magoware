@@ -51,7 +51,7 @@ exports.createaccount = function(req,res) {
 					return null;
 				}
 			}).catch(function (err) {
-				//todo: return some response?
+				winston.error("Quering for the client's account data failed with error: ", err);
 			});
 		},
 		// check if email exists
@@ -69,7 +69,7 @@ exports.createaccount = function(req,res) {
 					return null;
 				}
 			}).catch(function (err) {
-				//todo: return some response?
+				winston.error("Quering for the client's personal info failed with error: ", err);
 			});
 		},
 		//create account
@@ -106,11 +106,11 @@ exports.createaccount = function(req,res) {
 						done(null,token, new_customer);
 						return null;
 					}).catch(function(err){
-						//todo: return some response?
+						winston.error("Creating a new client account failed with error: ", err);
 					});
 					return null;
 				}).catch(function (err) {
-					//todo: return some response?
+					winston.error("Creating a new customer failed with error: ", err);
 				});
 			}
 			else{

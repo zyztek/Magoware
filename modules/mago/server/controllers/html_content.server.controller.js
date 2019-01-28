@@ -6,6 +6,7 @@
 var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     logHandler = require(path.resolve('./modules/mago/server/controllers/logs.server.controller')),
+    winston = require('winston'),
     db = require(path.resolve('./config/lib/sequelize')).models,
     DBModel = db.html_content;
 
@@ -22,6 +23,7 @@ exports.create = function(req, res) {
             return res.jsonp(result);
         }
     }).catch(function(err) {
+        winston.error(err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -45,6 +47,7 @@ exports.update = function(req, res) {
     updateData.updateAttributes(req.body).then(function(result) {
         res.json(result);
     }).catch(function(err) {
+        winston.error(err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -62,6 +65,7 @@ exports.delete = function(req, res) {
             result.destroy().then(function() {
                 return res.json(result);
             }).catch(function(err) {
+                winston.error(err);
                 return res.status(400).send({
                     message: errorHandler.getErrorMessage(err)
                 });
@@ -73,6 +77,7 @@ exports.delete = function(req, res) {
             });
         }
     }).catch(function(err) {
+        winston.error(err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -111,6 +116,7 @@ exports.list = function(req, res) {
             res.json(results.rows);
         }
     }).catch(function(err) {
+        winston.error(err);
         res.jsonp(err);
     });
 };
@@ -142,6 +148,7 @@ exports.dataByID = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
+        winston.error(err);
         return next(err);
     });
 
@@ -172,6 +179,7 @@ exports.htmlcontent_to_app = function(req, res, next, id) {
             return null;
         }
     }).catch(function(err) {
+        winston.error(err);
         return next(err);
     });
 

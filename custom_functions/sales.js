@@ -210,4 +210,57 @@ exports.add_subscription_transaction = function(req,res,sale_or_refund,transacti
     }
 }
 
+//saves movie in list of movies bought by this client
+exports.buy_movie = function(req, res, username, vod_id, transaction_id) {
+
+    var movie_purchase_data = []; //the records saved will be stored here
+
+    // search for the combo for transactional vod. if available, proceed
+    return db.combo.findOne({
+        attributes: ['id', 'duration'],
+        where: {product_id: 'transactional_vod', isavailable: true}
+    }).then(function(t_vod_combo) {
+        if(typeof req.app.locals.backendsettings.t_vod_duration !== "number"){
+            return {status: false, message:'buying movie failed. transactional vod not available', sale_data: []}; //the feature of transactional vod is not active
+        }
+        else{
+            // find the id of the client. if successful, proceed saving the sale records
+            return db.login_data.findOne({
+                attributes: ['id'],
+                where: {username: username}
+            }).then(function (client) {
+                if (!client) return {status: false, message: 'unable to find this client', sale_data: []}; //client not found
+
+                return sequelize_t.sequelize.transaction(function (t) {
+                    var t_vod_sales_data = {
+                        vod_id: vod_id,
+                        login_data_id: client.id,
+                        start_time: Date.now(),
+                        end_time: moment().add(t_vod_combo.duration, 'day'),
+                        transaction_id: transaction_id
+                    };
+                    var salesreport_data = {
+                        transaction_id: transaction_id,
+                        user_id: 1,
+                        combo_id: t_vod_combo.id,
+                        login_data_id: client.id,
+                        user_username: username,
+                        distributorname: '',
+                        saledate: Date.now()
+                    };
+                    movie_purchase_data.push(db.t_vod_sales.create(t_vod_sales_data, {transaction: t})); //insert subscription data in the final response
+                    movie_purchase_data.push(db.salesreport.create(salesreport_data, {transaction: t})); //insert sale data in the final response
+
+                    return Promise.all(movie_purchase_data, {transaction:t}); //execute transaction, return promise
+                }).then(function (result) {
+                    return {status: true, message:'subscription transaction executed correctly', sale_data: movie_purchase_data, };
+                }).catch(function (error) {
+                    winston.error("Buying this movie failed with error ", error);
+                    return {status: false, message:'error executing transactional vod operation', sale_data: [] };
+                });
+            });
+        }
+    });
+};
+
 exports.add_subscription = add_subscription;

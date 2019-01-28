@@ -18,6 +18,8 @@ var path = require('path'),
  * @apiName channel_list
  * @apiGroup DeviceAPI
  *
+ * @apiUse body_auth
+ *
  * @apiParam {String} auth Encrypted string composed of username, password, appid, boxid and timestamp.
  *
  *
@@ -51,6 +53,12 @@ var path = require('path'),
  *       }, ....
  *       ]
  *   }
+ *
+ * @apiDescription Returns catchup stream url for the requested channel.
+ *
+ * Copy paste this auth for testing purposes
+ *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
+ *
  */
 exports.list = function(req, res) {
     var qwhere = {};
@@ -68,14 +76,14 @@ exports.list = function(req, res) {
     if(req.auth_obj.appid === 3) stream_qwhere.stream_format = 2; // send only hls streams for ios application
     stream_qwhere.stream_source_id = req.thisuser.channel_stream_source_id; // streams come from the user's stream source
     stream_qwhere.stream_mode = 'live'; //filter streams based on device resolution
-    stream_qwhere.stream_resolution = (req.auth_obj.screensize === 1) ? {like: '%large%'} : {like: '%small%'};
+    stream_qwhere.stream_resolution = {$like: "%"+req.auth_obj.appid+"%"};
 
     // requisites for catchup streams
     var catchupstream_where = {stream_source_id: req.thisuser.channel_stream_source_id};
     if(req.thisuser.player.toUpperCase() === 'default'.toUpperCase()) catchupstream_where.stream_format = {$not: 0}; //don't send mpd streams for default player
     if(req.auth_obj.appid === 3) catchupstream_where.stream_format = 2; // send only hls streams for ios application
     catchupstream_where.stream_mode = 'catchup'; //filter streams based on device resolution
-    catchupstream_where.stream_resolution = (req.auth_obj.screensize === 1) ? {like: '%large%'} : {like: '%small%'};
+    catchupstream_where.stream_resolution = {$like: "%"+req.auth_obj.appid+"%"};
 
 //find user channels and subscription channels for the user
     models.my_channels.findAll({
@@ -168,14 +176,17 @@ exports.list = function(req, res) {
                 var response_data = result.concat(user_channel_list);
                 response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
             }).catch(function(error) {
+                winston.error("Searching for the users list of channels failed with error: ", error);
                 response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
             return null;
         }).catch(function(error) {
+            winston.error("Searching for the user's chatchup streams failed with error: ", error);
             response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
         return null;
     }).catch(function(error) {
+        winston.error("Searching for the user personal channels failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
@@ -212,14 +223,14 @@ exports.list_get = function(req, res) {
     if(req.auth_obj.appid === 3) stream_qwhere.stream_format = 2; // send only hls streams for ios application
     stream_qwhere.stream_source_id = req.thisuser.channel_stream_source_id; // streams come from the user's stream source
     stream_qwhere.stream_mode = 'live'; //filter streams based on device resolution
-    stream_qwhere.stream_resolution = (req.auth_obj.screensize === 1) ? {like: '%large%'} : {like: '%small%'};
+    stream_qwhere.stream_resolution = {$like: "%"+req.auth_obj.appid+"%"};
 
     // requisites for catchup streams
     var catchupstream_where = {stream_source_id: req.thisuser.channel_stream_source_id};
     if(req.thisuser.player.toUpperCase() === 'default'.toUpperCase()) catchupstream_where.stream_format = {$not: 0}; //don't send mpd streams for default player
     if(req.auth_obj.appid === 3) catchupstream_where.stream_format = 2; // send only hls streams for ios application
     catchupstream_where.stream_mode = 'catchup'; //filter streams based on device resolution
-    catchupstream_where.stream_resolution = (req.auth_obj.screensize === 1) ? {like: '%large%'} : {like: '%small%'};
+    catchupstream_where.stream_resolution = {$like: "%"+req.auth_obj.appid+"%"};
 
     //find user channels and subscription channels for the user
     models.my_channels.findAll({
@@ -313,14 +324,17 @@ exports.list_get = function(req, res) {
                 response.send_res_get(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
 
             }).catch(function(error) {
+                winston.error("Searching for the users list of channels failed with error: ", error);
                 response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
             return null;
         }).catch(function(error) {
+            winston.error("Searching for the user's chatchup streams failed with error: ", error);
             response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
         });
         return null;
     }).catch(function(error) {
+        winston.error("Searching for the user personal channels failed with error: ", error);
         response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
@@ -363,6 +377,7 @@ exports.genre = function(req, res) {
         var response_data = result.concat(favorite_genre);
         response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Getting list of genres failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
@@ -405,6 +420,7 @@ exports.genre_get = function(req, res) {
         var response_data = result.concat(favorite_genre);
         response.send_res_get(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
     }).catch(function(error) {
+        winston.error("Getting list of genres failed with error: ", error);
         response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
@@ -441,6 +457,7 @@ exports.favorites = function(req, res) {
                 callback(null, user.id);
                 return null;
             }).catch(function(error) {
+                winston.error("Finding account id failed with error: ", error);
                 response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
         },
@@ -451,6 +468,7 @@ exports.favorites = function(req, res) {
                 callback(null, user_id, channel.id);
                 return null;
             }).catch(function(error) {
+                winston.error("Finding channel id failed with error: ", error);
                 response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
         },
@@ -463,6 +481,7 @@ exports.favorites = function(req, res) {
                     var extra_data = "Added channel "+req.body.channelNumber+" as a favorite of user "+req.auth_obj.username; //todo: dynamic response
                     response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', extra_data, 'private,max-age=86400');
                 }).catch(function(error) {
+                    winston.error("Saving channel as favorite failed with error: ", error);
                     response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
                 });
             }
@@ -476,6 +495,7 @@ exports.favorites = function(req, res) {
                     var extra_data = "Removed channel "+req.body.channelNumber+" from the list of favorites for user "+req.auth_obj.username; //todo: dynamic response
                     response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', extra_data, 'private,max-age=86400');
                 }).catch(function(error) {
+                    winston.error("Removing channel from favorites failed with error: ", error);
                     response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
                 });
             }
@@ -493,6 +513,8 @@ exports.favorites = function(req, res) {
  * @api {POST} /apiv2/channels/program_info Channels - info on a program
  * @apiName program_info
  * @apiGroup DeviceAPI
+ *
+ * @apiUse body_auth
  *
  * @apiParam {String} auth Encrypted string composed of username, password, appid, boxid and timestamp.
  * @apiParam {Number} program_id Id  of the program to be scheduled / unscheduled
@@ -516,10 +538,15 @@ exports.favorites = function(req, res) {
  *          "has_catchup": true //values true/false
  *       ]
  *   }
+ *
+ * @apiDescription Returns catchup stream url for the requested channel.
+ *
+ * Copy paste this auth for testing purposes
+ *auth=gPIfKkbN63B8ZkBWj+AjRNTfyLAsjpRdRU7JbdUUeBlk5Dw8DIJOoD+DGTDXBXaFji60z3ao66Qi6iDpGxAz0uyvIj/Lwjxw2Aq7J0w4C9hgXM9pSHD4UF7cQoKgJI/D
  */
 exports.program_info = function(req, res) {
     var stream_mode = 'catchup';
-    var stream_resolution = (req.auth_obj.screensize === 1) ? {like: '%large%'} : {like: '%small%'};
+
     models.epg_data.findOne({
         attributes: ['title', 'long_description', 'program_start', 'program_end'],
         where: {id: req.body.program_id},
@@ -528,7 +555,7 @@ exports.program_info = function(req, res) {
                 model: models.channels, required: true, attributes: ['title', 'description'],
                 include: [
                     {model: models.genre, required: true, attributes: [ 'description']},
-                    {model: models.channel_stream, required: false, attributes: [ 'id'], where: {stream_mode: stream_mode, stream_resolution: stream_resolution}}
+                    {model: models.channel_stream, required: false, attributes: [ 'id'], where: {stream_mode: stream_mode, stream_resolution: {$like: "%"+req.auth_obj.appid+"%"}}}
                 ]
             },
             {model: models.program_schedule,
@@ -574,6 +601,7 @@ exports.program_info = function(req, res) {
         }
         response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
     }).catch(function(error) {
+        winston.error("Quering the event's data failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 
@@ -623,6 +651,7 @@ exports.schedule = function(req, res) {
                         schedule.schedule_program(moment(epg_program.program_start).format('x') - Date.now() - 300000, firebase_key, scheduled.id, req.thisuser.id, epg_program.channel_number, req.body.program_id);
                         response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
                     }).catch(function(error) {
+                        winston.error("Creating record for scheduled event failed with error: ", error);
                         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
                     });
                 }
@@ -637,11 +666,13 @@ exports.schedule = function(req, res) {
                         schedule.unschedule_program(eventid);
                         response.send_res(req, res, response_data, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
                     }).catch(function(error) {
+                        winston.error("Deleting record for scheduled event failed with error: ", error);
                         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
                     });
                 }
                 return null;
             }).catch(function(error) {
+                winston.error("Searching for scheduled event failed with error: ", error);
                 response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
             });
         }
@@ -653,6 +684,7 @@ exports.schedule = function(req, res) {
         }
         return null;
     }).catch(function(error) {
+        winston.error("Searching for the id of event to schedule failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };

@@ -79,6 +79,24 @@ export default function (nga, admin) {
                     }
                 })
                 .label('Url *'),
+            nga.field('stream_resolution', 'choices')
+                .attributes({ placeholder: 'Select screen types where this stream should play' })
+                .choices([
+                    { value: 1, label: 'Android Set Top Box' },
+                    { value: 2, label: 'Android Smart Phone' },
+                    { value: 3, label: 'IOS' },
+                    { value: 4, label: 'Android Smart TV' },
+                    { value: 5, label: 'Samsung Smart TV' },
+                    { value: 6, label: 'Apple TV' }
+                ])
+                .defaultValue([1,2,3,4,5,6])
+                .validation({validator: function(value) {
+                    if(value === null || value === ''){
+                        throw new Error('Please Select Stream resolution');
+                    }
+                }
+                })
+                .label('Stream resolution *'),
             nga.field('stream_format', 'choice')
                 .attributes({ placeholder: 'Stream Format' })
                 .choices([

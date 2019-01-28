@@ -30,7 +30,7 @@ exports.create_customer_data = function(req,res) {
                         return {status: true, message: "Customer datasuccessfullyccessfuly"}
                     }
                 }).catch(function(err) {
-                    winston.error('error creating customer dsta: ',err);
+                    winston.error('error creating customer data: ',err);
                     return {status: false, message: "there was an error creating customer data"}
                 });
             }
@@ -78,10 +78,12 @@ exports.create_login_data = function(req, res, login_data_username) {
                             return {status: true, message: "user created successfuly"}
                         }
                     }).catch(function(err) {
+                        winston.error("Error creating user account: ", err);
                             return {status: false, message: "there was an error creating username"}
                     });
                 }
             }).catch(function (err) {
+                winston.error("Error searching for the user account: ", err);
                 return {status: false, message: "there was an error running query"}
             });
 };

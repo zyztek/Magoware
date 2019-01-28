@@ -2,8 +2,10 @@
     "use strict";
 
     //let uuid = require("node-uuid");
+    var path = require('path');
     var crypto = require("crypto");
     var jsonfile = require("jsonfile");
+    var winston = require(path.resolve('./config/lib/winston'));
 
     var CONFIG_FILE = "./config/pallycon.config.json";
 
@@ -26,15 +28,16 @@
 
     jsonfile.readFile(CONFIG_FILE, function(err, data) {
         if (err) {
-            console.log('Creating default config file at ' + CONFIG_FILE);
+            winston.info('Creating pallycon config file at ' + CONFIG_FILE);
             jsonfile.writeFile(CONFIG_FILE, config, function(err) {
                 if (err)
-                    console.error(err);
+                    winston.error(err);
                 else
-                    console.log(config);
+                    winston.info('Pallycon config created')
+                    //console.log(config);
             });
         } else {
-            console.log(data);
+            winston.info('Pallycon config loaded')
             config = data;
         }
     });
@@ -42,7 +45,7 @@
 
     module.exports = {
         "encrypt": function encrypt(data) {
-            console.log('encrypt data: ' + data);
+            winston.info('encrypt data: ' + data);
             if (!data)
                 return 'fail';
 
@@ -58,7 +61,7 @@
             return result;
         },
         "decrypt": function decrypt(data) {
-            console.log('decrypt data: ' + data);
+            winston.info('decrypt data: ' + data);
             if (!data)
                 return 'fail';
 
@@ -70,20 +73,21 @@
             return result;
         },
         "getConfig": function getConfig() {
-            console.log('[getConfig] ' + JSON.stringify(config));
+            //winston.info('[getConfig] ' + JSON.stringify(config));
             return config;
         },
         "writeConfig": function writeConfig(configData) {
             config = configData;
             jsonfile.writeFile(CONFIG_FILE, config, function(err) {
                 if (err)
-                    console.error(err);
+                    winston.error(err);
                 else
-                    console.log('[writeConfig] ' + JSON.stringify(config));
+                    //console.log('[writeConfig] ' + JSON.stringify(config));
+                    winston.info('Pallycon config changed saved')
             });
         },
         "getAPIType": function getAPIType() {
-            console.log('[getAPIType] ' + config.API_TYPE);
+            //console.log('[getAPIType] ' + config.API_TYPE);
             return config.API_TYPE;
         }
     };

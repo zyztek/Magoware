@@ -21,6 +21,7 @@ exports.dbtest = function(req, res) {
     }).then(function (result) {
 		response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
     }).catch(function(error) {
+		winston.error("Quering the genre table failed with error: ", error);
 		response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });
 };
@@ -87,6 +88,7 @@ exports.gcm = function(req, res) {
 			response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
 			return null;
 		}).catch(function(error) {
+			winston.error("Creating / updating a device record failed with error: ", error);
 			response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
 		});
 
@@ -113,6 +115,7 @@ exports.gcm = function(req, res) {
 			response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
 			return null;
 		}).catch(function(error) {
+			winston.error("Creating / updating a device record failed with error: ", error);
 			response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
 		});
 	}
@@ -142,6 +145,7 @@ exports.command_response = function(req,res) {
 		response.send_res(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'no-store');
 		return null;
 	}).catch(function(error) {
+		winston.error("Creating a message record failed with error: ", error);
 		response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
 	});
 

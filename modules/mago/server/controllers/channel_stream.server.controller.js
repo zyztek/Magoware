@@ -6,6 +6,7 @@
 var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     db = require(path.resolve('./config/lib/sequelize')).models,
+    winston = require('winston'),
     refresh = require(path.resolve('./modules/mago/server/controllers/common.controller.js')),
     DBModel = db.channel_stream;
 
@@ -21,6 +22,7 @@ exports.create = function(req, res) {
             return res.jsonp(result);
         }
     }).catch(function(err) {
+        winston.error("Creating the channel stream failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -44,6 +46,7 @@ exports.update = function(req, res) {
     updateData.updateAttributes(req.body).then(function(result) {
         res.json(result);
     }).catch(function(err) {
+        winston.error("Updating the channel stream failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -63,6 +66,7 @@ exports.delete = function(req, res) {
             result.destroy().then(function() {
                 return res.json(result);
             }).catch(function(err) {
+                winston.error("Deleting the channel stream failed with error: ", err);
                 return res.status(400).send({
                     message: errorHandler.getErrorMessage(err)
                 });
@@ -74,6 +78,7 @@ exports.delete = function(req, res) {
             });
         }
     }).catch(function(err) {
+        winston.error("Finding the channel stream failed with error: ", err);
         return res.status(400).send({
             message: errorHandler.getErrorMessage(err)
         });
@@ -114,6 +119,7 @@ exports.list = function(req, res) {
       res.json(results.rows);
     }
   }).catch(function(err) {
+      winston.error("Finding list of channel streams failed with error: ", err);
     res.jsonp(err);
   });
 };
@@ -145,12 +151,13 @@ exports.dataByID = function(req, res, next, id) {
         message: 'No data with that identifier has been found'
       });
     } else {
-      req.channelStream = result;
-        req.channelStream.stream_resolution = req.channelStream.stream_resolution.split(','); //convert comma-separated string into array
+        req.channelStream = result;
+        req.channelStream.stream_resolution = JSON.parse("[" + req.channelStream.stream_resolution + "]");
         next();
-      return null;
+        return null;
     }
   }).catch(function(err) {
+      winston.error("Finding the channel stream failed with error: ", err);
     return next(err);
   });
 

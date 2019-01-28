@@ -121,15 +121,18 @@ exports.forgot = function(req, res, next) {
                                 done(false, user,plaintext_password);
                                 return null;
                             }).catch(function(error) {
+                                winston.error("Updating the status of a device record failed with error: ", error);
                                 done(error, user,plaintext_password);
                             });
                             return null;
                         }).catch(function(error) {
+                            winston.error("Updating the credentials of a client's account failed with error: ", error);
                             done(error, user,plaintext_password);
                         });
                         return null;
                     }
-                }).catch(function(err) {
+                }).catch(function(error) {
+                    winston.error("Searching for the client's account and personal info failed with error: ", error);
                     return res.status(400).send({
                         message: 'Username field must not be blank'
                     });

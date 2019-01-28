@@ -394,6 +394,7 @@ myApp.directive('approveReview', require('./groups/approveReview'));
 
 // personal config
 myApp.config(['$stateProvider', require('./personal-details/user-details')]);
+myApp.config(['$stateProvider', require('./geoip/geoip')]);
 myApp.config(['$stateProvider', require('./change-pass/change-password')]);
 myApp.config(['$stateProvider', require('./epgData/epgchart')]);
 
@@ -467,6 +468,8 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     admin.addEntity(nga.entity('AdvancedSettings'));
     admin.addEntity(nga.entity('Submenu'));
     admin.addEntity(nga.entity('VodEpisode'));
+    admin.addEntity(nga.entity('tv_episode_subtitles'));
+    admin.addEntity(nga.entity('tv_episode_streams'));
     admin.addEntity(nga.entity('ResellersLoginData'));
     admin.addEntity(nga.entity('ResellersUsers'));
     admin.addEntity(nga.entity('Series'));
@@ -474,10 +477,12 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     admin.addEntity(nga.entity('vodMenu'));
     admin.addEntity(nga.entity('vodMenuCarousel'));
     admin.addEntity(nga.entity('htmlContent'));
+    admin.addEntity(nga.entity('tmdbvods'));
 
 
     //Config
 
+    require('./tmdb_import/config')(nga, admin);
     require('./htmlContent/config')(nga, admin);
     require('./vodMenuCarousel/config')(nga, admin);
     require('./vodmenu/config')(nga, admin);
@@ -486,6 +491,8 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     require('./resellers_user/config')(nga, admin);
     require('./Resellers_loginData/config')(nga, admin);
     require('./VodEpisode/config')(nga, admin);
+    require('./tv_episode_subtitles/config')(nga, admin);
+    require('./tv_episode_streams/config')(nga, admin);
     require('./Submenu/config')(nga, admin);
     require('./AdvancedSettings/config')(nga, admin);
     require('./settings/PlayerSettings/config')(nga, admin);

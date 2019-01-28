@@ -44,16 +44,18 @@ function send_notification(event_time, firebase_key, login_data_id, channel_numb
                 }
                 else{
                     var min_ios_version = (company_configurations.ios_min_version) ? parseInt(company_configurations.ios_min_version) : parseInt('1.3957040');
-                    var min_stb_version = (company_configurations.stb_min_version) ? parseInt(company_configurations.stb_min_version) : parseInt('2.2.2');
+                    var android_phone_min_version = (company_configurations.android_phone_min_version) ? parseInt(company_configurations.android_phone_min_version) : '1.1.2.2';
+                    var min_stb_version = (company_configurations.stb_min_version) ? parseInt(company_configurations.stb_min_version) : '2.2.2';
+                    var android_tv_min_version = (company_configurations.android_tv_min_version) ? parseInt(company_configurations.android_tv_min_version) : '6.1.3.0';
                     for(var i=0; i<devices.length; i++){
-                        if(devices[i].appid === 1 && devices[i].app_version >= '2.2.2')
+                        if(devices[i].appid === 1 && devices[i].app_version >= min_stb_version)
                             var message = new push_msg.SCHEDULE_PUSH(epg_program.title, epg_program.long_description, '2', "scheduling", program_id.toString(), channel_number.toString(), event_time.toString());
-                        else if(devices[i].appid === 2 && devices[i].app_version >= min_stb_version){
+                        else if(devices[i].appid === 2 && devices[i].app_version >= android_phone_min_version){
                             var message = new push_msg.SCHEDULE_PUSH(epg_program.title, epg_program.long_description, '2', "scheduling", program_id.toString(), channel_number.toString(), event_time.toString());
                         }
                         else if(parseInt(devices[i].appid) === parseInt('3') && parseInt(devices[i].app_version) >= min_ios_version)
                             var message = new push_msg.SCHEDULE_PUSH(epg_program.title, epg_program.long_description, '2', "scheduling", program_id.toString(), channel_number.toString(), event_time.toString());
-                        else if(devices[i].appid === 4 && devices[i].app_version >= '6.1.3.0')
+                        else if(devices[i].appid === 4 && devices[i].app_version >= android_tv_min_version)
                             var message = new push_msg.SCHEDULE_PUSH(epg_program.title, epg_program.long_description, '2', "scheduling", program_id.toString(), channel_number.toString(), event_time.toString());
                         else if(['5', '6'].indexOf(devices[i].appid))
                             var message = new push_msg.SCHEDULE_PUSH(epg_program.title, epg_program.long_description, '2', "scheduling", program_id.toString(), channel_number.toString(), event_time.toString());
@@ -70,13 +72,13 @@ function send_notification(event_time, firebase_key, login_data_id, channel_numb
 
                 }
             }).catch(function(error) {
-                winston.error(error)
+                winston.error("Searching for the event failed with error: ", error);
             });
             return null;
         }
         return null;
     }).catch(function(error) {
-        winston.error(error)
+        winston.error("Searching for devices failed with error: ", error);
     });
 
 
@@ -96,7 +98,7 @@ exports.reload_scheduled_programs = function() {
             schedule_program(result[i].program_start.getTime() - Date.now() - 300000, result[i].program_schedules[0].id, result[i].program_schedules[0].login_id, result[i].channel_number, result[i].program_schedules[0].program_id);
         }
     }).catch(function(error){
-        winston.error(error)
+        winston.error("Searching for all scheduled programs failed with error: ", error);
     });
 }
 
@@ -141,17 +143,19 @@ function end_subscription(login_id, ending_after, app_ids, screensize, activity,
 
 function send_action(action, login_id, app_ids, firebase_key){
     models.devices.findOne({
-        attributes: ['googleappid', 'username', 'app_version', 'appid'], where: {login_data_id: login_id, device_active: true, appid: {in: app_ids}} //todo: username will be removed from table devices
+        attributes: ['googleappid', 'username', 'app_version', 'appid'], where: {login_data_id: login_id, device_active: true, appid: {in: app_ids}}
     }).then(function(result){
         if(result) {
             var min_ios_version = (company_configurations.ios_min_version) ? parseInt(company_configurations.ios_min_version) : parseInt('1.3957040');
-            var min_stb_version = (company_configurations.stb_min_version) ? parseInt(company_configurations.stb_min_version) : parseInt('2.2.2');
+            var android_phone_min_version = (company_configurations.android_phone_min_version) ? parseInt(company_configurations.android_phone_min_version) : '1.1.2.2';
+            var min_stb_version = (company_configurations.stb_min_version) ? parseInt(company_configurations.stb_min_version) : '2.2.2';
+            var android_tv_min_version = (company_configurations.android_tv_min_version) ? parseInt(company_configurations.android_tv_min_version) : '6.1.3.0';
             for(var i=0; i<result.length; i++){
-                if(result[i].appid === 1 && result[i].app_version >= '2.2.2') var message = new push_msg.ACTION_PUSH('Action', "Your subscription has ended", '5', "termination");
-                else if(result[i].appid === 2 && result[i].app_version >= min_stb_version) var message = new push_msg.ACTION_PUSH('Action', "Your subscription has ended", '5', "termination");
+                if(result[i].appid === 1 && result[i].app_version >= min_stb_version) var message = new push_msg.ACTION_PUSH('Action', "Your subscription has ended", '5', "termination");
+                else if(result[i].appid === 2 && result[i].app_version >= android_phone_min_version) var message = new push_msg.ACTION_PUSH('Action', "Your subscription has ended", '5', "termination");
                 else if(parseInt(result[i].appid) === parseInt('3') && parseInt(result[i].app_version) >= min_ios_version)
                     var message = new push_msg.ACTION_PUSH('Action', "Your subscription has ended", '5', "termination");
-                else if(result[i].appid === 4 && result[i].app_version >= '6.1.3.0') var message = new push_msg.ACTION_PUSH('Action', "Your subscription has ended", '5', "termination");
+                else if(result[i].appid === 4 && result[i].app_version >= android_tv_min_version) var message = new push_msg.ACTION_PUSH('Action', "Your subscription has ended", '5', "termination");
                 else if(['5', '6'].indexOf(result[i].appid))
                     var message = new push_msg.ACTION_PUSH('Action', "Your subscription has ended", '5', "termination");
                 else var message = {"action": "termination", "parameter1": "", "parameter2": "", "parameter3": ""};
@@ -159,7 +163,7 @@ function send_action(action, login_id, app_ids, firebase_key){
             }
         }
     }).catch(function(error){
-        winston.error(error)
+        winston.error("Searching for devices failed with error: ", error);
     });
 }
 

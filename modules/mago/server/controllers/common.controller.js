@@ -2,7 +2,8 @@ var fs = require('fs'),
     mkdirp = require('mkdirp'),
     path = require('path'),
     dbModel = require(path.resolve('./config/lib/sequelize')),
-    response = require(path.resolve("./config/responses.js"));
+    response = require(path.resolve("./config/responses.js")),
+    winston = require('winston');
 
 var folder;
 
@@ -210,6 +211,7 @@ function uploadFile (req, res){
                         //send response
                         res.json({err: 0, result: uploadLinkPath});
                     }).catch(function (error) {
+                        winston.error("Saving file path failed with error: ", error);
                         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
                     });
                 }

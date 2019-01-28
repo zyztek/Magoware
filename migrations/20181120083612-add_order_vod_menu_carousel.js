@@ -3,7 +3,7 @@ var winston = require('winston');
 
 module.exports = {
     up: function (queryInterface, Sequelize) {
-        return queryInterface.addColumn('vod_menu_carousel', 'order',{type: Sequelize.INTEGER(15), allowNull: false})
+        return queryInterface.addColumn('vod_menu_carousel', 'order', {type: Sequelize.INTEGER(15), allowNull: false})
             .catch(function(err) {winston.error('Adding column vod_menu_carousel.order failed with error message: ',err.message);});
     },
 

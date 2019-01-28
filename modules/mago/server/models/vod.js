@@ -9,19 +9,6 @@ module.exports = function(sequelize, DataTypes) {
             autoIncrement: true,
             unique: true
         },
-        vod_parent_id: {
-            type: DataTypes.INTEGER(11),
-            allowNull: true
-        },
-        vod_type: {
-            type: DataTypes.STRING(20),
-            defaultValue: "film",
-            allowNull: false
-        },
-        season_number: {
-            type: DataTypes.INTEGER(11),
-            allowNull: true
-        },
         imdb_id: {
             type: DataTypes.STRING(25),
             allowNull: true
@@ -59,10 +46,6 @@ module.exports = function(sequelize, DataTypes) {
             set: function (value) {
                 return this.setDataValue('spoken_languages', JSON.stringify(value));
             }
-        },
-        year: {
-            type: DataTypes.INTEGER(11),
-            allowNull: false
         },
         icon_url: {
             type: DataTypes.STRING(255),
@@ -136,7 +119,7 @@ module.exports = function(sequelize, DataTypes) {
         },
 		expiration_time: {
             type: DataTypes.DATE,
-            defaultValue: '2019:01:01 00:00:00'
+            defaultValue: '3018:01:01 00:00:00'
         },
         price: {
             type: DataTypes.DOUBLE,
@@ -176,18 +159,10 @@ module.exports = function(sequelize, DataTypes) {
             Vod.hasMany(models.package_vod, {foreignKey: 'vod_id'});
             if(models.vod_vod_categories) Vod.hasMany(models.vod_vod_categories, {foreignKey: 'vod_id'});
             if(models.vod_vod_categories) Vod.hasMany(models.vod_vod_categories, {as: 'vod_vod_category', foreignKey: 'vod_id'}); //this association serves to perform a double join on a matching category
-            if(models.vod_subtitles){
-                Vod.hasMany(models.vod_subtitles, {foreignKey: 'vod_id'});
-            }
-            if(models.vod_stream){
-                Vod.hasMany(models.vod_stream, {foreignKey: 'vod_id'});
-            }
+            if(models.vod_subtitles) Vod.hasMany(models.vod_subtitles, {foreignKey: 'vod_id'});
+            if(models.vod_stream) Vod.hasMany(models.vod_stream, {foreignKey: 'vod_id'});
             if(models.t_vod_sales) Vod.hasMany(models.t_vod_sales, {foreignKey: 'vod_id'});
-            Vod.belongsTo(models.vod, { as: 'tv_show_filter', foreignKey: 'vod_parent_id', useJunctionTable: false })
-            Vod.belongsTo(models.vod, { as: 'season_filter', foreignKey: 'vod_parent_id', useJunctionTable: false })
-            Vod.hasMany(models.vod, { as: 'seasons', foreignKey: 'vod_parent_id', useJunctionTable: false })
-            Vod.hasMany(models.vod, { as: 'episodes', foreignKey: 'vod_parent_id', useJunctionTable: false })
-            if (models.vod_resume) Vod.hasMany(models.vod_resume, {foreignKey: 'vod_id'});
+            if(models.vod_resume) Vod.hasMany(models.vod_resume, {foreignKey: 'vod_id'});
         }
     });
     return Vod;

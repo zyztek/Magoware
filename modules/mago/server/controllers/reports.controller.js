@@ -4,6 +4,7 @@
 var path = require('path'),
     errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
     db = require(path.resolve('./config/lib/sequelize')).models,
+    winston = require('winston'),
     LoginData = db.login_data;
     Combo = db.combo;
     SalesReport = db.salesreport;
@@ -29,6 +30,7 @@ exports.listOfSubscribers = function(req, res) {
             res.json(results);
         }
     }).catch(function(err) {
+        winston.error("Getting list of client accounts failed with error: ", err);
         res.jsonp(err);
     });
 };
@@ -48,6 +50,7 @@ exports.listOfSales = function(req, res) {
             res.json(results);
         }
     }).catch(function(err) {
+        winston.error("Getting list of sales failed with error: ", err);
         res.jsonp(err);
     });
 };
@@ -75,6 +78,7 @@ exports.expiringNextWeek = function(req, res) {
             res.json(results);
         }
     }).catch(function(err) {
+        winston.error("Getting list of subscriptions expiring in 7days failed with error: ", err);
         res.jsonp(err);
     });
 };
@@ -94,6 +98,7 @@ exports.listSalesByProduct = function(req, res) {
             res.json(results);
         }
     }).catch(function(err) {
+        winston.error("Getting sales per combo failed with error: ", err);
         res.jsonp(err);
     });
 };

@@ -8,6 +8,7 @@ var path = require('path'),
     DBpayment_transactions = db.payment_transactions,
     async = require('async'),
     winston = require(path.resolve('./config/lib/winston')),
+    authenticationHandler = require(path.resolve('./modules/deviceapiv2/server/controllers/authentication.server.controller')),
     whiteilst_IPs =['54.187.174.169',
                     '54.187.205.235',
                     '54.187.216.72',
@@ -61,25 +62,60 @@ exports.stripe_one_off_charge = function(req,res) {
     }
 
     if(!req.body.username) req.body.username = req.body.email;
-
+    console.log(req.body.stripetoken)
     var stripeobj = {
         amount: 1,
-        currency: "usd",
+        currency: 'usd',
         //description: "Example charge",
         //statement_descriptor: "Descriptor 22char",
-        metadata: {product_id: req.body.product_id, username:req.body.username},
+        metadata: {product_id: req.body.product_id, username:req.body.username, type: req.body.type},
         source: req.body.stripetoken
     };
 
-    DBCombos.findOne({
-        where: {product_id:req.body.product_id}
-    }).then(function (result) {
-        if(!result) {
-            thisresponse.error_code = 400;
-            thisresponse.extra_data = "Plan not found on database";
-            res.send(thisresponse);
-        } else {
-            stripeobj.amount = result.dataValues.value;
+    if (req.body.type == '' || req.body.type == 'subscr') {
+        DBCombos.findOne({
+            where: {product_id:req.body.product_id}
+        }).then(function (result) {
+            if(!result) {
+                thisresponse.error_code = 400;
+                thisresponse.extra_data = "Plan not found on database";
+                res.send(thisresponse);
+            } else {
+                stripeobj.amount = result.dataValues.value;
+                stripe.charges.create(stripeobj, function(err, charge) {
+                    if(err) {
+                        //payment failed
+                        thisresponse.status_code = err.statusCode;
+                        thisresponse.error_code = err.statusCode;
+                        thisresponse.error_description = err.message;
+                        thisresponse.extra_data = err.message;
+                        thisresponse.response_object = err;
+                        res.send(thisresponse);
+                    }
+                    else {
+                        //payment successful
+                        thisresponse.response_object = charge;
+                        thisresponse.extra_data = charge.outcome.seller_message;
+                        res.send(thisresponse);
+                    }
+                });
+                return null;
+            }
+        }).catch(function(error) {
+           winston.error(error);
+        });    
+    } else if (req.body.type == 'vod') {
+        db.vod.findOne({
+            where: {id: req.body.product_id}
+        }).then(function(result) {
+            if (!result) {
+                thisresponse.error_code = 400;
+                thisresponse.extra_data = "VOD not found on database";
+                res.send(thisresponse);
+                return;
+            }
+
+            stripeobj.amount = result.dataValues.price * 100;
             stripe.charges.create(stripeobj, function(err, charge) {
                 if(err) {
                     //payment failed
@@ -97,11 +133,10 @@ exports.stripe_one_off_charge = function(req,res) {
                     res.send(thisresponse);
                 }
             });
-            return null;
-        }
-    }).catch(function(error) {
-       winston.error(error);
-    });
+        }).catch(function(error) {
+            winston.error(error);
+        });
+    }
 };
 
 //stripe subscription charge - depricated
@@ -203,9 +238,19 @@ exports.stripe_add_subscription = function(req,res) {
         transaction_object.full_log = JSON.stringify(req.body);
         transaction_object.amount = req.body.data.object.amount;
         transaction_object.payment_success = true;
-
+        
     async.waterfall([
-        function(callback) {
+        function (callback) {
+            db.salesreport.findOne({
+                where: {transaction_id: transaction_id}
+            }).then(function(result){
+                if (result) {
+                    return callback(new Error("This order has already been executed"));
+                }
+                callback(null, {status:true}, callback);
+            })
+        },
+        function(err, result, callback) {
             //if invoice available then it is a subscription, else it is a one off charge.
             if (stripeinvoiceid) {
                 stripe.invoices.retrieve(
@@ -218,11 +263,12 @@ exports.stripe_add_subscription = function(req,res) {
                                     function (err, customer) {
                                         if (customer) {
                                             req.body.username = customer.email;
+                                            req.body.email = customer.email;
                                             req.body.product_id = invoice.lines.data[0].plan.id;
-                                            callback(null,{status:true});
+                                            callback(null, {status:true}, callback);
                                         }
                                         else {
-                                            callback(null,{status:false, message:"customer not found"});
+                                            callback(null, {status:false, message:"customer not found"}, callback);
                                         }
                                     }
                                 );
@@ -231,11 +277,11 @@ exports.stripe_add_subscription = function(req,res) {
                                 //get username and product_id from metadata
                                 req.body.username = invoice.lines.data[0].metadata.username;
                                 req.body.product_id = invoice.lines.data[0].plan.id;
-                                callback(null,{status:true});
+                                callback(null, {status:true}), callback;
                             }
                         }
                         else {
-                            callback(null,{status:false, message:"invoice not found"});
+                            callback(null, {status:false, message:"invoice not found"}, callback);
                         }
                     }
                 );
@@ -243,32 +289,68 @@ exports.stripe_add_subscription = function(req,res) {
             //else it is a one off charge
             else {
                 req.body.username = req.body.data.object.metadata.username;
+                req.body.type = req.body.data.object.metadata.type;
                 req.body.product_id = req.body.data.object.metadata.product_id;
-                callback({status:true},callback);
+                callback(null, {status:true}, callback);
             }
         },
         //create or find login account
-        function (result,callback) {
+        function (err, result, callback) {
             if(result.status) {
-                customer_functions.create_login_data(req, res, req.body.username).then(function (value) {
-                    callback(null, value);
+                req.body.firstname = '';
+                req.body.lastname = '';
+                req.body.address = '';
+                req.body.city = '';
+                req.body.country = '';
+                req.body.telephone = '';
+
+                req.body.email = (req.body.email) ? req.body.email : ''
+                req.body.salt = authenticationHandler.makesalt();
+                req.body.password = (req.body.password) ? req.body.password : "1234";
+                req.body.channel_stream_source_id = (req.body.channel_stream_source_id) ? req.body.channel_stream_source_id : 1;
+                req.body.vod_stream_source = (req.body.vod_stream_source) ? req.body.vod_stream_source : 1;
+                req.body.pin = (req.body.pin) ? req.body.pin : 1234;
+
+                customer_functions.find_or_create_customer_and_login(req, res).then(function(result){
+                    callback(null, result, callback);
                 })
             }
             else {
-                callback(null, result);
+                callback(null, {status: true, callback});
             }
 
         }
 
     ], function (err, result) {
-
-        if(result.status) {
-            subscription_functions.add_subscription_transaction(req, res, sale_or_refund, transaction_id).then(function(result) {
-                if (result.status) {
-
-                    //confirm successful response.
-                    res.send(result);
-
+        if (err == null && result.status) {
+            if(!req.body.type || req.body.type == 'subscr') {
+                subscription_functions.add_subscription_transaction(req, res, sale_or_refund, transaction_id).then(function(result) {
+                    if (result.status) {
+    
+                        //confirm successful response.
+                        res.send(result);
+    
+                        //enter record into database regardless of results
+                        transaction_object.customer_username = req.body.username;
+                        transaction_object.product_id = req.body.product_id;
+                        DBpayment_transactions.upsert(transaction_object)
+                            .then(function (result) {
+                                return true;
+                            })
+                            .catch(function (err) {
+                                return false;
+                                winston.error('error saving transction: ',err);
+                            });
+                    }
+                    else {
+                        res.status(300).send(result);
+                    }
+                });
+            }
+            else if (req.body.type == 'vod') {
+                subscription_functions.buy_movie(req, res, req.body.username, req.body.product_id, transaction_id)
+                .then(function(result) {
+                    res.send(result)
                     //enter record into database regardless of results
                     transaction_object.customer_username = req.body.username;
                     transaction_object.product_id = req.body.product_id;
@@ -280,18 +362,14 @@ exports.stripe_add_subscription = function(req,res) {
                             return false;
                             winston.error('error saving transction: ',err);
                         });
-                }
-                else {
-                    res.status(300).send(result);
-                }
-            });
+                    winston.info({status: result.status, message: result.message});              
+                });
+            }
         }
         else{
             winston.error('error proccessing stripe transaction: ',err);
-            res.status(300).send(result);
-        }
-
-
+            res.status(300).send(err);
+        }    
     });
 };
 
@@ -358,11 +436,11 @@ exports.render_payment_form = function(req,res) {
             //optionsrow += '<option value ="' + combos[i].dataValues.value + '">' + combos[i].dataValues.name + ' - ' + combos[i].dataValues.value + '</option>';
         }
 
-        res.render(path.resolve('modules/paymentgateways/server/templates/paymentform/demo/stripe_payment_form'), {
+        res.render(path.resolve('modules/paymentgateways/server/templates/stripe-checkout-form'), {
             //options: '<option value="volvo">Volvo</option>', //req.body.name,
-            email: 'myemail@email', //req.body.email,
-            message: 'req.body.message',
-            subject: 'req.body.subject'
+            username: 'tester@mago.com', //req.body.email,
+            product_id: '1',
+            type: 'vod'
         });
     });
 };
