@@ -66,7 +66,7 @@ export default function (nga, admin) {
         .title('<h4>HTML Content <i class="fa fa-angle-right" aria-hidden="true"></i> Edit: {{ entry.values.id }}</h4>')
         .fields([
             nga.field('name','string')
-                .attributes({ placeholder: 'Name' })
+                .attributes({ placeholder: 'Name', readOnly: true })
                 .validation({required: true})
                 .label('Name'),
             nga.field('description','string')

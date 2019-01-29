@@ -56,12 +56,38 @@ exports.device_menu_get = function(req, res) {
         where: {appid: {$like: '%'+req.auth_obj.appid+'%' }, isavailable:true, is_guest_menu: get_guest_menus},
         order: [[ 'position', 'ASC' ]]
     }).then(function (result) {
-        for(var i=0; i<result.length; i++){
-            result[i].icon_url = req.app.locals.settings.assets_url+result[i].icon_url;
-        }
 
-        response.send_res_get(req, res, result, 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400');
+        models.customer_data.findOne({
+            attributes:['firstname','lastname'],
+            where: {id: req.thisuser.customer_id }
+        }).then(function(customer_data_result) {
 
+            models.html_content.findOne({
+                where: {name: 'welcomeMessage' }
+            }).then(function(html_content_result) {
+
+                var html;
+                if(!html_content_result){
+                    html = 'Welcome';
+                }else {
+                    var content_from_ui = html_content_result.content;
+                    html = content_from_ui.replace(new RegExp('{{fullname}}', 'gi'),customer_data_result.firstname+' '+customer_data_result.lastname);
+                }
+                for(var i=0; i<result.length; i++){
+                    result[i].icon_url = req.app.locals.settings.assets_url+result[i].icon_url;
+                }
+                response.send_res(req, res, result, 200, 1, 'OK_DESCRIPTION', html, 'private,max-age=86400');
+
+            }).catch(function(error){
+                winston.error("Html Content failed with error", error);
+                response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+            });
+            return false;
+        }).catch(function(error){
+            winston.error("Quering for the client's personal info failed with error: ", error);
+            response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
+        });
+        return false
     }).catch(function(error) {
         winston.error("Getting a list of menus failed with error: ", error);
         response.send_res_get(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
