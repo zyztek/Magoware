@@ -4,7 +4,7 @@ var winston = require('winston');
 module.exports = {
     up: function (queryInterface, Sequelize) {
 
-        queryInterface.sequelize.query('UPDATE `channel_stream` AS `channel_stream` ' +
+        return queryInterface.sequelize.query('UPDATE `channel_stream` AS `channel_stream` ' +
             'SET `channel_stream`.`stream_resolution` = REPLACE( REPLACE(`channel_stream`.`stream_resolution`, "small", "2,3"), "large", "1,4,5,6");')
             .then(function(success){
                 winston.info('Success updating the values of column channel_stream.stream_resolution');
@@ -20,7 +20,7 @@ module.exports = {
 
     down: function (queryInterface, Sequelize) {
 
-        queryInterface.sequelize.query('UPDATE `channel_stream` AS `channel_stream` ' +
+        return queryInterface.sequelize.query('UPDATE `channel_stream` AS `channel_stream` ' +
             'SET `channel_stream`.`stream_resolution` = REPLACE( REPLACE(`channel_stream`.`stream_resolution`, "2,3", "small"), "1,4,5,6", "large");').then(function(success){
             winston.info('Success updating the values of column channel_stream.stream_resolution');
             //update default value for channel_stream.stream_resolution
