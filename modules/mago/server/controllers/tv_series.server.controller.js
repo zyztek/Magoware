@@ -93,7 +93,7 @@ exports.create = function(req, res) {
     if(!req.body.clicks) req.body.clicks = 0;
     if(!req.body.duration) req.body.duration = 0;
 
-    var array_tv_series_categories = req.body.tv_series_categories_categories || [];
+    var array_tv_series_categories = req.body.tv_series_categories || [];
     delete req.body.tv_series_categories;
 
     var array_tv_series_packages = req.body.tv_series_packages || [];

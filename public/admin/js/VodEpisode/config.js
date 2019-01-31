@@ -111,6 +111,10 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'Season Number' })
                 .validation({ required: true })
                 .label('Season Number'),
+            nga.field('episode_number', 'number')
+                .attributes({ placeholder: 'Episode Number' })
+                .validation({ required: true })
+                .label('Episode Number'),
             nga.field('director', 'string')
                 .attributes({ placeholder: 'Episode Director' })
                 .validation({ required: true })
@@ -212,6 +216,15 @@ export default function (nga, admin) {
                     }
                 })
                 .label('Image *'),
+            nga.field('adult_content', 'choice')
+                .defaultValue(false)
+                .choices([
+                    { value: true, label: 'Yes' },
+                    { value: false, label: 'No' }
+                ])
+                .attributes({ placeholder: 'Choose from dropdown list' })
+                .validation({ required: true})
+                .label('Has adult content'),
             nga.field('pin_protected','boolean')
                 .attributes({ placeholder: 'Pin Protected' })
                 .validation({ required: true })
@@ -224,6 +237,18 @@ export default function (nga, admin) {
                 .validation({ required: true })
                 .defaultValue(new Date())
                 .label('Expiration date'),
+            nga.field('mandatory_ads', 'choice')
+                .defaultValue(false)
+                .choices([{value: true, label: 'Enabled'}, {value: false, label: 'Disabled'}])
+                .attributes({placeholder: 'Choose from dropdown list'})
+                .validation({required: true})
+                .label('Mandatory ads'),
+            nga.field('revenue', 'number')
+                .defaultValue(0)
+                .label('Revenues'),
+            nga.field('budget', 'number')
+                .defaultValue(0)
+                .label('Budget'),
             nga.field('template')
                 .label('')
                 .template(edit_button),
@@ -267,6 +292,10 @@ export default function (nga, admin) {
                 .attributes({ placeholder: 'Season Number' })
                 .validation({ required: true })
                 .label('Season Number'),
+            nga.field('episode_number', 'number')
+                .attributes({ placeholder: 'Episode Number' })
+                .validation({ required: true })
+                .label('Episode Number'),
             nga.field('director', 'string')
                 .attributes({ placeholder: 'Episode Director' })
                 .validation({ required: true })
@@ -368,6 +397,15 @@ export default function (nga, admin) {
                     }
                 })
                 .label('Image *'),
+            nga.field('adult_content', 'choice')
+                .defaultValue(false)
+                .choices([
+                    { value: true, label: 'Yes' },
+                    { value: false, label: 'No' }
+                ])
+                .attributes({ placeholder: 'Choose from dropdown list' })
+                .validation({ required: true})
+                .label('Has adult content'),
             nga.field('pin_protected','boolean')
                 .attributes({ placeholder: 'Pin Protected' })
                 .validation({ required: true })
@@ -380,6 +418,18 @@ export default function (nga, admin) {
                 .validation({ required: true })
                 .defaultValue(new Date())
                 .label('Expiration date'),
+            nga.field('mandatory_ads', 'choice')
+                .defaultValue(false)
+                .choices([{value: true, label: 'Enabled'}, {value: false, label: 'Disabled'}])
+                .attributes({placeholder: 'Choose from dropdown list'})
+                .validation({required: true})
+                .label('Mandatory ads'),
+            nga.field('revenue', 'number')
+                .defaultValue(0)
+                .label('Revenues'),
+            nga.field('budget', 'number')
+                .defaultValue(0)
+                .label('Budget'),
             //default subtitle field is exclusive to the edition view
             nga.field('default_subtitle_id', 'choice')
                 .choices(function(entry) {
