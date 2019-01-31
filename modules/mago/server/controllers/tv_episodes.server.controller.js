@@ -22,13 +22,24 @@ exports.create = function(req, res) {
     if(!req.body.duration) req.body.duration = 0;
     if (!req.body.original_title) req.body.original_title = req.body.title;
 
-    DBModel.create(req.body).then(function(result) {
-        if (!result) {
-            return res.status(400).send({message: 'fail create data'});
-        } else {
-            logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
-            return res.jsonp(result);
-        }
+    db.tv_season.findOne({
+        attributes: ['id'], where: {tv_show_id: req.body.tv_show_id, season_number: req.body.season_number}
+    }).then(function(tv_season){
+        req.body.tv_season_id = tv_season.id;
+        DBModel.create(req.body).then(function(result) {
+            if (!result) {
+                return res.status(400).send({message: 'fail create data'});
+            } else {
+                logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
+                return res.jsonp(result);
+            }
+        }).catch(function(err) {
+            winston.error(err);
+            return res.status(400).send({
+                message: errorHandler.getErrorMessage(err)
+            });
+        });
+        return null;
     }).catch(function(err) {
         winston.error(err);
         return res.status(400).send({
@@ -58,19 +69,30 @@ exports.update = function(req, res) {
         var deleteimage = path.resolve('./public'+updateData.image_url);
     }
 
-    updateData.updateAttributes(req.body).then(function(result) {
-        if(deletefile) {
-            fs.unlink(deletefile, function (err) {
-                //todo: return some warning
+    db.tv_season.findOne({
+        attributes: ['id'], where: {tv_show_id: req.body.tv_season.tv_sery.tv_show_id, season_number: req.body.season_number}
+    }).then(function(tv_season){
+        req.body.tv_season_id = tv_season.id;
+        updateData.updateAttributes(req.body).then(function(result) {
+            if(deletefile) {
+                fs.unlink(deletefile, function (err) {
+                    //todo: return some warning
+                });
+            }
+            logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
+            if(deleteimage) {
+                fs.unlink(deleteimage, function (err) {
+                    //todo: return some warning
+                });
+            }
+            return res.jsonp(result);
+        }).catch(function(err) {
+            winston.error(err);
+            return res.status(400).send({
+                message: errorHandler.getErrorMessage(err)
             });
-        }
-        logHandler.add_log(req.token.uid, req.ip.replace('::ffff:', ''), 'created', JSON.stringify(req.body));
-        if(deleteimage) {
-            fs.unlink(deleteimage, function (err) {
-                //todo: return some warning
-            });
-        }
-        return res.jsonp(result);
+        });
+        return null;
     }).catch(function(err) {
         winston.error(err);
         return res.status(400).send({

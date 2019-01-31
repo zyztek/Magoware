@@ -187,6 +187,18 @@ export default function (nga, admin) {
                 .validation({ required: true })
                 .defaultValue(new Date())
                 .label('Expiration date'),
+            nga.field('mandatory_ads', 'choice')
+                .defaultValue(false)
+                .choices([{value: true, label: 'Enabled'}, {value: false, label: 'Disabled'}])
+                .attributes({placeholder: 'Choose from dropdown list'})
+                .validation({required: true})
+                .label('Mandatory ads'),
+            nga.field('revenue', 'number')
+                .defaultValue(0)
+                .label('Revenues'),
+            nga.field('budget', 'number')
+                .defaultValue(0)
+                .label('Budget'),
             nga.field('template')
                 .label('')
                 .template(edit_button),
@@ -309,6 +321,18 @@ export default function (nga, admin) {
                 .validation({ required: true })
                 .defaultValue(new Date())
                 .label('Expiration date'),
+            nga.field('mandatory_ads', 'choice')
+                .defaultValue(false)
+                .choices([{value: true, label: 'Enabled'}, {value: false, label: 'Disabled'}])
+                .attributes({placeholder: 'Choose from dropdown list'})
+                .validation({required: true})
+                .label('Mandatory ads'),
+            nga.field('revenue', 'number')
+                .defaultValue(0)
+                .label('Revenues'),
+            nga.field('budget', 'number')
+                .defaultValue(0)
+                .label('Budget'),
             nga.field('template')
                 .label('')
                 .template(edit_button),
