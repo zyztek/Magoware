@@ -28,7 +28,7 @@ exports.get_movie_details = function(req, res) {
 
     var attributes = [
         'id', ['adult_content', 'adult'], 'homepage', 'budget', 'mandatory_ads', 'imdb_id', 'original_language', 'original_title', 'expiration_time', 'price',
-        ['starring', 'cast'], 'director', [db.sequelize.fn('YEAR', db.sequelize.col('release_date')), "release_year"],
+        ['starring', 'cast'], 'director', [db.sequelize.fn('YEAR', db.sequelize.col('release_date')), "release_year"], [sequelize.literal('"film"'), 'vod_type'],
         [db.sequelize.fn("concat", req.app.locals.backendsettings.assets_url, db.sequelize.col('image_url')), 'backdrop_path'],
         [db.sequelize.fn("concat", req.app.locals.backendsettings.assets_url, db.sequelize.col('vod.icon_url')), 'poster_path'],
         ['description', 'overview'], 'popularity', 'revenue', ['duration', 'runtime'], 'vote_count', 'trailer_url', 'vod_preview_url', 'default_subtitle_id',
