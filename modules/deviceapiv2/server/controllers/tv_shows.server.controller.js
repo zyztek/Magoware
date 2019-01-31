@@ -58,7 +58,7 @@ exports.tv_show_list = function(req, res) {
             original_title: {$like: '%'+req.query.search+'%'},
             description: {$like: '%'+req.query.search+'%'},
             tagline: {$like: '%'+req.query.search+'%'},
-            starring: {$like: '%'+req.query.search+'%'}
+            cast: {$like: '%'+req.query.search+'%'}
         };
     }
 
