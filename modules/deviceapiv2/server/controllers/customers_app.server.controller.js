@@ -133,8 +133,11 @@ exports.update_user_data = function(req, res) {
                         auth: {
                             user: req.app.locals.settings.email_username,
                             pass: req.app.locals.settings.email_password
-                        }
-                    };
+                        },
+							tls: {
+								rejectUnauthorized: false
+							}	
+						}
                     var smtpTransport = nodemailer.createTransport(smtpConfig);
                     var mailOptions = {
                         from: req.app.locals.settings.email_address,
