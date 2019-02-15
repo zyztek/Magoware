@@ -10,7 +10,7 @@ module.exports = {
                 queryInterface.removeColumn('vod', 'vod_parent_id', { transaction: t })
             ])
         }).catch(function(error){
-            winston.error('Adding tables tv_episode_stream, tv_episode_subtitles, tv_episode_resume failed with error message: ',error.message);
+            winston.error('Dropping old structure columns failed with error message: ',error);
         });
     },
 
@@ -30,7 +30,7 @@ module.exports = {
                 }, { transaction: t })
             ])
         }).catch(function(error){
-            winston.error('Adding tables tv_episode_stream, tv_episode_subtitles, tv_episode_resume failed with error message: ',error.message);
+            winston.error('Reverting to old vod structure failed with error message: ',error.message);
         });
     }
 };

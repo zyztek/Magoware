@@ -263,4 +263,11 @@ module.exports = function(app) {
         .get(mainController.get_weather_widget);
 
 
+    /* ===== welcome message ===== */
+
+    app.route('/apiv2/welcomeMessage')
+        .all(authpolicy.isAllowed)
+        .get(mainController.get_welcomeMessage);
+
+
 };

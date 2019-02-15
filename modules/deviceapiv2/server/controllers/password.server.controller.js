@@ -80,8 +80,11 @@ exports.forgot = function(req, res, next) {
         auth: {
             user: req.app.locals.settings.email_username,
             pass: req.app.locals.settings.email_password
-        }
-    };
+        },
+		tls: {
+			rejectUnauthorized: false
+		}	
+	}
 
     var smtpTransport = nodemailer.createTransport(smtpConfig);
 
