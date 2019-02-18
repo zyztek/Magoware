@@ -456,12 +456,12 @@ export default function (nga, admin) {
                 .label('')
                 .template('<ma-create-button entity-name="tv_episode_subtitles" class="pull-right" label="ADD SUBTITLES" default-values="{ tv_episode_id: entry.values.id }"></ma-create-button>'),
 
-            nga.field('tv_episode_streams', 'referenced_list')
-                .label('Stream Sources')
-                .targetEntity(admin.getEntity('tv_episode_streams'))
+            nga.field('tv_episode_url', 'referenced_list')
+                .label('Stream url Sources')
+                .targetEntity(admin.getEntity('tv_episode_stream'))
                 .targetReferenceField('tv_episode_id')
                 .targetFields([
-                    nga.field('url').label('Episode URL'),
+                    nga.field('tv_episode_url').label('Episode URL'),
                 ])
                 .listActions(['edit', 'delete']),
             nga.field('ADD STREAM', 'template')

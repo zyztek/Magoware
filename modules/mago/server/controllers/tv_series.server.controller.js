@@ -206,8 +206,8 @@ exports.delete = function(req, res) {
             return sequelize_t.sequelize.transaction(function (t) {
                 return db.tv_series_categories.destroy({where: {tv_show_id: req.tv_show.id}}, {transaction: t}).then(function (removed_genres) {
                     return db.t_tv_series_sales.destroy({where: {tv_show_id: req.tv_show.id}}, {transaction: t}).then(function (removed_series_sales) {
-                        return db.tv_season.destroy({where: {tv_show_id: req.tv_show.id}}, {transaction: t}).then(function (removed_subtitles) {
-                            return db.tv_show.destroy({where: {id: req.tv_show.id}}, {transaction: t});
+                        return db.tv_season.destroy({where: {tv_show_id: req.tv_show.id}}, {transaction: t}).then(function (removed_seasons) {
+                            return db.tv_series.destroy({where: {id: req.tv_show.id}}, {transaction: t});
                         });
                     });
                 });

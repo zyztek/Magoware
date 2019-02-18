@@ -13,12 +13,12 @@ module.exports = function(app) {
 
 
     /* ===== tv episode streams ===== */
-    app.route('/api/tv_episode_streams')
+    app.route('/api/tv_episode_stream')
         .all(policy.isAllowed)
         .get(tv_episodeStreams.list)
         .post(tv_episodeStreams.create);
 
-    app.route('/api/tv_episode_streams/:tv_episode_stream_id')
+    app.route('/api/tv_episode_stream/:tv_episode_stream_id')
         .all(policy.isAllowed)
         .get(tv_episodeStreams.read)
         .put(tv_episodeStreams.update)

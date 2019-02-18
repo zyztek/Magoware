@@ -39,7 +39,7 @@ exports.get_movie_details = function(req, res) {
         attributes: attributes,
         include: [
             {
-                model: models.vod_stream, attributes: ['stream_format', 'url', 'token', 'token_url', 'encryption', 'encryption_url'], required: false,
+                model: models.vod_stream, attributes: ['stream_format', 'drm_platform', 'url', 'token', 'token_url', 'encryption', 'encryption_url'], required: false,
                 where: {stream_source_id: req.thisuser.vod_stream_source, stream_resolution: {$like: "%"+req.auth_obj.appid+"%"}}
             },
             {

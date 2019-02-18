@@ -61,12 +61,6 @@ exports.read = function(req, res) {
  */
 exports.update = function(req, res) {
 
- //   console.log("req episode data ", req.tv_episode.tv_season.tv_sery);
-   // console.log("req.tv_episode.tv_season.tv_sery ", req.tv_episode.tv_season.tv_sery);
-    console.log("series id ", req.body.tv_season.tv_sery.tv_show_id);
-
-
-
     var updateData = req.tv_episode;
     if(updateData.icon_url != req.body.icon_url) {
         var deletefile = path.resolve('./public'+updateData.icon_url);

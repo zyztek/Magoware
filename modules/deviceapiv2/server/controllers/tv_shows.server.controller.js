@@ -45,10 +45,10 @@ exports.tv_show_list = function(req, res) {
 
     //attribute list
     final_where.attributes = [
-        'id', 'vote_count', 'vote_average', 'title', 'popularity', [ sequelize.literal('"tv_series"'), 'vod_type'], 'trailer_url',
-        [db.sequelize.fn("concat", req.app.locals.backendsettings.assets_url, db.sequelize.col('tv_series.image_url')), 'backdrop_path'],
-        [db.sequelize.fn("concat", req.app.locals.backendsettings.assets_url, db.sequelize.col('tv_series.icon_url')), 'poster_path'],
-        'original_language', 'original_title', ['adult_content', 'adult'], ['description', 'overview'], [sequelize.fn('DATE_FORMAT', sequelize.col('tv_series.release_date'), '%Y-%m-%d'), 'release_date']
+        'id', 'vote_count', 'vote_average', 'title', 'popularity', [ sequelize.literal('"tv_series"'), 'vod_type'], 'trailer_url', 'createdAt',
+         [db.sequelize.fn("concat", req.app.locals.backendsettings.assets_url, db.sequelize.col('tv_series.image_url')), 'backdrop_path'],
+         [db.sequelize.fn("concat", req.app.locals.backendsettings.assets_url, db.sequelize.col('tv_series.icon_url')), 'poster_path'],
+         'original_language', 'original_title', ['adult_content', 'adult'], ['description', 'overview'], [sequelize.fn('DATE_FORMAT', sequelize.col('tv_series.release_date'), '%Y-%m-%d'), 'release_date']
     ];
 
     //prepare search condition by keyword
@@ -78,10 +78,15 @@ exports.tv_show_list = function(req, res) {
     //join tables
     final_where.include = [
         {model: models.tv_series_categories, required: true, attributes: [], where: category_filter},
-        {model: models.tv_season, attributes: ['id', 'season_number', 'title'], required: false, where: {expiration_time: {$gte: Date.now()}, is_available: true}}
+        {model: models.tv_season, attributes: ['id', 'season_number', 'title'], required: false, where: {expiration_time: {$gte: Date.now()}, is_available: true}},
+        {
+            model: models.tv_season, as: 'season', attributes: ['id', 'season_number', 'title'], required: false, where: {expiration_time: {$gte: Date.now()}, is_available: true},
+            include: [{ model: models.tv_episode, attributes: ['id', 'tv_season_id', 'season_number', 'episode_number'], required: false,  where: {expiration_time: {$gte: Date.now()}, is_available: true},
+                include: [{model: models.tv_episode_resume, required: false, where: {login_id: req.thisuser.id}, attributes: ['updatedAt']}]
+            }]
+        }
     ];
-
-    final_where.subQuery = false; //keeps subquery from generating
+    final_where.distinct = true; //ensures that the count does not include join results
 
     //start query
     models.tv_series.findAndCountAll(
@@ -90,12 +95,25 @@ exports.tv_show_list = function(req, res) {
         var tv_show_list = [];
         async.forEach(results.rows, function(tv_show, callback){
             tv_show = tv_show.toJSON();
-            tv_show.last_watched = {
-                "episode_id": 1,
-                "season_id": 1,
-                "season_number": 1,
-                "episode_number": 1
-            };
+
+             tv_show.last_watched = {};
+             var last_watched_date = null;
+             for(var i=0; i<tv_show.season.length; i++){
+                for(var j=0; j<tv_show.season[i].tv_episodes.length; j++){
+                    if(tv_show.season[i].tv_episodes[j].tv_episode_resumes[0] && last_watched_date < tv_show.season[i].tv_episodes[j].tv_episode_resumes[0].updatedAt){
+                        last_watched_date = tv_show.season[i].tv_episodes[j].tv_episode_resumes[0].updatedAt;
+                        tv_show.last_watched = {
+                            "episode_id": tv_show.season[i].tv_episodes[j].id,
+                            "season_id": tv_show.season[i].tv_episodes[j].tv_season_id,
+                            "season_number": tv_show.season[i].tv_episodes[j].season_number,
+                            "episode_number": tv_show.season[i].tv_episodes[j].episode_number
+                        };
+                    }
+                }
+             }
+            delete tv_show.season;
+            delete tv_show.createdAt;
+
             tv_show_list.push(tv_show);
             callback(null);
         },function(error, result){
@@ -148,8 +166,7 @@ exports.tv_show_details = function(req, res) {
             {
                 model: models.tv_season, as: 'season', attributes: ['id'], required: false, where: {expiration_time: {$gte: Date.now()}, is_available: true},
                 include: [{model: models.tv_episode, attributes: ['id', 'tv_season_id', 'season_number', 'episode_number'], required: false, where: {expiration_time: {$gte: Date.now()}, is_available: true},
-                    include: [{model: models.tv_episode_resume, attributes: [[sequelize.fn('MAX', sequelize.col('season.tv_episodes.tv_episode_resumes.updatedAt')), 'last_watched']],
-                        required: false, where: {login_id: req.thisuser.id}}]
+                    include: [{model: models.tv_episode_resume, attributes: ['updatedAt'], required: false, where: {login_id: req.thisuser.id}}]
                 }]
             }
         ],
@@ -173,22 +190,28 @@ exports.tv_show_details = function(req, res) {
 
                     //prepare array of categories
                     vod_data.genres = [];
-                    for (var i = 0; i < vod_data.tv_series_categories.length; i++) vod_data.genres.push({
-                        "id": vod_data.tv_series_categories[i].vod_category.id,
-                        "name": vod_data.tv_series_categories[i].vod_category.name
+                    for (var k = 0; k < vod_data.tv_series_categories.length; k++) vod_data.genres.push({
+                        "id": vod_data.tv_series_categories[k].vod_category.id,
+                        "name": vod_data.tv_series_categories[k].vod_category.name
                     });
                     delete vod_data.tv_series_categories;
 
                     //prepare object of last watched episode
-                    if(vod_data.season[0].tv_episodes[0].tv_episode_resumes[0]){
-                        vod_data.last_watched = {
-                            "episode_id": vod_data.season[0].tv_episodes[0].id,
-                            "season_id": vod_data.season[0].tv_episodes[0].tv_season_id,
-                            "season_number": vod_data.season[0].tv_episodes[0].season_number,
-                            "episode_number": vod_data.season[0].tv_episodes[0].episode_number
-                        };
+                    vod_data.last_watched = {};
+                    var last_watched_date = null;
+                    for(var i=0; i<vod_data.season.length; i++){
+                        for(var j=0; j<vod_data.season[i].tv_episodes.length; j++){
+                            if(vod_data.season[i].tv_episodes[j].tv_episode_resumes[0] && last_watched_date < vod_data.season[i].tv_episodes[j].tv_episode_resumes[0].updatedAt){
+                                last_watched_date = vod_data.season[i].tv_episodes[j].tv_episode_resumes[0].updatedAt;
+                                vod_data.last_watched = {
+                                    "episode_id": vod_data.season[i].tv_episodes[j].id,
+                                    "season_id": vod_data.season[i].tv_episodes[j].tv_season_id,
+                                    "season_number": vod_data.season[i].tv_episodes[j].season_number,
+                                    "episode_number": vod_data.season[i].tv_episodes[j].episode_number
+                                };
+                            }
+                        }
                     }
-                    else vod_data.last_watched = {};
                     delete vod_data.season;
 
                     //prepare dynamic button list based on client rights to play the item
@@ -357,7 +380,7 @@ exports.episode_details = function(req, res) {
         attributes: attributes,
         include: [
             {
-                model: models.tv_episode_stream, attributes: ['stream_format', ['tv_episode_url', 'url'], 'token', 'token_url', 'encryption', 'encryption_url'],
+                model: models.tv_episode_stream, attributes: ['stream_format', 'drm_platform', ['tv_episode_url', 'url'], 'token', 'token_url', 'encryption', 'encryption_url'],
                 where: {stream_source_id: req.thisuser.vod_stream_source, stream_resolution: {$like: "%"+req.auth_obj.appid+"%"}}, required: false
             },
             {
@@ -423,7 +446,6 @@ exports.episode_details = function(req, res) {
         else response.send_res_get(req, res, [], 200, 1, 'OK_DESCRIPTION', 'OK_DATA', 'private,max-age=86400'); //send details object
 
     }).catch(function(error) {
-        console.log(error)
         winston.error("Querying for the details of the episode failed with error: ", error);
         response.send_res(req, res, [], 706, -1, 'DATABASE_ERROR_DESCRIPTION', 'DATABASE_ERROR_DATA', 'no-store');
     });

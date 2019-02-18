@@ -469,7 +469,7 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     admin.addEntity(nga.entity('Submenu'));
     admin.addEntity(nga.entity('VodEpisode'));
     admin.addEntity(nga.entity('tv_episode_subtitles'));
-    admin.addEntity(nga.entity('tv_episode_streams'));
+    admin.addEntity(nga.entity('tv_episode_stream'));
     admin.addEntity(nga.entity('ResellersLoginData'));
     admin.addEntity(nga.entity('ResellersUsers'));
     admin.addEntity(nga.entity('Series'));
@@ -492,7 +492,7 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     require('./Resellers_loginData/config')(nga, admin);
     require('./VodEpisode/config')(nga, admin);
     require('./tv_episode_subtitles/config')(nga, admin);
-    require('./tv_episode_streams/config')(nga, admin);
+    require('./tv_episode_stream/config')(nga, admin);
     require('./Submenu/config')(nga, admin);
     require('./AdvancedSettings/config')(nga, admin);
     require('./settings/PlayerSettings/config')(nga, admin);
