@@ -18,7 +18,7 @@ We recommend versions 7.x.x or 8.x.x installed for nodejs
 
 Download MAGOWARE Backoffice application from Github
 
-https://github.com/MAGOWARE/backoffice-administration.git
+[https://github.com/zyztek/backoffice-administration]
 
 Run the following command within the root folder to install application libriaries:
 ```
